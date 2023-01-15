@@ -27,10 +27,10 @@ const View = styled.div`
       align-content: center;
   `;
 
-const DetailedView = styled.div`
+const TopView = styled.div`
+  width: 100vw;
   display: flex;
-  justify-content: center;
-  display: ${props => props.display ? "flex" : "none"};
+  justify-content: flex-start;
 `;
 
 const Button = styled.button`
@@ -61,21 +61,32 @@ const RecordButton = styled(Button)`
 
 function App() {
   
-  const [showDetails, setShowDetails] = useState(false);
-  const [playPosition, setPlayPosition] = useState(0);
+  const [showDetails, setShowDetails] = useState(true);
+  const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
   const playing = useRef(false); // no re rendering please
   const drawing = useRef();
 
-  const makeChannel = (name, url, pan) => {
-    const channel = new Tone.Channel({
-      pan
-    }).toDestination();
-    const player = new Tone.Player({
-      url: url,
+  const makeChannel = (recording, pan) => {
+    const channel = new Tone.Channel({pan}).toDestination();
+    const new_player = new Tone.Player({
+      url: recording.url,
       loop: false
-    }).sync().start(0);
-    player.connect(channel);
+    }).sync().start(playPosition.current);
+    new_player.connect(channel);
+
+    setRecordings(existing => {
+      if (existing.length === 0) {
+        return [{...recording, player: new_player}]
+      }
+      else return [
+        existing.slice(0, existing.length - 1),
+        {...recording, player: new_player},
+      ]
+    });
+    // recording.player is set to this player (check deep assignment with useState)
+    // needed for drag to update position
+    // latest position also should be maintained with playPosition ?
 
     // // add a UI element
     // ui({
@@ -84,10 +95,6 @@ function App() {
     //   parent: document.querySelector("#content")
     // });
   }
-
-  useEffect(() => {
-  
-  }, []);
 
   // const saveRecording = (recording) => {
   //     const url = URL.createObjectURL(recording);
@@ -102,8 +109,7 @@ function App() {
   }
 
   const receiveRecording = (recording) => {
-    setRecordings((prevRecordings) => [...prevRecordings, recording]);
-    makeChannel("Test", recording.url, 0);
+    makeChannel(recording, 0);
   
     // or done in transport?? it just seems like a pain to pass everything everywhere
     // the issue is that if I just pass the recordings object to the transport, the view will be synced. So it would be 
@@ -124,15 +130,22 @@ function App() {
     // So that all transport is handled by transport - all data is passed to where it should be
   }
 
+  const setPlayPosition = (position) => {
+    playPosition.current = position;
+  }
+
+  useEffect(() => {
+
+  }, []);
+
   return (
     <View id="Tone" ref={drawing.current}>
-      <Tree prop={displayNodeDetails}>
-      </Tree>
-      <MainTransport display={showDetails} recordings={recordings} 
-        playPosition={playPosition} setPosition={setPlayPosition} play={play}></MainTransport>
-      <DetailedView display={showDetails}>
+      <TopView>
         <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
-      </DetailedView>
+      </TopView>
+      <MainTransport recordings={recordings} 
+        playPosition={playPosition} setPlayPosition={setPlayPosition} play={play}>
+      </MainTransport>
     </View> 
   )
 }

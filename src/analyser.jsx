@@ -1,20 +1,25 @@
 import {  useEffect } from 'react'
 import p5 from 'p5';
+import styled from 'styled-components';
+
+const StyledWaveform = styled.div`
+  height: 100px;
+`
 
 export default function Waveform(analyser) {
     useEffect(() => {
       let analyzer = analyser.analyser;
       if (!analyzer) return;
       const s = (sketch) => {
-        let x = 800;
-        let y = 300;
+        let x = 500;
+        let y = 150;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          sketch.background('white');
+          sketch.background('#dcf0f3');
           sketch.noFill();
           const values = analyzer.getValue();
           sketch.beginShape();
@@ -34,7 +39,7 @@ export default function Waveform(analyser) {
     }, []);
 
     return (
-        <div id="waveform">
-        </div>
+        <StyledWaveform id="waveform">
+        </StyledWaveform>
     );
   }
