@@ -2,12 +2,15 @@ import { useRef, useEffect } from 'react';
 import p5 from 'p5';
 
 import styled from 'styled-components';
+import Draggable from 'react-draggable';
 import { Timeline, Transport } from 'tone';
 import NewRecording from './newrecording';
 
+import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
+
 const TransportView = styled.div`
   height: 400px;
-  width: 100vw;
+  width: 90vw;
   display: ${props => props.display ? "none" : "flex"};
   flex-direction: column;
   justify-content: flex-start;
@@ -21,13 +24,15 @@ const TransportObjects = styled.div`
 
 const TransportTimeline = styled.div`
   overflow: scroll;
+  display: flex;
+  flex-direction: column;
   max-width: 90vw;
+  margin-bottom: 50px;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
-  margin-bottom: 50px;
 `;
 
 const PlayButton = styled.button`
@@ -81,18 +86,30 @@ block swipe to go back
 
 */
 
-function MainTransport({display, recordings, playPosition, setPlayPosition, play}) {
+function MainTransport({display, recordings, updatePlayer, updateRecordings, play}) {
 
     let playBtn = document.getElementById("play_btn");
     const transport = useRef();
-    const length = 2000;
+    const length = TRANSPORT_LENGTH;
+  
+    // update start time for dropped element's player
+    const onStop = (data, recording, index) => {
+      let new_player = updatePlayer(recording);
+      let new_pos = data.lastX / PIX_TO_TIME;
+      new_player.sync().start(new_pos);
+      new_player.connect(recording.channel); 
+      recording.player = new_player;
+      recording.position = new_pos;
+      updateRecordings(recording, index);
+    }
 
     const inflateRecordings = () => {
-      return recordings.map(r => (
-        <RecordingView className="recording_clip"></RecordingView>
-        // <NewRecording key={Math.random() * 1000}
-        //   newRecording={r} setPlayPosition={setPlayPosition}>
-        // </NewRecording>
+      return recordings.map((r, index) => (
+        <Draggable key={"rec_clip_" + index} 
+            onStop={(e, data) => onStop(data, r, index)}
+            bounds={{left: 0, right: TRANSPORT_LENGTH, top: 0, bottom: 0}}>
+          <RecordingView className="recording_clip"></RecordingView>
+        </Draggable>
       ));
     }	
 
@@ -113,7 +130,7 @@ function MainTransport({display, recordings, playPosition, setPlayPosition, play
           let i = 0;
           while (i < x) {
             sketch.line(i + 10, y-25, i + 10, y-15);
-            sketch.text(i, i+10, y);
+            sketch.text(i / PIX_TO_TIME, i+10, y);
             sketch.textAlign(sketch.CENTER);
             i = i + 50;
           }
@@ -132,10 +149,10 @@ function MainTransport({display, recordings, playPosition, setPlayPosition, play
 
     return (
         <TransportView id="transportview" display={display}>
-          <RecordingsView>
-            {inflateRecordings()}
-          </RecordingsView>
           <TransportTimeline id="timeline" ref={transport}>
+            <RecordingsView>
+              {inflateRecordings()}
+            </RecordingsView>
           </TransportTimeline>
             <PlayButton type="button" id="play_btn" onClick={play}></PlayButton>
         </TransportView>

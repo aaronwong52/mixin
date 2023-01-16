@@ -31,6 +31,7 @@ const TopView = styled.div`
   width: 100vw;
   display: flex;
   justify-content: flex-start;
+  margin-bottom: 100px;
 `;
 
 const Button = styled.button`
@@ -69,19 +70,22 @@ function App() {
 
   const makeChannel = (recording, pan) => {
     const channel = new Tone.Channel({pan}).toDestination();
-    const new_player = new Tone.Player({
+    let new_player = new Tone.Player({
       url: recording.url,
       loop: false
     }).sync().start(playPosition.current);
+    new_player.buffer.onload = (buffer) => {
+      playPosition.current += buffer.duration;
+    };
     new_player.connect(channel);
-
+    
     setRecordings(existing => {
       if (existing.length === 0) {
-        return [{...recording, player: new_player}]
+        return [{...recording, player: new_player, channel: channel}]
       }
       else return [
         existing.slice(0, existing.length - 1),
-        {...recording, player: new_player},
+        {...recording, player: new_player, channel: channel},
       ]
     });
     // recording.player is set to this player (check deep assignment with useState)
@@ -94,6 +98,20 @@ function App() {
     //   tone: channel,
     //   parent: document.querySelector("#content")
     // });
+  }
+
+  const updateRecordings = (updatedRecording, index) => {
+    setRecordings(existing => {
+      if (existing.length === 1) {
+        return [{...updatedRecording}]
+      }
+      else return [
+        ...existing.slice(0, index),
+        {...updatedRecording},
+        ...existing.slice(index, existing.length)
+      ]
+    });
+    console.log(recordings);
   }
 
   // const saveRecording = (recording) => {
@@ -130,8 +148,13 @@ function App() {
     // So that all transport is handled by transport - all data is passed to where it should be
   }
 
-  const setPlayPosition = (position) => {
-    playPosition.current = position;
+  const updatePlayer = (recording) => {
+    recording.player.dispose();
+    let new_player = new Tone.Player({
+      url: recording.url,
+      loop: false
+    });
+    return new_player;
   }
 
   useEffect(() => {
@@ -143,8 +166,8 @@ function App() {
       <TopView>
         <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
       </TopView>
-      <MainTransport recordings={recordings} 
-        playPosition={playPosition} setPlayPosition={setPlayPosition} play={play}>
+      <MainTransport recordings={recordings} updatePlayer={updatePlayer}
+        updateRecordings={updateRecordings} play={play}>
       </MainTransport>
     </View> 
   )
