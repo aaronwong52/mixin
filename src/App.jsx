@@ -64,6 +64,7 @@ function App() {
   const [showDetails, setShowDetails] = useState(true);
   const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
+  const [selectedRecording, setSelectedRecording] = useState({})
   const playing = useRef(false); // no re rendering please
   const drawing = useRef();
 
@@ -75,18 +76,29 @@ function App() {
     }).sync().start(playPosition.current);
     new_player.buffer.onload = (buffer) => {
       playPosition.current += buffer.duration;
+      console.log(buffer.duration);
+      setRecordings(existing => {
+        if (existing.length === 0) {
+          return [
+            {...recording, 
+              duration: buffer.duration, 
+              player: new_player, 
+              channel: channel
+            }
+          ]
+        }
+        else return [
+          ...existing.slice(0, existing.length),
+          {...recording, 
+            duration: buffer.duration, 
+            player: new_player, 
+            channel: channel
+          },
+        ]
+      });
+      new_player.connect(channel);
     };
-    new_player.connect(channel);
     
-    setRecordings(existing => {
-      if (existing.length === 0) {
-        return [{...recording, player: new_player, channel: channel}]
-      }
-      else return [
-        existing.slice(0, existing.length - 1),
-        {...recording, player: new_player, channel: channel},
-      ]
-    });
     // recording.player is set to this player (check deep assignment with useState)
     // needed for drag to update position
     // latest position also should be maintained with playPosition ?
@@ -107,7 +119,7 @@ function App() {
       else return [
         ...existing.slice(0, index),
         {...updatedRecording},
-        ...existing.slice(index, existing.length)
+        ...existing.slice(index + 1, existing.length)
       ]
     });
   }
@@ -164,9 +176,11 @@ function App() {
       <TopView>
         <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
       </TopView>
-      <Editor></Editor>
+      <Editor recording={selectedRecording}></Editor>
       <MainTransport recordings={recordings} newPlayer={newPlayer}
-        updateRecordings={updateRecordings} toggle={toggle}>
+        updateRecordings={updateRecordings}
+        selectRecording={setSelectedRecording} 
+        toggle={toggle}>
       </MainTransport>
     </View> 
   )
