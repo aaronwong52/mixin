@@ -3,33 +3,31 @@ import p5 from 'p5';
 
 import styled from 'styled-components';
 import Draggable from 'react-draggable';
-import { Timeline, Transport } from 'tone';
-import NewRecording from './newrecording';
+import { Transport } from 'tone';
+import Playhead from './playline';
 
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 
 const TransportView = styled.div`
-  height: 400px;
-  width: 90vw;
+  height: 250px;
+  width: 100vw;
   display: ${props => props.display ? "none" : "flex"};
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-`;
-
-const TransportObjects = styled.div`
-  height: 200px;
-  width: 100vw;
+  border: 1px dotted grey;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
 `;
 
 const TransportTimeline = styled.div`
   overflow: scroll;
   display: flex;
   flex-direction: column;
-  max-width: 90vw;
+  width: 100vw;
   padding-bottom: 10px;
   margin-bottom: 20px;
-  border: 1px dotted grey;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -57,6 +55,7 @@ const RecordingsView = styled.div`
   justify-content: flex-start;
   align-items: center;
   margin-left: 16px;
+  padding-top: 5px;
 `;
 
 const RecordingView = styled.div`
@@ -89,6 +88,14 @@ block swipe to go back
 
 */
 
+
+/* 
+
+To sync playline with transport
+Transport.seconds to pixels to css
+
+*/
+
 function MainTransport({display, recordings, newPlayer, 
   updateRecordings, selectRecording, toggle}) {
 
@@ -106,9 +113,8 @@ function MainTransport({display, recordings, newPlayer,
 
       new_player.sync().start(new_pos);
       new_player.connect(recording.channel); 
-      console.log(new_pos)
       recording.player = new_player;
-      
+               
       updateRecordings(recording, index);
     }
     
@@ -143,21 +149,19 @@ function MainTransport({display, recordings, newPlayer,
     useEffect(() => {
       const s = (sketch) => {
         let x = TRANSPORT_LENGTH;
-        let y = 75;
+        let y = 25;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          let time = (Transport.seconds * PIX_TO_TIME) + 10;
           sketch.background("white");
           sketch.fill(51)
           sketch.textSize(12);
 
           sketch.line(0, y - 20, x, y - 20); // baseline
           sketch.stroke('blue');
-          sketch.line(time, -30, time, y - 15);
           sketch.stroke('grey');
 
           let i = 0;
@@ -183,12 +187,13 @@ function MainTransport({display, recordings, newPlayer,
 
     return (
         <TransportView id="transportview" display={display}>
-           <RecordingsView id="recordingsview">
-              {inflateRecordings()}
+            <Playhead></Playhead>
+            <RecordingsView id="recordingsview">
+                {inflateRecordings()}
             </RecordingsView>
           <TransportTimeline id="timeline" ref={transportRef}>
           </TransportTimeline>
-            <PlayButton type="button" id="play_btn" onClick={toggle}></PlayButton>
+              <PlayButton type="button" id="play_btn" onClick={toggle}></PlayButton>
         </TransportView>
     )
 }
