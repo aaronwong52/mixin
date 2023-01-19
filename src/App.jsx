@@ -22,15 +22,12 @@ core functionality (use Router):
 const View = styled.div`
       display: flex; 
       flex-direction: column; 
-      justify-content: center; 
       align-items: center;
-      align-content: center;
   `;
 
 const TopView = styled.div`
-  width: 100vw;
   display: flex;
-  justify-content: flex-start;
+  margin: 15px 0px;
 `;
 
 const Button = styled.button`
@@ -56,7 +53,12 @@ const RecordButton = styled(Button)`
   `;
 
   function toggle() {
-    Tone.Transport.toggle();
+    if (Tone.Transport.state === "started") {
+      Tone.Transport.pause();
+    }
+    else {
+      Tone.Transport.start();
+    }
   }
 
 function App() {
@@ -65,7 +67,6 @@ function App() {
   const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
   const [selectedRecording, setSelectedRecording] = useState({})
-  const playing = useRef(false); // no re rendering please
   const drawing = useRef();
 
   const makeChannel = (recording, pan) => {

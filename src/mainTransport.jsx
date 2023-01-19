@@ -27,7 +27,7 @@ const TransportTimeline = styled.div`
   flex-direction: column;
   width: 100vw;
   padding-bottom: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 50px;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -35,15 +35,28 @@ const TransportTimeline = styled.div`
   }
 `;
 
+const IconView = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  height: 35px;
+  width: 200px;
+`;
+
 const PlayButton = styled.button`
   width: 35px;
   height: 35px;
-  margin-bottom: 50px;
   background-color: transparent;
   border: none;
-  background: url('/images/play-button.png') no-repeat;
+  background: ${props => props.playState
+    ? "url('/images/pause.png') no-repeat;" 
+    : "url('/images/play.png') no-repeat;"
+  }
   background-size: 35px;
   :hover {cursor: pointer;}
+`;
+
+const DownloadButton = styled(PlayButton)`
+  background: url('/images/down.png') no-repeat;
 `;
 
 const RecordingsView = styled.div`
@@ -63,6 +76,7 @@ const RecordingView = styled.div`
     height: 75px;
     background-color: #d6b8f5;
     border: 1px dashed grey;
+    opacity: 0.5;
 `;
 
 /* 
@@ -102,6 +116,8 @@ function MainTransport({display, recordings, newPlayer,
     const dragging = useRef(false);
     const transportRef = useRef();
 
+    const [playing, setPlaying] = useState(false);
+
     const edit = (recording) => {
       selectRecording(recording);
     }
@@ -132,6 +148,11 @@ function MainTransport({display, recordings, newPlayer,
       if (e.type === 'mousemove' || e.type === 'touchmove') {
         dragging.current = true;
       }
+    }
+
+    const onPlay = () => {
+      setPlaying(!playing);
+      toggle();
     }
 
     const inflateRecordings = () => {
@@ -193,7 +214,10 @@ function MainTransport({display, recordings, newPlayer,
             </RecordingsView>
           <TransportTimeline id="timeline" ref={transportRef}>
           </TransportTimeline>
-              <PlayButton type="button" id="play_btn" onClick={toggle}></PlayButton>
+          <IconView>
+            <PlayButton type="button" id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
+            <DownloadButton type="button"></DownloadButton>
+          </IconView>
         </TransportView>
     )
 }
