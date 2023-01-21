@@ -19,7 +19,7 @@ export default function Waveform(analyser) {
         };
 
         sketch.draw = () => {
-          sketch.background('#dcf0f3');
+          sketch.background('#4f8adb');
           sketch.noFill();
           const values = analyser.getValue();
           sketch.beginShape();
