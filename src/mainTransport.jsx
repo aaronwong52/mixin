@@ -9,7 +9,6 @@ import Playhead from './playline';
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 
 const TransportView = styled.div`
-  height: 250px;
   width: 100vw;
   display: ${props => props.display ? "none" : "flex"};
   flex-direction: column;
@@ -35,30 +34,6 @@ const TransportTimeline = styled.div`
   }
 `;
 
-const IconView = styled.div`
-  display: flex;
-  justify-content: space-evenly;
-  height: 35px;
-  width: 200px;
-`;
-
-const PlayButton = styled.button`
-  width: 35px;
-  height: 35px;
-  background-color: transparent;
-  border: none;
-  background: ${props => props.playState
-    ? "url('/images/pause.png') no-repeat;" 
-    : "url('/images/play.png') no-repeat;"
-  }
-  background-size: 35px;
-  :hover {cursor: pointer;}
-`;
-
-const DownloadButton = styled(PlayButton)`
-  background: url('/images/down.png') no-repeat;
-`;
-
 const RecordingsView = styled.div`
   position: relative;
   overflow: auto; 
@@ -77,6 +52,7 @@ const RecordingView = styled.div`
     background-color: #d6b8f5;
     border: 1px dashed grey;
     opacity: 0.5;
+    :hover {cursor: grab;}
 `;
 
 /* 
@@ -111,12 +87,10 @@ Transport.seconds to pixels to css
 */
 
 function MainTransport({display, recordings, newPlayer, 
-  updateRecordings, selectRecording, toggle}) {
+  updateRecordings, selectRecording}) {
 
     const dragging = useRef(false);
     const transportRef = useRef();
-
-    const [playing, setPlaying] = useState(false);
 
     const edit = (recording) => {
       selectRecording(recording);
@@ -148,11 +122,6 @@ function MainTransport({display, recordings, newPlayer,
       if (e.type === 'mousemove' || e.type === 'touchmove') {
         dragging.current = true;
       }
-    }
-
-    const onPlay = () => {
-      setPlaying(!playing);
-      toggle();
     }
 
     const inflateRecordings = () => {
@@ -214,10 +183,6 @@ function MainTransport({display, recordings, newPlayer,
             </RecordingsView>
           <TransportTimeline id="timeline" ref={transportRef}>
           </TransportTimeline>
-          <IconView>
-            <PlayButton type="button" id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
-            <DownloadButton type="button"></DownloadButton>
-          </IconView>
         </TransportView>
     )
 }
