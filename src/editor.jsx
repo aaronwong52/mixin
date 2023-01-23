@@ -3,11 +3,11 @@ import * as Tone from 'tone';
 import p5 from 'p5';
 
 import { useState, useEffect, useRef } from 'react';
-import { PIX_TO_TIME, SAMPLE_RATE, TRANSPORT_LENGTH } from './utils';
+import { PIX_TO_TIME, SAMPLE_RATE } from './utils';
 
 const StyledEditor = styled.div`
     width: 100vw;
-    height: 250px;
+    height: 225px;
     background-color: #fafaf7;
 `;
 
@@ -17,6 +17,7 @@ const StyledWaveformView = styled.div`
 
 function Editor({recording}) {
     const [buffer, setBuffer] = useState([]);
+    const zoom = useRef(3);
     const editorRef = useRef();
 
     const s = (sketch) => {
@@ -39,14 +40,16 @@ function Editor({recording}) {
                 let window = 100;
                 for (let p = position; p < position + window; p++) {
                     if (buffer[p] < 0) {
-                        sum -= buffer[p] * 1000;
+                        sum -= buffer[p] * 300;
                     } else {
-                        sum += buffer[p] * 1000;
+                        sum += buffer[p] * 300;
                     }
                 }
+                let x = sketch.map(
+                    i, 0, buffer.length - 1, start / zoom.current, (start + (duration * PIX_TO_TIME) * zoom.current)
+                );
                 let average = (sum * 2) / window;
-                let x = sketch.map(i, 0, buffer.length - 1, start, start + (duration * PIX_TO_TIME));
-                sketch.vertex(x, sketch.height - average);
+                sketch.vertex(x, 150 - average);
                 i += window;
                 position += window;
             }

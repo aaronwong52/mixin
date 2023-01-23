@@ -9,7 +9,7 @@ import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 
 const Playline = styled.div`
   position: absolute;
-  left: 0;
+  top: 0;
 `
 
 function Playhead() {
@@ -17,7 +17,7 @@ function Playhead() {
     useEffect(() => {
         const s = (sketch) => {
             let x = TRANSPORT_LENGTH;
-            let y = 85;
+            let y = 100;
             sketch.setup = () => {
                 sketch.createCanvas(x, y);
             }
@@ -25,7 +25,7 @@ function Playhead() {
                 let time = (Transport.seconds * PIX_TO_TIME);
                 sketch.background("white");
                 sketch.fill("#dcf0f3")
-                sketch.rect(time + 10, 0, 5, y);
+                sketch.rect(time, 0, 4, y);
             }
         }
         let playSketch = new p5(s, playlineRef.current);
