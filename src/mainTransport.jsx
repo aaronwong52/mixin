@@ -33,20 +33,20 @@ const TransportTimeline = styled.div`
 `;
 
 const RecordingsView = styled.div`
-  position: absolute;
-  overflow: scroll; 
+  position: relative;
+  display: flex;
   margin-left: 10px;
-  
+  z-index: 99;
 `;
 
 const RecordingView = styled.div`
+    position: absolute;
     width: 100px;
     height: 75px;
     background-color: #d6b8f5;
     border: 1px dashed grey;
     opacity: 0.5;
     :hover {cursor: grab;}
-    z-index: 10;
 `;
 
 /* 
@@ -81,20 +81,27 @@ Transport.seconds to pixels to css
 */
 
 function MainTransport({display, recordings, newPlayer, 
-  updateRecordings, selectRecording}) {
+  selectRecording}) {
 
     const dragging = useRef(false);
+    const dragStart = useRef(-1);
     const transportRef = useRef();
 
     const edit = (recording) => {
       selectRecording(recording);
     }
     
-    const onStop = (data, recording, index) => {
+    const onStop = (e, data, recording, index) => {
       // onDrag (hacky)
       if (dragging.current) {
         dragging.current = false;
-        newPlayer(data, recording);
+        newPlayer(data, recording, index);
+        console.log(e.changedTouches[0].clientX);
+        // since currently it doesn't know where in the div I'm dragging from
+        // the lastX data point - it knows where the drag started from! nvm it sucks lol
+        // it stores how far from the initial click point we are
+        // so on a click with drag - first figure out which audio clip it lies in
+        // then add final lastX!
       }
 
       // onClick
@@ -104,6 +111,9 @@ function MainTransport({display, recordings, newPlayer,
     }
 
     const onDrag = (e, data, recording, index) => {
+      if (dragStart.current < 0) {
+        dragStart.current = e.touches[0].clientX;
+      }
       if (e.type === 'mousemove' || e.type === 'touchmove') {
         dragging.current = true;
       }
@@ -113,7 +123,7 @@ function MainTransport({display, recordings, newPlayer,
       return recordings.map((r, index) => (
         <Draggable key={"rec_clip_" + index}
             onDrag={(e, data) => onDrag(e, data, r, index)}
-            onStop={(e, data) => onStop(data, r, index)}
+            onStop={(e, data) => onStop(e, data, r, index)}
             bounds={'#recordingsview'}>
           <RecordingView className="recording_clip">
           </RecordingView>
@@ -151,7 +161,13 @@ function MainTransport({display, recordings, newPlayer,
           sketch.rect(time + 10, -20, 4, 100);
         };
 
-        sketch.mouseClicked = (event) => {
+        sketch.mouseClicked = () => {
+          if (sketch.mouseY < 0 || sketch.mouseY > y) {
+            return;
+          }
+          if (dragging.current) {
+            return;
+          }
           Transport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
           if (Transport.seconds < 0.1) {
             Transport.seconds = 0;
@@ -166,8 +182,10 @@ function MainTransport({display, recordings, newPlayer,
       let clips = document.getElementsByClassName("recording_clip");
       for (let c = 0; c < clips.length; c++) {
         clips[c].style.width = (recordings[c].duration * PIX_TO_TIME) + "px";
+        if (!clips[c].style.left) {
+          clips[c].style.left = (recordings[c].position * PIX_TO_TIME) + "px";
+        }
       }
-      
     }, [recordings]);
 
     return (

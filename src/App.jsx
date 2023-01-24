@@ -30,19 +30,29 @@ const View = styled.div`
       display: flex; 
       flex-direction: column; 
       align-items: center;
-      background-color: #3a649e
+      background-color: #3a649e;
   `;
 
 const TopView = styled.div`
   display: flex;
+  max-height: 30vh;
   margin: 15px 0px;
   background-color: #4f8adb;
   border-radius: 10px;
   overflow: hidden;
 `;
 
+const MiddleView = styled.div`
+  height: 60vh;
+  overflow: hidden;
+`
+
 const BottomView = styled.div`
-  padding: 10px 10px;
+  width: 100vw;
+  display: flex;
+  bottom: 10px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const IconView = styled.div`
@@ -53,6 +63,7 @@ const IconView = styled.div`
   width: 250px;
   border-radius: 4px;
   background-color: #e6f0ff;
+  box-shadow: 0 0 3px #e6f0ff;
 `;
 
 const PlayButton = styled.button`
@@ -79,8 +90,8 @@ const RestartButton = styled(PlayButton)`
 
 const MuteButton = styled(PlayButton)`
   background: ${props => props.mute 
-    ? "url('/images/unmute.png') no-repeat;"
-    : "url('/images/mute.png') no-repeat;"
+    ? "url('/images/mute.png') no-repeat;"
+    : "url('/images/unmute.png') no-repeat;"
   }
 `;
 
@@ -179,10 +190,6 @@ function App() {
   //     anchor.click();
   // }
 
-  const displayNodeDetails = (nodeContent) => {
-    setShowDetails(!showDetails);
-  }
-
   const receiveRecording = (recording) => {
     makeChannel(recording, 0);
   
@@ -205,9 +212,12 @@ function App() {
     // So that all transport is handled by transport - all data is passed to where it should be
   }
 
-  const newPlayer = (data, recording) => {
+  const newPlayer = (data, recording, index) => {
     recording.player.dispose();
+    console.log(data);
     let new_pos = recording.position + (data.lastX / PIX_TO_TIME);
+    console.log(recording.position);
+    console.log(new_pos);
 
     if (new_pos < 0) {new_pos = 0;} // no hiding clips
     let new_player = new Tone.Player({
@@ -216,7 +226,6 @@ function App() {
     }).sync().start(new_pos);
 
     new_player.buffer.onload = (buffer) => {
-
       recording.position = new_pos;
       recording.player = new_player;
       recording.buffer = buffer;
@@ -245,7 +254,7 @@ function App() {
   }
 
   const download = async () => {
-    let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
+    // let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
    
     let renderedBuffer = await render();
     let mix = Tone.getContext().createBufferSource();
@@ -285,24 +294,7 @@ function App() {
   // }
 
   useEffect(() => {
-    // async function addToneWorklet(processor) {
-    //   const audioContext = Tone.getContext();
-    //   await audioContext.addAudioWorkletModule("processor.js", "processor");
-    //   let processingNode = audioContext.createAudioWorkletNode("processor");
-    //   console.log(processingNode);
-    //   processingNode.connect(audioContext.destination);
-    //   processor.current = processingNode;
-    // }
-
-    // async function addAudioWorklet(processor) {
-    //   const baseAudioContext = Tone.getContext();
-    //   const audioContext = baseAudioContext.rawContext;
-    //   await audioContext.audioWorklet.addModule("processor.js");
-    //   const processingNode = new ProcessorWorkletNode(audioContext);
-    //   processingNode.connect(audioContext.destination);
-    //   processor.current = processingNode;
-    // }
-    // addAudioWorklet(processor);
+   
   }, []);
 
   return (
@@ -310,11 +302,12 @@ function App() {
       <TopView>
         <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
       </TopView>
-      <Editor recording={selectedRecording}></Editor>
-      <MainTransport recordings={recordings} newPlayer={newPlayer}
-        updateRecordings={updateRecordings}
-        selectRecording={setSelectedRecording}>
+      <MiddleView>
+        <Editor recording={selectedRecording}></Editor>
+        <MainTransport recordings={recordings} newPlayer={newPlayer}
+          selectRecording={setSelectedRecording}>
       </MainTransport>
+      </MiddleView>
       <BottomView>
         <IconView>
             <PlayButton id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
