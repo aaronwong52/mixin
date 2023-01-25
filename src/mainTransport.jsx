@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import p5 from 'p5';
 
 import styled from 'styled-components';
 import Draggable from 'react-draggable';
 import { Transport } from 'tone';
-import Playhead from './playline';
 
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 
@@ -72,7 +71,6 @@ block swipe to go back
 
 */
 
-
 /* 
 
 To sync playline with transport
@@ -95,13 +93,11 @@ function MainTransport({display, recordings, newPlayer,
       // onDrag (hacky)
       if (dragging.current) {
         dragging.current = false;
-        newPlayer(data, recording, index);
-        console.log(e.changedTouches[0].clientX);
-        // since currently it doesn't know where in the div I'm dragging from
-        // the lastX data point - it knows where the drag started from! nvm it sucks lol
-        // it stores how far from the initial click point we are
-        // so on a click with drag - first figure out which audio clip it lies in
-        // then add final lastX!
+
+        // final mouse position shift
+        let delta = e.changedTouches[0].clientX - dragStart.current;
+        newPlayer(delta, recording, index);
+        dragStart.current = -1;
       }
 
       // onClick
@@ -112,6 +108,7 @@ function MainTransport({display, recordings, newPlayer,
 
     const onDrag = (e, data, recording, index) => {
       if (dragStart.current < 0) {
+        // initial mouse position
         dragStart.current = e.touches[0].clientX;
       }
       if (e.type === 'mousemove' || e.type === 'touchmove') {

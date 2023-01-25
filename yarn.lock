@@ -644,7 +644,7 @@
     "picocolors" "^1.0.0"
     "source-map-js" "^1.0.2"
 
-"prop-types@^15.6.2", "prop-types@^15.8.1":
+"prop-types@^15.6.2", "prop-types@^15.7.2", "prop-types@^15.8.1":
   "integrity" "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg=="
   "resolved" "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
   "version" "15.8.1"
@@ -670,6 +670,13 @@
   dependencies:
     "clsx" "^1.1.1"
     "prop-types" "^15.8.1"
+
+"react-file-drop@^3.1.6":
+  "integrity" "sha512-G1IKKP5ql0FYlWl7X5+ZEDQfzeF5bT4meV6vg3wySs1+NvPOZgoNxTZxAqayENzW+zOf/WVQ81FPaK+yLuryuw=="
+  "resolved" "https://registry.npmjs.org/react-file-drop/-/react-file-drop-3.1.6.tgz"
+  "version" "3.1.6"
+  dependencies:
+    "prop-types" "^15.7.2"
 
 "react-is@^16.13.1":
   "integrity" "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="
