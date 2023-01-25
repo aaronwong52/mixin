@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import p5 from 'p5';
 
 import styled from 'styled-components';
@@ -35,7 +35,7 @@ const RecordingsView = styled.div`
   position: relative;
   display: flex;
   margin-left: 10px;
-  z-index: 99;
+  z-index: 999;
 `;
 
 const RecordingView = styled.div`
@@ -46,6 +46,7 @@ const RecordingView = styled.div`
     border: 1px dashed grey;
     opacity: 0.5;
     :hover {cursor: grab;}
+    z-index: 999;
 `;
 
 /* 
@@ -83,6 +84,7 @@ function MainTransport({display, recordings, newPlayer,
 
     const dragging = useRef(false);
     const dragStart = useRef(-1);
+    const stopSketchClick = useRef(false);
     const transportRef = useRef();
 
     const edit = (recording) => {
@@ -93,9 +95,9 @@ function MainTransport({display, recordings, newPlayer,
       // onDrag (hacky)
       if (dragging.current) {
         dragging.current = false;
-
-        // final mouse position shift
-        let delta = e.changedTouches[0].clientX - dragStart.current;
+        stopSketchClick.current = true;
+        // final mouse position shift !!! for Desktop only, mobile uses touch events?
+        let delta = e.clientX - dragStart.current;
         newPlayer(delta, recording, index);
         dragStart.current = -1;
       }
@@ -109,7 +111,7 @@ function MainTransport({display, recordings, newPlayer,
     const onDrag = (e, data, recording, index) => {
       if (dragStart.current < 0) {
         // initial mouse position
-        dragStart.current = e.touches[0].clientX;
+        dragStart.current = e.clientX; // desktop
       }
       if (e.type === 'mousemove' || e.type === 'touchmove') {
         dragging.current = true;
@@ -155,7 +157,7 @@ function MainTransport({display, recordings, newPlayer,
           }
           let time = (Transport.seconds * PIX_TO_TIME);
           sketch.fill("#dcf0f3")
-          sketch.rect(time + 10, -20, 4, 100);
+          sketch.rect(time + 10, -20, 4, 100); // playline
         };
 
         sketch.mouseClicked = () => {
@@ -163,6 +165,10 @@ function MainTransport({display, recordings, newPlayer,
             return;
           }
           if (dragging.current) {
+            return;
+          }
+          if (stopSketchClick.current) {
+            stopSketchClick.current = false;
             return;
           }
           Transport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;

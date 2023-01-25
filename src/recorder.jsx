@@ -31,7 +31,7 @@ const RecordButton = styled.button`
   :hover {cursor: pointer;}
 `;
 
-function Record({playPosition, receiveRecording}) {
+function Record({receiveRecording}) {
 
     const recordingState = useRef(false);
 
@@ -67,6 +67,7 @@ function Record({playPosition, receiveRecording}) {
                     data: blobUrl, 
                     player: null,
                     channel: null,
+                    loaded: false
                 };
                 receiveRecording(newRecording);
                 recordingState.current = false;

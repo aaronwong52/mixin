@@ -9,27 +9,67 @@ const StyledEditor = styled.div`
     width: 100vw;
     height: 225px;
     background-color: #fafaf7;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 
-const StyledWaveformView = styled.div`
-    height: 150px;
+const ControlView = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    width: 50px;
+    height: 175px;
 `
+const ClipMute = styled.button`
+    background: ${props => props.muted 
+        ? "url('/images/mute.png') no-repeat;"
+        : "url('/images/unmute.png') no-repeat;"
+    };
+    width: 25px;
+    height: 25px;
+    background-color: transparent;
+    background-size: 25px;
+    border: none;
+    :hover {cursor: pointer;}
+    -webkit-tap-highlight-color: transparent;
+`;
+
+const ClipSolo = styled(ClipMute)`
+    background: none;
+    font-size: 25px;
+    font-weight: bold;
+    color: ${props => props.solo
+        ? "#42bcf5"
+        : "inherit"
+    };
+`;
+
+const WaveformView = styled.div`
+    height: 175px;
+    border: 1px solid black;
+`;
 
 function Editor({recording}) {
     const [buffer, setBuffer] = useState([]);
+    const [muted, setMuted] = useState(false);
+    const [solo, setSolo] = useState(false);
     const zoom = useRef(3);
     const editorRef = useRef();
 
+    // resize canvas on window resize!
     const s = (sketch) => {
+        let width = sketch.windowWidth / 1.5;
+        let height = 175;
         sketch.setup = () => {
-            sketch.createCanvas(sketch.windowWidth, 150);
+            sketch.createCanvas(width, height);
         };
         sketch.draw = () => {
             if (buffer.length === 0) {
                 return;
             }
             const duration = buffer.length / SAMPLE_RATE;
-            const start = findMiddle(duration * PIX_TO_TIME, 0, sketch.windowWidth);
             sketch.background('#fafaf7');
             sketch.beginShape();
             sketch.noFill();
@@ -40,47 +80,61 @@ function Editor({recording}) {
                 let window = 100;
                 for (let p = position; p < position + window; p++) {
                     if (buffer[p] < 0) {
-                        sum -= buffer[p] * 300;
+                        sum -= buffer[p] * 500;
                     } else {
-                        sum += buffer[p] * 300;
+                        sum += buffer[p] * 500;
                     }
                 }
                 let x = sketch.map(
-                    i, 0, buffer.length - 1, start / zoom.current, (start + (duration * PIX_TO_TIME) * zoom.current)
+                    i, 0, buffer.length - 1, 0, width
                 );
                 let average = (sum * 2) / window;
-                sketch.vertex(x, 150 - average);
+                sketch.vertex(x, height / 1.5 - average); // 1.5 since waveform points upwards
                 i += window;
                 position += window;
             }
             sketch.endShape();
         }
     }
-    
-    // given length of an object, and a range, return its middle-est position in this range
-    const findMiddle = (length, start, end) => {
-        if (start >= end) {
-            return -1;
+
+    const mute = () => {
+        if (!Object.keys(recording).length) {
+            return;
         }
-        if (length > end - start) {
-            return -1;
+        recording.player.mute = true;
+        setMuted(!muted);
+    }
+
+    const soloClip = () => {
+        if (!Object.keys(recording).length) {
+            return;
         }
-        return Math.floor((end - start - length) / 2);
+        // figure out how to implement solo
+        setSolo(!solo);
     }
 
     useEffect(() => {
         let waveform = new p5(s, editorRef.current);
         if (Object.keys(recording).length) {
-            setBuffer(recording.player.buffer._buffer.getChannelData(0));
+            try {
+                setBuffer(recording.player.buffer._buffer.getChannelData(0));
+            } catch (e) {
+                // bad 
+            }
         };
         return () => {
             waveform.remove();
         }
     }, [recording, buffer]);
+
     return (
         <StyledEditor>
-            <StyledWaveformView ref={editorRef}>
-            </StyledWaveformView>
+            <ControlView>
+                <ClipMute onClick={mute} muted={muted}></ClipMute>
+                <ClipSolo onClick={soloClip} solo={solo}>S</ClipSolo>
+            </ControlView>
+            <WaveformView ref={editorRef}>
+            </WaveformView>
         </StyledEditor>
     )
 }

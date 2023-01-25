@@ -69,7 +69,7 @@ const IconView = styled.div`
   border-radius: 4px;
   background-color: #e6f0ff;
   box-shadow: 0 0 3px #e6f0ff;
-`;
+`;  
 
 const PlayButton = styled.button`
   width: 35px;
@@ -93,7 +93,7 @@ const RestartButton = styled(PlayButton)`
   background: url('/images/restart.png') no-repeat;
 `;
 
-const MuteButton = styled(PlayButton)`
+export const MuteButton = styled(PlayButton)`
   background: ${props => props.mute 
     ? "url('/images/mute.png') no-repeat;"
     : "url('/images/unmute.png') no-repeat;"
@@ -113,7 +113,6 @@ function App() {
   
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
   const [selectedRecording, setSelectedRecording] = useState({});
   const [endRecordingsPosition, setEndRecordingsPosition] = useState(0);
@@ -133,7 +132,7 @@ function App() {
     let new_player = new Tone.Player({
       url: recording.data,
       loop: false
-    }).sync().start(playPosition.current);
+    }).sync().start(Tone.Transport.seconds);
     if (typeof(recording.data) == "string") {
       new_player.buffer.onload = (buffer) => {
         addRecording(recording, buffer, new_player, channel)
@@ -152,7 +151,8 @@ function App() {
             duration: buffer.duration, 
             player: player,
             channel: channel,
-            buffer: buffer
+            buffer: buffer,
+            loaded: true
           }
         ]
       } else {
@@ -163,12 +163,13 @@ function App() {
             duration: buffer.duration, 
             player: player, 
             channel: channel,
-            buffer: buffer
+            buffer: buffer,
+            loaded: true
           },
         ]
       }
     });
-    playPosition.current += buffer.duration;
+    Tone.Transport.seconds += buffer.duration;
     player.connect(channel);
   }
 
@@ -196,7 +197,7 @@ function App() {
 
     if (new_pos < 0) {new_pos = 0;} // no hiding clips
     let new_player = new Tone.Player({
-      url: recording.url,
+      url: recording.data,
       loop: false
     }).sync().start(new_pos);
 
@@ -208,7 +209,6 @@ function App() {
       checkEndPosition(new_pos + buffer.duration);
 
       new_player.connect(recording.channel);
-      console.log(recording.position);
       updateRecordings(recording, index);
     }
   }
@@ -277,7 +277,6 @@ function App() {
         let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
         audioReader.readAsArrayBuffer(files[0]);
         audioReader.onload = async () => {
-          console.log(audioReader.result);
           let buffer = audioReader.result;
           // encoded to audio buffer into Player into recording
           try {
@@ -302,6 +301,7 @@ function App() {
       data: buffer,
       player: newPlayer,
       channel: null,
+      loaded: true
     };
     receiveRecording(newRecording);
   }
@@ -313,7 +313,7 @@ function App() {
   return (
     <View id="Tone" ref={drawing.current}>
       <TopView>
-        <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
+        <Record receiveRecording={receiveRecording}></Record>
       </TopView>
       <FileDrop onDrop={(files, event) => upload(files, event)}
           onFrameDragEnter={(event) => setDropping(true)}
