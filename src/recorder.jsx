@@ -6,18 +6,19 @@ import Waveform from './analyser';
 import * as Tone from 'tone';
 
 const RecordView = styled.div`
-    background-color: #4f8adb;
     height: 250px;
     width: 500px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: #bed2ed;
 
     @media only screen and (max-width: 768px) {
         height: 200px;
         width: 300px;
     }
+    border-radius: 10px;
 `;
 
 const RecordButton = styled.button`

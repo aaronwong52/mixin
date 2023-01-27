@@ -12,14 +12,14 @@ export default function Waveform(analyser) {
       if (!analyser) return;
       const s = (sketch) => {
         let x = 500;
-        let y = 150;
+        let y = 140;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          sketch.background('#4f8adb');
+          sketch.background('#bed2ed');
           sketch.noFill();
           const values = analyser.getValue();
           sketch.beginShape();
@@ -34,6 +34,7 @@ export default function Waveform(analyser) {
         };
       };
       let wavep5 = new p5(s, 'waveform');
+      return () => wavep5.remove();
     }, []);
 
     return (

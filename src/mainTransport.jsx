@@ -3,6 +3,7 @@ import p5 from 'p5';
 
 import styled from 'styled-components';
 import Draggable from 'react-draggable';
+
 import { Transport } from 'tone';
 
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
@@ -14,7 +15,7 @@ const TransportView = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background-color: white;
+  background-color: #e1e9f2;
 `;
 
 const TransportTimeline = styled.div`
@@ -23,7 +24,6 @@ const TransportTimeline = styled.div`
   flex-direction: column;
   width: 100vw;
   padding-bottom: 10px;
-  margin-bottom: 50px;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -41,7 +41,8 @@ const RecordingsView = styled.div`
 const RecordingView = styled.div`
     position: absolute;
     width: 100px;
-    height: 75px;
+    height: 85px;
+    margin-top: 10px;
     background-color: #d6b8f5;
     border: 1px dashed grey;
     opacity: 0.5;
@@ -82,7 +83,7 @@ Transport.seconds to pixels to css
 function MainTransport({display, recordings, newPlayer, 
   selectRecording}) {
 
-    const dragging = useRef(false);
+    const draggingRef = useRef(false);
     const dragStart = useRef(-1);
     const stopSketchClick = useRef(false);
     const transportRef = useRef();
@@ -93,8 +94,8 @@ function MainTransport({display, recordings, newPlayer,
     
     const onStop = (e, data, recording, index) => {
       // onDrag (hacky)
-      if (dragging.current) {
-        dragging.current = false;
+      if (draggingRef.current) {
+        draggingRef.current = false;
         stopSketchClick.current = true;
         // final mouse position shift !!! for Desktop only, mobile uses touch events?
         let delta = e.clientX - dragStart.current;
@@ -114,7 +115,7 @@ function MainTransport({display, recordings, newPlayer,
         dragStart.current = e.clientX; // desktop
       }
       if (e.type === 'mousemove' || e.type === 'touchmove') {
-        dragging.current = true;
+        draggingRef.current = true;
       }
     }
 
@@ -133,38 +134,109 @@ function MainTransport({display, recordings, newPlayer,
     useEffect(() => {
       const s = (sketch) => {
         let x = TRANSPORT_LENGTH;
-        let y = 100;
+        let y = 140;
+
+        class Drag {
+          constructor() {
+        
+            this.dragging = false; // Is the object being dragged?
+            this.rollover = false; // Is the mouse over the ellipse?
+        
+        
+            this.x = 10;
+            this.y = 0;
+            // Dimensions
+            this.w = 4;
+            this.h = 110;
+          }
+        
+          over() {
+            // Is mouse over object
+            if (sketch.mouseX > this.x && sketch.mouseX < this.x + this.w 
+              && sketch.mouseY > this.y && sketch.mouseY < this.y + this.h) {
+              this.rollover = true;
+            } else {
+              this.rollover = false;
+            }
+        
+          }
+        
+          update() {
+        
+            // Adjust location if being dragged
+            if (this.dragging) {
+              this.x = sketch.mouseX + this.offsetX;
+              this.y = sketch.mouseY + this.offsetY;
+            }
+        
+          }
+        
+          show() {
+        
+            sketch.stroke(0);
+            // Different fill based on state
+            if (this.dragging) {
+              sketch.fill(50);
+            } else if (this.rollover) {
+              sketch.fill(100);
+            } else {
+              sketch.fill(175, 200);
+            }
+            sketch.rect(this.x, this.y, this.w, this.h);
+          }
+        
+          pressed() {
+            // Did I click on the rectangle?
+            if (sketch.mouseX > this.x && sketch.mouseX < this.x + this.w 
+              && sketch.mouseY > this.y && sketch.mouseY < this.y + this.h) {
+              this.dragging = true;
+              // If so, keep track of relative location of click to corner of rectangle
+              this.offsetX = this.x - sketch.mouseX;
+              this.offsetY = this.y - sketch.mouseY;
+            }
+          }
+        
+          released() {
+            // Quit dragging
+            this.dragging = false;
+          }
+        }
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          sketch.background("white");
+          sketch.background("#e1e9f2");
           sketch.fill(51)
           sketch.textSize(12);
 
-          sketch.line(0, y - 20, x, y - 20); // baseline
+          sketch.line(0, y - 30, x, y - 30); // baseline
+          sketch.line(10, 0, x, 0);
           sketch.stroke('blue');
           sketch.stroke('grey');
 
           let i = 0;
           while (i < x) {
-            sketch.line(i + 10, y - 25, i + 10, y - 15);
-            sketch.text(i / PIX_TO_TIME, i + 10, y);
+            sketch.line(i + 10, y - 35, i + 10, y - 25);
+            sketch.text(i / PIX_TO_TIME, i + 10, y - 10);
             sketch.textAlign(sketch.CENTER);
             i += 50;
           }
           let time = (Transport.seconds * PIX_TO_TIME);
-          sketch.fill("#dcf0f3")
-          sketch.rect(time + 10, -20, 4, 100); // playline
+          sketch.fill("#425c8c")
+          let playline = new Drag(time + 10, 0, 4, 110);
+          playline.over();
+          playline.update();
+          playline.show();
+          // sketch.rect(time + 10, 0, 4, 110); // playline
         };
 
         sketch.mouseClicked = () => {
           if (sketch.mouseY < 0 || sketch.mouseY > y) {
             return;
           }
-          if (dragging.current) {
+          if (draggingRef.current) {
             return;
           }
           if (stopSketchClick.current) {
