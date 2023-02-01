@@ -94,7 +94,7 @@ const PlayButton = styled.button`
   border: none;
   padding: 0;
   background: ${props => props.playState
-    ? "url('/images/pause.png') center;" 
+    ? "url('/images/pause_white.png') center;" 
     : "url('/images/play_white.png') center;"
   }
   background-size: 30px;
@@ -214,7 +214,7 @@ how to fix this:
 
   The only advantage of two is if this offset ever needs to be used outside of pressing play
   It seems we only need to use the exact position of things for playing, and for section exports, as the UI is always synced
-  So no! We can just calculate it at runtime. Shouldn't be expensive, relatively
+  So 1! We can just calculate it at play time. Shouldn't be expensive, relatively
 /* 
 
 
@@ -359,6 +359,10 @@ function App() {
       type: type
     });
     downloadBlob(blob);
+  };
+
+  const setExportingState = () => {
+    setExporting(!exporting);
   }
 
   const downloadBlob = (blob) => {
@@ -434,19 +438,29 @@ function App() {
         <MixologyMenu>
           <MenuLabels>
             <Title>MIXOLOGY</Title>
-            <MenuOption onClick={() => setExporting(!exporting)}>Export</MenuOption>
+            <MenuOption onClick={setExporting}>Export</MenuOption>
           </MenuLabels>
         </MixologyMenu>
-        <Record receiveRecording={receiveRecording}></Record>
+        <Record 
+          receiveRecording={receiveRecording} 
+          exporting={exporting}>
+        </Record>
         <ExportMenu displayState={exporting}></ExportMenu>
       </TopView>
-      <FileDrop onDrop={(files, event) => upload(files, event)}
+      <FileDrop 
+          onDrop={(files, event) => upload(files, event)}
           onFrameDragEnter={(event) => setDropping(true)}
           onFrameDragLeave={(event) => setDropping(false)}>
         <MiddleView dropping={dropping}>
-          <Editor recording={selectedRecording} solo={solo}></Editor>
-          <MainTransport recordings={state.recordings} updatePlayer={updatePlayer}
-            selectRecording={setSelectedRecording}>
+          <Editor 
+            recording={selectedRecording} 
+            solo={solo}>
+          </Editor>
+          <MainTransport 
+            recordings={state.recordings} 
+            updatePlayer={updatePlayer}
+            selectRecording={setSelectedRecording} 
+            exporting={exporting}>
           </MainTransport>
         </MiddleView>
       </FileDrop>
