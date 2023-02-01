@@ -15,15 +15,17 @@ const TransportView = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background-color: #e1e9f2;
+  background-color: #1e2126;
 `;
 
 const TransportTimeline = styled.div`
   overflow: scroll;
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  padding-bottom: 10px;
+  width: 95vw;
+  padding-bottom: 5px;
+  background-color: #bed2ed;
+  border-radius: 4px;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -35,6 +37,7 @@ const RecordingsView = styled.div`
   position: relative;
   display: flex;
   margin-left: 10px;
+  background-color: #1f324d;
   z-index: 999;
 `;
 
@@ -43,11 +46,13 @@ const RecordingView = styled.div`
     width: 100px;
     height: 85px;
     margin-top: 10px;
-    background-color: #d6b8f5;
-    border: 1px dashed grey;
-    opacity: 0.5;
-    :hover {cursor: grab;}
+    background-color: #1f324d;
+    border: none;
+    border-radius: 4px;
+    opacity: 0.75;
+    :hover {cursor: pointer;}
     z-index: 999;
+    
 `;
 
 /* 
@@ -80,7 +85,7 @@ Transport.seconds to pixels to css
 
 */
 
-function MainTransport({display, recordings, newPlayer, 
+function MainTransport({display, recordings, updatePlayer, 
   selectRecording}) {
 
     const draggingRef = useRef(false);
@@ -88,24 +93,21 @@ function MainTransport({display, recordings, newPlayer,
     const stopSketchClick = useRef(false);
     const transportRef = useRef();
 
-    const edit = (recording) => {
-      selectRecording(recording);
-    }
-    
     const onStop = (e, data, recording, index) => {
-      // onDrag (hacky)
+
+      // onDrag
       if (draggingRef.current) {
         draggingRef.current = false;
         stopSketchClick.current = true;
         // final mouse position shift !!! for Desktop only, mobile uses touch events?
         let delta = e.clientX - dragStart.current;
-        newPlayer(delta, recording, index);
+        updatePlayer(delta, recording, index);
         dragStart.current = -1;
       }
 
       // onClick
       else {
-        edit(recording);
+        selectRecording(recording);
       }
     }
 
@@ -136,78 +138,12 @@ function MainTransport({display, recordings, newPlayer,
         let x = TRANSPORT_LENGTH;
         let y = 140;
 
-        class Drag {
-          constructor() {
-        
-            this.dragging = false; // Is the object being dragged?
-            this.rollover = false; // Is the mouse over the ellipse?
-        
-        
-            this.x = 10;
-            this.y = 0;
-            // Dimensions
-            this.w = 4;
-            this.h = 110;
-          }
-        
-          over() {
-            // Is mouse over object
-            if (sketch.mouseX > this.x && sketch.mouseX < this.x + this.w 
-              && sketch.mouseY > this.y && sketch.mouseY < this.y + this.h) {
-              this.rollover = true;
-            } else {
-              this.rollover = false;
-            }
-        
-          }
-        
-          update() {
-        
-            // Adjust location if being dragged
-            if (this.dragging) {
-              this.x = sketch.mouseX + this.offsetX;
-              this.y = sketch.mouseY + this.offsetY;
-            }
-        
-          }
-        
-          show() {
-        
-            sketch.stroke(0);
-            // Different fill based on state
-            if (this.dragging) {
-              sketch.fill(50);
-            } else if (this.rollover) {
-              sketch.fill(100);
-            } else {
-              sketch.fill(175, 200);
-            }
-            sketch.rect(this.x, this.y, this.w, this.h);
-          }
-        
-          pressed() {
-            // Did I click on the rectangle?
-            if (sketch.mouseX > this.x && sketch.mouseX < this.x + this.w 
-              && sketch.mouseY > this.y && sketch.mouseY < this.y + this.h) {
-              this.dragging = true;
-              // If so, keep track of relative location of click to corner of rectangle
-              this.offsetX = this.x - sketch.mouseX;
-              this.offsetY = this.y - sketch.mouseY;
-            }
-          }
-        
-          released() {
-            // Quit dragging
-            this.dragging = false;
-          }
-        }
-
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          sketch.background("#e1e9f2");
+          sketch.background("#bed2ed");
           sketch.fill(51)
           sketch.textSize(12);
 
@@ -223,13 +159,9 @@ function MainTransport({display, recordings, newPlayer,
             sketch.textAlign(sketch.CENTER);
             i += 50;
           }
-          let time = (Transport.seconds * PIX_TO_TIME);
-          sketch.fill("#425c8c")
-          let playline = new Drag(time + 10, 0, 4, 110);
-          playline.over();
-          playline.update();
-          playline.show();
-          // sketch.rect(time + 10, 0, 4, 110); // playline
+          let time = Transport.seconds * PIX_TO_TIME;
+          sketch.fill("#bac7db");
+          sketch.rect(time + 10, 0, 4, 110, 500); // playline
         };
 
         sketch.mouseClicked = () => {
@@ -249,8 +181,8 @@ function MainTransport({display, recordings, newPlayer,
           }
         }
       };
-      let wavep5 = new p5(s, transportRef.current);
-      return () => wavep5.remove();
+      let transportp5 = new p5(s, transportRef.current);
+      return () => transportp5.remove();
     }, []);
 
     useEffect(() => {

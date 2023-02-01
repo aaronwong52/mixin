@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.9.1",
     "audiobuffer-to-wav": "^1.0.0",
     "lamejs": "^1.2.1",
     "p5": "^1.5.0",
@@ -16,6 +17,7 @@
     "react-dom": "^16.14.0",
     "react-draggable": "^4.4.5",
     "react-file-drop": "^3.1.6",
+    "react-redux": "^8.0.5",
     "styled-components": "^5.3.6",
     "tone": "^14.7.77"
   },

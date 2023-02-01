@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-
 import styled from 'styled-components';
 
 import Waveform from './analyser';
@@ -12,7 +11,7 @@ const RecordView = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #bed2ed;
+    background-color: #1f324d;
 
     @media only screen and (max-width: 768px) {
         height: 200px;
@@ -24,17 +23,25 @@ const RecordView = styled.div`
 const RecordButton = styled.button`
   width: 35px;
   height: 35px;
-  margin-left: 12px;
   background-color: transparent;
   border: none;
-  background: url('/images/record.png') no-repeat;
+  background: ${props => props.recording
+    ? "url('/images/stop.png') no-repeat;"
+    : "url('/images/record_muted.png') no-repeat;"
+  };
   background-size: 35px;
-  :hover {cursor: pointer;}
+  margin: 8px 0px;
+  :hover {
+    cursor: pointer;
+    box-shadow: 0 0 10px red;
+    border-radius: 50%;
+}
 `;
 
 function Record({receiveRecording}) {
 
     const recordingState = useRef(false);
+    const [recording, setRecording] = useState(false);
 
     const recorder = new Tone.Recorder();
     const mic = new Tone.UserMedia();
@@ -53,6 +60,7 @@ function Record({receiveRecording}) {
     }
 
     useEffect(() => {
+        // for some reason (Tone?) this only works by binding a click listener, DOMException when using onClick prop
         let recBtn = document.getElementById("rec_btn");
 
         // recBtn.disabled = !Tone.UserMedia.supported;
@@ -64,26 +72,30 @@ function Record({receiveRecording}) {
                 let blobUrl = URL.createObjectURL(data);
                 let newRecording = {
                     position: Tone.Transport.seconds,
-                    duration: data.size, 
+                    duration: 0, 
                     data: blobUrl, 
                     player: null,
-                    channel: null,
+                    // id: null, // used by Tone to register events (player sync)
+                    index: 0,
+                    solo: false,
                     loaded: false
                 };
                 receiveRecording(newRecording);
                 recordingState.current = false;
+                setRecording(false);
             }
             else {
                 openMic();
                 recorder.start();
                 recordingState.current = true;
+                setRecording(true);
             }
         })
     }, []);
 
     return (
         <RecordView>
-            <RecordButton type="button" id="rec_btn"></RecordButton>
+            <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
             <Waveform analyser={analyser}></Waveform>
         </RecordView>
     )
