@@ -235,6 +235,10 @@ function App() {
 
   const audioReader = new FileReader();
 
+  const lockState = () => {
+
+  }
+
   const createPlayer = (recording) => {
     return new Tone.Player({
       url: recording.data,
@@ -250,11 +254,14 @@ function App() {
     // because scheduling things on the transport is not built to support playback in the middle of a sample via player
 
     let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
+    console.log("OFFSET " + offset);
     recording.player.sync().start(offset);
   }
 
   const calculatePlayOffset = (mouseX, currentPosition) => {
-    return mouseX - currentPosition; // check what happens if value is negative (values past buffer end should be fine)
+    console.log(mouseX);
+    console.log(currentPosition);
+    return mouseX - currentPosition;
   }
 
   const receiveRecording = (recording) => {
@@ -294,6 +301,9 @@ function App() {
   }
 
   const onPlay = () => {
+    if (exporting) {
+      return;
+    }
     let tryPlay = toggle();
     if (tryPlay) {
       setPlaying(!playing);
@@ -301,11 +311,17 @@ function App() {
   };
 
   const restart = () => {
+    if (exporting) {
+      return;
+    }
     setPlaying(false);
     Tone.Transport.stop();
   }
 
   const mute = () => {
+    if (exporting) {
+      return;
+    }
     let mute = Tone.getContext().destination.mute;
     mute = !mute;
     setMuted(!muted);
@@ -326,11 +342,20 @@ function App() {
       dispatch({type: 'soloClip',  payload: payload});
     }
   }
+  
+  const bounce = (fileFormat, ranges) => {
 
-  const exportAsWav = async () => {
+    if (fileFormat == 'mp3') { // check types
+      exportAsMp3(ranges);
+    } else {
+      exportAsWav(ranges);
+    }
+  }
+
+  const exportAsWav = async (ranges) => {
     let renderedBuffer = await renderBuffer();
 
-    /* ????? */
+    /* ????? necessary? */
     let mix = Tone.getContext().createBufferSource();
     mix.buffer = renderedBuffer;
     mix.connect(Tone.getContext().rawContext.destination);
@@ -339,7 +364,7 @@ function App() {
     exportFile(wav, 'audio/wav');
   };
 
-  const exportAsMp3 = async () => {
+  const exportAsMp3 = async (ranges) => {
     let mp3 = [];
     let renderedBuffer = await renderBuffer();
     let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
@@ -354,9 +379,9 @@ function App() {
     exportFile(mp3, 'audio/mpeg');
   };
 
-  const exportFile = (file, type) => {
+  const exportFile = (file, fileFormat) => {
     let blob = new window.Blob([new DataView(file)], {
-      type: type
+      type: fileFormat
     });
     downloadBlob(blob);
   };
@@ -375,6 +400,8 @@ function App() {
   }
 
   // invariant: as long as all the audio is set up through Tone, the render will be correct
+
+  // how to export a range? is there a way to easily do it with Tone? or offlineContext?
   const renderBuffer = async () => {
     // OfflineAudioContext(numChannels, length, sampleRate)
     const offlineContext = new OfflineAudioContext(2, state.endPosition, SAMPLE_RATE);
@@ -383,7 +410,7 @@ function App() {
       source.buffer = bufferFromToneBuffer(recording.buffer);
       source.connect(offlineContext.destination);
       source.start();
-    });
+    }); 
     return await offlineContext.startRendering();
   }
 
@@ -438,14 +465,14 @@ function App() {
         <MixologyMenu>
           <MenuLabels>
             <Title>MIXOLOGY</Title>
-            <MenuOption onClick={setExporting}>Export</MenuOption>
+            <MenuOption onClick={setExportingState}>Export</MenuOption>
           </MenuLabels>
         </MixologyMenu>
         <Record 
           receiveRecording={receiveRecording} 
           exporting={exporting}>
         </Record>
-        <ExportMenu displayState={exporting}></ExportMenu>
+        <ExportMenu displayState={exporting} bounce={bounce}></ExportMenu>
       </TopView>
       <FileDrop 
           onDrop={(files, event) => upload(files, event)}
@@ -454,7 +481,8 @@ function App() {
         <MiddleView dropping={dropping}>
           <Editor 
             recording={selectedRecording} 
-            solo={solo}>
+            solo={solo}
+            exporting={exporting}>
           </Editor>
           <MainTransport 
             recordings={state.recordings} 
