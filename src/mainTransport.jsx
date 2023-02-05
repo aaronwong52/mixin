@@ -85,7 +85,7 @@ Transport.seconds to pixels to css
 
 */
 
-function MainTransport({recordings, updatePlayer, 
+function MainTransport({recordings, updatePlayerPosition, 
   selectRecording, exporting}) {
 
     const draggingRef = useRef(false);
@@ -98,6 +98,7 @@ function MainTransport({recordings, updatePlayer,
       // onDrag
       if (draggingRef.current) {
         draggingRef.current = false;
+        stopSketchClick.current = true; // to stop playhead moving when dragging stops 
         // final mouse position shift !!! for Desktop only, mobile uses touch events?
         let delta = e.clientX - dragStart.current;
         updatePlayer(delta, recording, index);

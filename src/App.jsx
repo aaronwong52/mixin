@@ -125,14 +125,18 @@ const ClockArea = styled.div`
 const initialState = {
   recordings: [],
   endPosition: 0,
+  channel: new Tone.Channel().toDestination(),
+  soloChannel: new Tone.Channel().toDestination()
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'addRecording':
-      return addRecording(state, action.payload);
-    case 'updateRecording':
-      return updateRecording(state, action.payload);
+    case 'scheduleRecording':
+      return scheduleRecording(state, action.payload);
+    case 'updateBuffer':
+      return updateBuffer(state, action.payload);
+    case 'updateRecordingPosition':
+      return updateRecordingPosition(state, action.payload);
     case 'soloClip':
       return soloClip(state, action.payload);
     case 'unsoloClip':
@@ -140,23 +144,26 @@ const reducer = (state, action) => {
   }
 };
 
-const addRecording = (state, recording) => {
+const scheduleRecording = (state, recording) => {
   recording.index = state.recordings.length;
-  let newDuration = recording.data.duration;
+
+  schedulePlayer(recording, Tone.Transport.seconds);
+  recording.player.connect(state.channel);
+  return addRecording(state, recording);
+};
+
+const addRecording = (state, recording) => {
   if (state.recordings.length === 0) {
-      return {recordings: [recording], endPosition: recording.position + newDuration};
+    return {
+      ...state,
+      recordings: [recording], endPosition: recording.position + recording.duration
+    };
   } else {
-    let newEndPosition = recording.position + newDuration > state.endPosition
+    let newEndPosition = recording.position + recording.duration > state.endPosition
       ? recording.position
       : state.endPosition;
-    console.log({
-      recordings: [
-        ...state.recordings.slice(0, state.recordings.length),
-        recording
-      ],
-      endPosition: newEndPosition
-    });
     return {
+      ...state,
       recordings: [
         ...state.recordings.slice(0, state.recordings.length),
         recording
@@ -166,37 +173,70 @@ const addRecording = (state, recording) => {
   }
 };
 
-const updateRecording = (state, payload) => {
-  let clipIndex = payload.index;
+const updateBuffer = (state, recording) => {
+  return updateRecording(state, recording);
+}
+
+const updateRecordingPosition = (state, recording) => {
+  recording.position = (recording.position + (delta / PIX_TO_TIME) < 0)
+  ? 0     // no hiding clips
+  : recording.position + (delta / PIX_TO_TIME)
+
+  schedulePlayer(recording);
+  return updateRecording(state, recording);
+};
+
+const updateRecording = (state, recording) => {
+  let clipIndex = recording.index;
   let existingLength = state.recordings.length;
   if (existingLength === 1) {
     return {
      ...state, 
-     recordings: [{...payload}]
+     recordings: [{...recording}]
     };
   } else return {
     ...state,
     recordings: [
       ...state.recordings.slice(0, clipIndex),
-      {...payload},
+      {...recording},
       ...state.recordings.slice(clipIndex + 1, existingLength)
     ]
   }
-};
+}
+
+const schedulePlayer = (recording) => {
+  // cancel current scheduling
+  // Tone.Transport.clear(recording.id);
+
+  // replace with player.sync.start(offset)
+  // because scheduling things on the transport is not built to support playback in the middle of a sample via player
+
+  let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
+  recording.player.sync().start(recording.position + offset);
+}
+
+// return offset of playhead in relation to a recording clip
+// returns 0 if negative
+const calculatePlayOffset = (playPosition, recordingPosition) => {
+  if (playPosition < recordingPosition) {
+    return 0;
+  }
+  return playPosition - recordingPosition;
+}
 
 // solo: route player to solo channel and solo it
 
 const soloClip = (state, payload) => {
-  payload.recording.player.connect(payload.soloChannel);
-  payload.soloChannel.solo = true;
+  payload.recording.player.connect(state.soloChannel);
+  state.soloChannel.solo = true;
   payload.recording.solo = true;
   return updateRecording(state, payload.recording);
 };
 
 const unsoloClip = (state, payload) => {
   payload.recording.player.disconnect(); // disconnect() -> disconnect all
-  payload.recording.player.connect(payload.channel); // reconnect to original channel
-  payload.soloChannel.solo = false;
+  payload.recording.player.connect(state.channel); // reconnect to original channel
+  state.soloChannel.solo = false;
   payload.recording.solo = false;
   return updateRecording(state, payload.recording);
 }
@@ -221,13 +261,11 @@ how to fix this:
 
 */
 function App() {
-
-  const channel = new Tone.Channel().toDestination();
-  const soloChannel = new Tone.Channel().toDestination();
   
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
+  
   const [selectedRecording, setSelectedRecording] = useState({});
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -239,54 +277,35 @@ function App() {
 
   }
 
+  // logic for this with reducer is a little tricky
+  // any state operations that need to read state -> place in reducer
+  // we have to place the onload callback here so that we don't have to dispatch another action from inside the reducer
+
+  const receiveRecording = (recording) => {
+    recording.player = createPlayer(recording);
+    
+    if (typeof(recording.data) == "string") { // from recorder
+      dispatch({type: 'scheduleRecording', payload: recording});
+      recording.player.buffer.onload = (buffer) => {
+        recording.data = buffer;
+        recording.duration = buffer.duration;
+        dispatch({type: 'updateBuffer', payload: recording});
+      };
+    } else {
+      dispatch({type: 'scheduleRecording', payload: recording});
+    }
+  }
+
+  const updatePlayerPosition = (delta, recording, index) => {
+    dispatch({type: 'updateRecordingPosition', payload: recording});
+  }
+
   const createPlayer = (recording) => {
     return new Tone.Player({
       url: recording.data,
       loop: false
     });
-  }
-
-  const schedulePlayer = (recording) => {
-    // cancel current scheduling
-    // Tone.Transport.clear(recording.id);
-
-    // replace with player.sync.start(offset)
-    // because scheduling things on the transport is not built to support playback in the middle of a sample via player
-
-    let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
-    console.log("OFFSET " + offset);
-    recording.player.sync().start(offset);
-  }
-
-  const calculatePlayOffset = (mouseX, currentPosition) => {
-    console.log(mouseX);
-    console.log(currentPosition);
-    return mouseX - currentPosition;
-  }
-
-  const receiveRecording = (recording) => {
-    recording.player = createPlayer(recording);
-    schedulePlayer(recording, Tone.Transport.seconds);
-    recording.player.connect(channel);
-    if (typeof(recording.data) == "string") { // from recorder
-      recording.player.buffer.onload = (buffer) => {
-        recording.data = buffer;
-        recording.duration = buffer.duration;
-        dispatch({type: 'addRecording', payload: recording});
-      };
-    } else { // from file
-      dispatch({type: 'addRecording', payload: recording});
-    }
-  }
-
-  const updatePlayer = (delta, recording, index) => {
-    recording.position = (recording.position + (delta / PIX_TO_TIME) < 0)
-      ? 0     // no hiding clips
-      : recording.position + (delta / PIX_TO_TIME)
-
-    schedulePlayer(recording);
-    dispatch({type: 'updateRecording', payload: recording});
-  }
+  };
 
   const toggle = () => {
     if (Tone.Transport.state === "started") {
@@ -329,23 +348,17 @@ function App() {
 
   // takes current solo state (boolean)
   // soloes or un soloes
-  const solo = (soloState) => {
-    let payload = {
-      recording: selectedRecording,
-      channel: channel,
-      soloChannel: soloChannel
-    }
-    
+  const solo = (soloState) => { 
     if (soloState) {
-      dispatch({type: 'unsoloClip',  payload: payload});
+      dispatch({type: 'unsoloClip',  payload: selectedRecording});
     } else {
-      dispatch({type: 'soloClip',  payload: payload});
+      dispatch({type: 'soloClip',  payload: selectedRecording});
     }
   }
   
   const bounce = (fileFormat, ranges) => {
 
-    if (fileFormat == 'mp3') { // check types
+    if (fileFormat == 'mp3') {
       exportAsMp3(ranges);
     } else {
       exportAsWav(ranges);
@@ -456,6 +469,10 @@ function App() {
   }
 
   useEffect(() => {
+
+  }, [state.recordings]);
+
+  useEffect(() => {
     
   }, []);
 
@@ -486,7 +503,7 @@ function App() {
           </Editor>
           <MainTransport 
             recordings={state.recordings} 
-            updatePlayer={updatePlayer}
+            updatePlayerPosition={updatePlayerPosition}
             selectRecording={setSelectedRecording} 
             exporting={exporting}>
           </MainTransport>
