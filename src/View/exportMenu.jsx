@@ -21,6 +21,8 @@ const fadeOut = keyframes`
     }
 `;
 
+// should also contain export logic!
+
 const ExportMenuView = styled.div`
     visibility: ${props => props.displayState ? 'visible' : 'hidden'};
     position: absolute;

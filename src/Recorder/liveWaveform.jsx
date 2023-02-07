@@ -1,12 +1,9 @@
 import {  useEffect } from 'react'
 import p5 from 'p5';
-import styled from 'styled-components';
 
-const StyledWaveform = styled.div`
-  height: 100px;
-`
+import { StyledWaveform } from './liveWaveformStyles';
 
-export default function Waveform(analyser) {
+export default function LiveWaveform(analyser) {
     useEffect(() => {
       analyser = analyser.analyser;
       if (!analyser) return;

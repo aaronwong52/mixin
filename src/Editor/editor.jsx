@@ -1,57 +1,8 @@
-import styled from 'styled-components';
-import * as Tone from 'tone';
 import p5 from 'p5';
 
 import { useState, useEffect, useRef } from 'react';
-import { PIX_TO_TIME, SAMPLE_RATE } from './utils';
-
-const StyledEditor = styled.div`
-    width: 100vw;
-    height: 175px;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-`;
-
-const ControlView = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    width: 50px;
-    height: 175px;
-`
-const ClipMute = styled.button`
-    background: ${props => props.muted 
-        ? "url('/images/mute_white.png') no-repeat;"
-        : "url('/images/unmute_white.png') no-repeat;"
-    };
-    width: 25px;
-    height: 25px;
-    padding: 0;
-    background-color: transparent;
-    background-size: 25px;
-    border: none;
-    :hover {cursor: pointer;}
-    -webkit-tap-highlight-color: transparent;
-`;
-
-const ClipSolo = styled(ClipMute)`
-    background: none;
-    font-size: 26px;
-    font-weight: bold;
-    color: ${props => props.solo
-        ? "#3c5e91"
-        : "#d1d5de"
-    };
-`;
-
-const WaveformView = styled.div`
-    height: 175px;
-    border: 1px solid black;
-    border-radius: 4px;
-    box-shadow: 0 0 3px #727a87;
-`;
+import * as styles from './editorStyles';
+import { SAMPLE_RATE } from '../utils/constants';
 
 // recording is selectedRecording prop
 function Editor({recording, solo, exporting}) {
@@ -121,14 +72,14 @@ function Editor({recording, solo, exporting}) {
     }, [recording, buffer]);
 
     return (
-        <StyledEditor>
-            <ControlView>
-                <ClipMute onClick={mute} muted={muted}></ClipMute>
-                <ClipSolo onClick={soloClip} solo={recording.solo}>S</ClipSolo>
-            </ControlView>
-            <WaveformView ref={editorRef}>
-            </WaveformView>
-        </StyledEditor>
+        <styles.Editor>
+            <styles.ControlView>
+                <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
+                <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
+            </styles.ControlView>
+            <styles.EditorWaveform ref={editorRef}>
+            </styles.EditorWaveform>
+        </styles.Editor>
     )
 }
 
