@@ -1,53 +1,5 @@
 import styled from 'styled-components';
 
-export const View = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column; 
-  justify-content: flex-start;
-  align-items: center;
-  background: linear-gradient(to right, #1e2126, #282f38 50%, #1e2126);
-`;
-
-export const TopView = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  justify-content: space-evenly;
-
-  padding: 25px 25px;
-  border-radius: 10px;
-`;
-
-export const MixologyMenu = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  color: #ced4de;
-  margin-left: 25px;
-`;
-
-export const MenuLabels = styled.div`
-`;
-
-export const Title = styled.h2`
-  font-size: 24px;
-  margin-bottom: 0px;
-`;
-
-export const MenuOption = styled.h3`
-  font-size: 18px;
-  margin: 35px 0px;
-  :hover {cursor: pointer; color: white;}
-`;
-
-export const MiddleView = styled.div`
-  box-shadow: ${props => props.dropping
-    ? "0 0 12px #ebeff5"
-    : "none"
-  };
-`;
-
 export const ControlView = styled.div`
   display: flex;
   justify-content: space-around;

@@ -8,10 +8,10 @@ const Clock = styled.div`
    background-color: "#1e2126";
 `
 
-// time (number) to clock time (string)
+// time (number) to seconds time (string) (s.ms)
 const toClockTime = (time) => {
     let timeString = time.toFixed(2).toString();
-    return timeString.split(".")[0] + ":" + timeString.split(".")[1];
+    return timeString.split(".")[0] + "." + timeString.split(".")[1];
 }
 
 export default function TransportClock() {
