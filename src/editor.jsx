@@ -23,11 +23,12 @@ const ControlView = styled.div`
 `
 const ClipMute = styled.button`
     background: ${props => props.muted 
-        ? "url('/images/mute.png') no-repeat;"
+        ? "url('/images/mute_white.png') no-repeat;"
         : "url('/images/unmute_white.png') no-repeat;"
     };
     width: 25px;
     height: 25px;
+    padding: 0;
     background-color: transparent;
     background-size: 25px;
     border: none;
@@ -37,10 +38,10 @@ const ClipMute = styled.button`
 
 const ClipSolo = styled(ClipMute)`
     background: none;
-    font-size: 25px;
+    font-size: 26px;
     font-weight: bold;
     color: ${props => props.solo
-        ? "#42bcf5"
+        ? "#3c5e91"
         : "#d1d5de"
     };
 `;
@@ -52,10 +53,10 @@ const WaveformView = styled.div`
     box-shadow: 0 0 3px #727a87;
 `;
 
-function Editor({recording}) {
+// recording is selectedRecording prop
+function Editor({recording, solo}) {
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
-    const [solo, setSolo] = useState(false);
     const zoom = useRef(3);
     const editorRef = useRef();
 
@@ -84,7 +85,7 @@ function Editor({recording}) {
                 }
                 let x = sketch.map(i, 0, buffer.length - 1, 0, width);
                 let average = (sum * 2) / window;
-                sketch.vertex(x, height / 2 - average / 3); // 1.5 since waveform points upwards
+                sketch.vertex(x, height / 2 - average); // 1.5 since waveform points upwards
                 i += window;
                 position += window;
             }
@@ -104,8 +105,7 @@ function Editor({recording}) {
         if (!Object.keys(recording).length) {
             return;
         }
-        // figure out how to implement solo
-        setSolo(!solo);
+        solo(recording.solo);
     }
 
     useEffect(() => {
@@ -124,7 +124,7 @@ function Editor({recording}) {
         <StyledEditor>
             <ControlView>
                 <ClipMute onClick={mute} muted={muted}></ClipMute>
-                <ClipSolo onClick={soloClip} solo={solo}>S</ClipSolo>
+                <ClipSolo onClick={soloClip} solo={recording.solo}>S</ClipSolo>
             </ControlView>
             <WaveformView ref={editorRef}>
             </WaveformView>

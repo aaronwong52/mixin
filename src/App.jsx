@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useReducer } from 'react'
 
 import styled from 'styled-components';
 
@@ -8,6 +8,8 @@ import { FileDrop } from 'react-file-drop';
 import MainTransport from './mainTransport';
 import Record from './recorder';
 import Editor from './editor';
+import TransportClock from './transportClock';
+import ExportMenu from './exportMenu';
 
 import { bufferToWav, bufferFromToneBuffer } from './audio-utils';
 
@@ -29,10 +31,10 @@ core functionality (use Router):
 */
 
 const View = styled.div`
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column; 
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   background: linear-gradient(to right, #1e2126, #282f38 50%, #1e2126);
 `;
@@ -41,174 +43,242 @@ const TopView = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   justify-content: space-evenly;
-  width: 95vw;
-  padding: 25px 0px;
+
+  padding: 25px 25px;
   border-radius: 10px;
 `;
 
-const Title = styled.h2`
-  font-size: 20px;
+const MixologyMenu = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
   color: #ced4de;
-`
+  margin-left: 25px;
+`;
+
+const MenuLabels = styled.div`
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  margin-bottom: 0px;
+`;
+const MenuOption = styled.h3`
+  font-size: 18px;
+  margin: 35px 0px;
+  :hover {cursor: pointer; color: white;}
+`;
 
 const MiddleView = styled.div`
   box-shadow: ${props => props.dropping
     ? "0 0 12px #ebeff5"
     : "none"
   };
-  height: 50vh;
 `
-
-const BottomView = styled.div`
-  width: 100vw;
-  height: 85px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #1e2126;
-`;
-
-const IconView = styled.div`
+const ControlView = styled.div`
   display: flex;
   justify-content: space-around;
   align-items: center;
   height: 50px;
-  width: 250px;
-  border-radius: 4px;
-  background-color: #e6f0ff;
-  box-shadow: 0 0 3px #e6f0ff;
+  width: 350px;
+  margin-top: 40px;
+  border-radius: 10px;
+  background-color: #1e2126;
+  box shadow: 0 0 3px #e6f0ff;
 `;  
 
 const PlayButton = styled.button`
-  width: 35px;
-  height: 35px;
-  background-color: transparent;
+  width: 30px;
+  height: 30px;
   border: none;
+  padding: 0;
   background: ${props => props.playState
-    ? "url('/images/pause.png') no-repeat;" 
-    : "url('/images/play.png') no-repeat;"
+    ? "url('/images/pause.png') center;" 
+    : "url('/images/play_white.png') center;"
   }
-  background-size: 35px;
+  background-size: 30px;
   -webkit-tap-highlight-color: transparent;
   :hover {cursor: pointer;}
 `;
 
-const DownloadButton = styled(PlayButton)`
-  background: url('/images/down.png') no-repeat;
-`;
-
 const RestartButton = styled(PlayButton)`
-  background: url('/images/restart.png') no-repeat;
+  background: url('/images/restart_white.png') center;
 `;
 
-export const MuteButton = styled(PlayButton)`
+const MuteButton = styled(PlayButton)`
   background: ${props => props.mute 
-    ? "url('/images/mute.png') no-repeat;"
-    : "url('/images/unmute.png') no-repeat;"
+    ? "url('/images/mute_white.png') center;"
+    : "url('/images/unmute_white.png') center/99%;"
   }
 `;
 
+const ClockArea = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100px;
+  height: 35px;
+  background-color: #465261;
+  border-radius: 10px;
+`;
+
+const initialState = {
+  recordings: [],
+  endPosition: 0,
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'addRecording':
+      return addRecording(state, action.payload);
+    case 'updateRecording':
+      return updateRecording(state, action.payload);
+    case 'soloClip':
+      return soloClip(state, action.payload);
+    case 'unsoloClip':
+      return unsoloClip(state, action.payload);
+  }
+};
+
+const addRecording = (state, recording) => {
+  recording.index = state.recordings.length;
+  let newDuration = recording.data.duration;
+  if (state.recordings.length === 0) {
+      return {recordings: [recording], endPosition: recording.position + newDuration};
+  } else {
+    let newEndPosition = recording.position + newDuration > state.endPosition
+      ? recording.position
+      : state.endPosition;
+    console.log({
+      recordings: [
+        ...state.recordings.slice(0, state.recordings.length),
+        recording
+      ],
+      endPosition: newEndPosition
+    });
+    return {
+      recordings: [
+        ...state.recordings.slice(0, state.recordings.length),
+        recording
+      ],
+      endPosition: newEndPosition
+    };
+  }
+};
+
+const updateRecording = (state, payload) => {
+  let clipIndex = payload.index;
+  let existingLength = state.recordings.length;
+  if (existingLength === 1) {
+    return {
+     ...state, 
+     recordings: [{...payload}]
+    };
+  } else return {
+    ...state,
+    recordings: [
+      ...state.recordings.slice(0, clipIndex),
+      {...payload},
+      ...state.recordings.slice(clipIndex + 1, existingLength)
+    ]
+  }
+};
+
+// solo: route player to solo channel and solo it
+
+const soloClip = (state, payload) => {
+  payload.recording.player.connect(payload.soloChannel);
+  payload.soloChannel.solo = true;
+  payload.recording.solo = true;
+  return updateRecording(state, payload.recording);
+};
+
+const unsoloClip = (state, payload) => {
+  payload.recording.player.disconnect(); // disconnect() -> disconnect all
+  payload.recording.player.connect(payload.channel); // reconnect to original channel
+  payload.soloChannel.solo = false;
+  payload.recording.solo = false;
+  return updateRecording(state, payload.recording);
+}
+
+
+/* -----------------------------------------------------------------------
+
+how to fix this: 
+
+2 options: 
+
+  1. on play, look first at playhead position and update all players' start with an offset
+
+  2. everytime playhead is moved, look at playhead position and update all players' start with an offset
+
+  The only advantage of two is if this offset ever needs to be used outside of pressing play
+  It seems we only need to use the exact position of things for playing, and for section exports, as the UI is always synced
+  So no! We can just calculate it at runtime. Shouldn't be expensive, relatively
+/* 
+
+
+
+*/
 function App() {
+
+  const channel = new Tone.Channel().toDestination();
+  const soloChannel = new Tone.Channel().toDestination();
   
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [recordings, setRecordings] = useState([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [selectedRecording, setSelectedRecording] = useState({});
-  const [endRecordingsPosition, setEndRecordingsPosition] = useState(0);
   const [dropping, setDropping] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const drawing = useRef();
 
   const audioReader = new FileReader();
 
-  const checkEndPosition = (position) => {
-    if (position > endRecordingsPosition) {
-      setEndRecordingsPosition(position);
-    }
-  }
-
-  const makeChannel = (recording, pan) => {
-    const channel = new Tone.Channel({pan}).toDestination();
-    let new_player = new Tone.Player({
+  const createPlayer = (recording) => {
+    return new Tone.Player({
       url: recording.data,
       loop: false
-    }).sync().start(Tone.Transport.seconds);
-    if (typeof(recording.data) == "string") {
-      new_player.buffer.onload = (buffer) => {
-        addRecording(recording, buffer, new_player, channel)
-      };
-    } else {
-      addRecording(recording, recording.data, new_player, channel);
-    }
+    });
   }
 
-  const addRecording = (recording, buffer, player, channel) => {
-    setRecordings(existing => {
-      if (existing.length === 0) {
-        setEndRecordingsPosition(recording.position + buffer.duration);
-        return [
-          {...recording, 
-            duration: buffer.duration, 
-            player: player,
-            channel: channel,
-            buffer: buffer,
-            loaded: true
-          }
-        ]
-      } else {
-        checkEndPosition(recording.position + buffer.duration);
-        return [
-          ...existing.slice(0, existing.length),
-          {...recording, 
-            duration: buffer.duration, 
-            player: player, 
-            channel: channel,
-            buffer: buffer,
-            loaded: true
-          },
-        ]
-      }
-    });
-    player.connect(channel);
+  const schedulePlayer = (recording) => {
+    // cancel current scheduling
+    // Tone.Transport.clear(recording.id);
+
+    // replace with player.sync.start(offset)
+    // because scheduling things on the transport is not built to support playback in the middle of a sample via player
+
+    let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
+    recording.player.sync().start(offset);
   }
 
-  const updateRecordings = (updatedRecording, index) => {
-    setRecordings(existing => {
-      if (existing.length === 1) {
-        return [{...updatedRecording}]
-      }
-      else return [
-        ...existing.slice(0, index),
-        {...updatedRecording},
-        ...existing.slice(index + 1, existing.length)
-      ]
-    });
+  const calculatePlayOffset = (mouseX, currentPosition) => {
+    return mouseX - currentPosition; // check what happens if value is negative (values past buffer end should be fine)
   }
 
   const receiveRecording = (recording) => {
-    makeChannel(recording, 0);
+    recording.player = createPlayer(recording);
+    schedulePlayer(recording, Tone.Transport.seconds);
+    recording.player.connect(channel);
+    if (typeof(recording.data) == "string") { // from recorder
+      recording.player.buffer.onload = (buffer) => {
+        recording.data = buffer;
+        recording.duration = buffer.duration;
+        dispatch({type: 'addRecording', payload: recording});
+      };
+    } else { // from file
+      dispatch({type: 'addRecording', payload: recording});
+    }
   }
 
-  const newPlayer = (delta, recording, index) => {
-    recording.player.dispose();
-    // new position is current position
-    let new_pos = recording.position + (delta / PIX_TO_TIME);
+  const updatePlayer = (delta, recording, index) => {
+    recording.position = (recording.position + (delta / PIX_TO_TIME) < 0)
+      ? 0     // no hiding clips
+      : recording.position + (delta / PIX_TO_TIME)
 
-    if (new_pos < 0) {new_pos = 0;} // no hiding clips
-    let new_player = new Tone.Player({
-      url: recording.data,
-      loop: false
-    }).sync().start(new_pos);
-
-    new_player.buffer.onload = (buffer) => {
-      recording.position = new_pos;
-      recording.player = new_player;
-      recording.buffer = buffer;
-
-      checkEndPosition(new_pos + buffer.duration);
-
-      new_player.connect(recording.channel);
-      updateRecordings(recording, index);
-    }
+    schedulePlayer(recording);
+    dispatch({type: 'updateRecording', payload: recording});
   }
 
   const toggle = () => {
@@ -216,7 +286,7 @@ function App() {
       Tone.Transport.pause();
       return true;
     }
-    else if (recordings.length > 0) {
+    else if (state.recordings.length > 0) {
       Tone.Transport.start();
       return true;
     }
@@ -241,19 +311,55 @@ function App() {
     setMuted(!muted);
   }
 
-  const download = async () => {
-    let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
-   
+  // takes current solo state (boolean)
+  // soloes or un soloes
+  const solo = (soloState) => {
+    let payload = {
+      recording: selectedRecording,
+      channel: channel,
+      soloChannel: soloChannel
+    }
+    
+    if (soloState) {
+      dispatch({type: 'unsoloClip',  payload: payload});
+    } else {
+      dispatch({type: 'soloClip',  payload: payload});
+    }
+  }
+
+  const exportAsWav = async () => {
     let renderedBuffer = await renderBuffer();
+
+    /* ????? */
     let mix = Tone.getContext().createBufferSource();
     mix.buffer = renderedBuffer;
     mix.connect(Tone.getContext().rawContext.destination);
+    
     let wav = bufferToWav(renderedBuffer);
-    let blob = new window.Blob([new DataView(wav)], {
-      type: 'audio/wav'
+    exportFile(wav, 'audio/wav');
+  };
+
+  const exportAsMp3 = async () => {
+    let mp3 = [];
+    let renderedBuffer = await renderBuffer();
+    let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
+    
+    let tempMP3 = mp3Encoder.encodeBuffer(renderedBuffer);
+    mp3.push(tempMP3);
+
+    // get end of mp3
+    tempMP3 = mp3Encoder.flush();
+    mp3.push(tempMP3);
+
+    exportFile(mp3, 'audio/mpeg');
+  };
+
+  const exportFile = (file, type) => {
+    let blob = new window.Blob([new DataView(file)], {
+      type: type
     });
     downloadBlob(blob);
-  };
+  }
 
   const downloadBlob = (blob) => {
     let anchor = document.createElement('a');
@@ -264,10 +370,11 @@ function App() {
     window.URL.revokeObjectURL(url);;
   }
 
+  // invariant: as long as all the audio is set up through Tone, the render will be correct
   const renderBuffer = async () => {
     // OfflineAudioContext(numChannels, length, sampleRate)
-    const offlineContext = new OfflineAudioContext(2, endRecordingsPosition, SAMPLE_RATE);
-    recordings.forEach(function(recording) {
+    const offlineContext = new OfflineAudioContext(2, state.endPosition, SAMPLE_RATE);
+    state.recordings.forEach(function(recording) {
       let source = offlineContext.createBufferSource();
       source.buffer = bufferFromToneBuffer(recording.buffer);
       source.connect(offlineContext.destination);
@@ -318,33 +425,39 @@ function App() {
   }
 
   useEffect(() => {
-   
+    
   }, []);
 
   return (
     <View id="Tone" ref={drawing.current}>
       <TopView>
-        <Title>MIXOLOGY</Title>
+        <MixologyMenu>
+          <MenuLabels>
+            <Title>MIXOLOGY</Title>
+            <MenuOption onClick={() => setExporting(!exporting)}>Export</MenuOption>
+          </MenuLabels>
+        </MixologyMenu>
         <Record receiveRecording={receiveRecording}></Record>
+        <ExportMenu displayState={exporting}></ExportMenu>
       </TopView>
       <FileDrop onDrop={(files, event) => upload(files, event)}
           onFrameDragEnter={(event) => setDropping(true)}
           onFrameDragLeave={(event) => setDropping(false)}>
         <MiddleView dropping={dropping}>
-          <Editor recording={selectedRecording}></Editor>
-          <MainTransport recordings={recordings} newPlayer={newPlayer}
+          <Editor recording={selectedRecording} solo={solo}></Editor>
+          <MainTransport recordings={state.recordings} updatePlayer={updatePlayer}
             selectRecording={setSelectedRecording}>
           </MainTransport>
         </MiddleView>
       </FileDrop>
-      <BottomView>
-        <IconView>
-            <PlayButton id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
-            <MuteButton onClick={mute} mute={muted}></MuteButton>
-            <RestartButton onClick={restart}></RestartButton>
-            <DownloadButton onClick={download}></DownloadButton>
-        </IconView>
-      </BottomView>
+      <ControlView>
+          <PlayButton id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
+          <MuteButton onClick={mute} mute={muted}></MuteButton>
+          <RestartButton onClick={restart}></RestartButton>
+          <ClockArea>
+            <TransportClock></TransportClock>
+          </ClockArea>
+      </ControlView>
     </View> 
   )
 }
