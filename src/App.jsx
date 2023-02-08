@@ -3,6 +3,8 @@ import { useRef, useState, useEffect } from 'react'
 import styled from 'styled-components';
 
 import * as Tone from 'tone';
+import { AudioWorkletNode } from "standardized-audio-context";
+
 import MainTransport from './mainTransport';
 import Record from './recorder';
 import Editor from './editor';
@@ -30,27 +32,29 @@ const TopView = styled.div`
   margin: 15px 0px;
 `;
 
-const Button = styled.button`
-  margin: 30px 10px;
+const IconView = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  height: 35px;
+  width: 200px;
 `;
 
-const RecordButton = styled(Button)`
+const PlayButton = styled.button`
   width: 35px;
   height: 35px;
   background-color: transparent;
   border: none;
-  background: url('/images/record.png') no-repeat;
+  background: ${props => props.playState
+    ? "url('/images/pause.png') no-repeat;" 
+    : "url('/images/play.png') no-repeat;"
+  }
   background-size: 35px;
-  `;
+  :hover {cursor: pointer;}
+`;
 
-  const PlayButton = styled(Button)`
-  width: 35px;
-  height: 35px;
-  background-color: transparent;
-  border: none;
-  background: url('/images/play-button.png') no-repeat;
-  background-size: 35px;
-  `;
+const DownloadButton = styled(PlayButton)`
+  background: url('/images/down.png') no-repeat;
+`;
 
   function toggle() {
     if (Tone.Transport.state === "started") {
@@ -63,14 +67,16 @@ const RecordButton = styled(Button)`
 
 function App() {
   
+  const [playing, setPlaying] = useState(false);
   const [showDetails, setShowDetails] = useState(true);
   const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
-  const [selectedRecording, setSelectedRecording] = useState({})
+  const [selectedRecording, setSelectedRecording] = useState({});
+  const processor = useRef();
   const drawing = useRef();
 
   const makeChannel = (recording, pan) => {
-    const channel = new Tone.Channel({pan}).toDestination();
+    const channel = new Tone.Channel({pan}).connect(processor.current);
     let new_player = new Tone.Player({
       url: recording.url,
       loop: false
@@ -167,8 +173,41 @@ function App() {
     return new_player;
   }
 
-  useEffect(() => {
+  const onPlay = () => {
+    setPlaying(!playing);
+    toggle();
+  };
 
+  const download = async () => {
+    
+  };
+
+  class ProcessorWorkletNode extends AudioWorkletNode {
+    constructor(context) {
+      super(context, "processor");
+    }
+  }
+
+  useEffect(() => {
+    // async function addToneWorklet(processor) {
+    //   const audioContext = Tone.getContext();
+    //   await audioContext.addAudioWorkletModule("processor.js", "processor");
+    //   let processingNode = audioContext.createAudioWorkletNode("processor");
+    //   console.log(processingNode);
+    //   processingNode.connect(audioContext.destination);
+    //   processor.current = processingNode;
+    // }
+
+    async function addAudioWorklet(processor) {
+      const baseAudioContext = Tone.getContext();
+      const audioContext = baseAudioContext.rawContext;
+      await audioContext.audioWorklet.addModule("processor.js");
+      const processingNode = new ProcessorWorkletNode(audioContext);
+      processingNode.connect(audioContext.destination);
+      console.log(processingNode)
+      processor.current = processingNode;
+    }
+    addAudioWorklet(processor);
   }, []);
 
   return (
@@ -179,9 +218,12 @@ function App() {
       <Editor recording={selectedRecording}></Editor>
       <MainTransport recordings={recordings} newPlayer={newPlayer}
         updateRecordings={updateRecordings}
-        selectRecording={setSelectedRecording} 
-        toggle={toggle}>
+        selectRecording={setSelectedRecording}>
       </MainTransport>
+      <IconView>
+          <PlayButton type="button" id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
+          <DownloadButton type="button" onClick={download}></DownloadButton>
+      </IconView>
     </View> 
   )
 }
