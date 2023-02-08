@@ -90,6 +90,7 @@ function MainTransport({recordings, updatePlayer,
 
     const draggingRef = useRef(false);
     const dragStart = useRef(-1);
+    const stopSketchClick = useRef(false);
     const transportRef = useRef();
 
     const onStop = (e, recording, index) => {
@@ -171,6 +172,11 @@ function MainTransport({recordings, updatePlayer,
 
           // if dragging a clip, or if export menu is open
           if (draggingRef.current || exporting) {
+            return;
+          }
+          
+          if (stopSketchClick.current) {
+            stopSketchClick.current = false;
             return;
           }
 
