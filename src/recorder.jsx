@@ -104,7 +104,13 @@ function Record({playPosition, receiveRecording}) {
                 closeMic();
                 let data = await recorder.stop();
                 let blobUrl = URL.createObjectURL(data);
-                let newRecording = {position: playPosition, url: blobUrl, size: data.size, player: null};
+                let newRecording = {
+                    position: playPosition.current, 
+                    url: blobUrl, 
+                    size: data.size, 
+                    player: null,
+                    channel: null
+                };
 
                 // Tone.Transport.schedule(position); // in seconds ... this should be done in main app after receiving
                 // along with display of new recording view
