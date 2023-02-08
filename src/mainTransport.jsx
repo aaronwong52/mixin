@@ -90,10 +90,9 @@ function MainTransport({recordings, updatePlayer,
 
     const draggingRef = useRef(false);
     const dragStart = useRef(-1);
-    const stopSketchClick = useRef(false);
     const transportRef = useRef();
 
-    const onStop = (e, data, recording, index) => {
+    const onStop = (e, recording, index) => {
 
       // onDrag
       if (draggingRef.current) {

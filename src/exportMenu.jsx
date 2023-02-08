@@ -84,7 +84,7 @@ const ExportButton = styled(FileTypeButton)`
     background-color: #d7dae0;
 `;
 
-function ExportMenu({displayState}) {
+function ExportMenu({displayState, bounce}) {
 
     const [fileFormat, setFileFormat] = useState('');
 
@@ -93,9 +93,20 @@ function ExportMenu({displayState}) {
     }
     
     const onBounceClick = () => {
-        
+        if (!fileFormat) {
+            // error
+        }
+
         // ranges: [start, end]
-        let ranges = document.getElementsByClassName("export_range_input");
+        let rangeInputs = Array.from(document.getElementsByClassName("export_range_input")); // HTMLCollection -> array
+        let ranges = getRangesFromInputs(rangeInputs);
+        bounce(fileFormat, ranges);
+    }
+
+    const getRangesFromInputs = (inputs) => {
+        return inputs.map((input) => {
+            return parseInt(input.value);
+        })
     }
 
     return (

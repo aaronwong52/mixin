@@ -54,7 +54,7 @@ const WaveformView = styled.div`
 `;
 
 // recording is selectedRecording prop
-function Editor({recording, solo}) {
+function Editor({recording, solo, exporting}) {
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
     const zoom = useRef(3);
@@ -94,7 +94,7 @@ function Editor({recording, solo}) {
     }
 
     const mute = () => {
-        if (!Object.keys(recording).length) {
+        if (!Object.keys(recording).length || exporting) {
             return;
         }
         recording.player.mute = true;
@@ -102,7 +102,7 @@ function Editor({recording, solo}) {
     }
 
     const soloClip = () => {
-        if (!Object.keys(recording).length) {
+        if (!Object.keys(recording).length || exporting) {
             return;
         }
         solo(recording.solo);
