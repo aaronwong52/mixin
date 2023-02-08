@@ -4,17 +4,14 @@ import * as styles from './AppStyles';
 
 import * as Tone from 'tone';
 import { FileDrop } from 'react-file-drop';
+import { createPlayer } from '../utils/audio-utils';
 
 import { recordingReducer } from '../Reducer/recordingReducer';
 import Transport from '../Transport/transport';
 import Recorder from '../Recorder/recorder';
 import Editor from '../Editor/editor';
 import TransportClock from '../Transport/transportClock';
-import ExportMenu from './exportMenu';
-
-import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
-
-import { SAMPLE_RATE } from '../utils/constants';
+import ExportMix from '../Export/exportMix';
 
 /* 
 
@@ -53,6 +50,8 @@ const initialState = {
     soloChannel: new Tone.Channel().toDestination()
 };
 
+// app serves to put views together and act as a data processor + connector to the reducer
+// maintains Control state
 function App() {
   
   const [playing, setPlaying] = useState(false);
@@ -70,6 +69,8 @@ function App() {
   // any state operations that need to read state -> place in reducer
   // we have to place the onload callback here so that we don't have to dispatch another action from inside the reducer
 
+
+  // receive from Recorder -> add to store and send to Transport
   const receiveRecording = (recording) => {
     recording.player = createPlayer(recording);
     
@@ -83,7 +84,7 @@ function App() {
     } else {
       dispatch({type: 'scheduleRecording', payload: recording});
     }
-  }
+  };
 
   const updatePlayerPosition = (delta, recording, index) => {
     dispatch({type: 'updateRecordingPosition', 
@@ -94,15 +95,7 @@ function App() {
     );
   }
 
-  const createPlayer = (recording) => {
-    return new Tone.Player({
-      url: recording.data,
-      loop: false
-    });
-  };
-
   const toggle = () => {
-    console.log(state.recordings);
     if (Tone.Transport.state === "started") {
       Tone.Transport.pause();
       return true;
@@ -151,78 +144,10 @@ function App() {
     }
   }
   
-  const bounce = (fileFormat, ranges) => {
-
-    if (fileFormat == 'mp3') {
-      exportAsMp3(ranges);
-    } else {
-      exportAsWav(ranges);
-    }
-  }
-
-  const exportAsWav = async (ranges) => {
-    let renderedBuffer = await renderBuffer();
-
-    /* ????? necessary? */
-    let mix = Tone.getContext().createBufferSource();
-    mix.buffer = renderedBuffer;
-    mix.connect(Tone.getContext().rawContext.destination);
-    
-    let wav = bufferToWav(renderedBuffer);
-    exportFile(wav, 'audio/wav');
-  };
-
-  const exportAsMp3 = async (ranges) => {
-    let mp3 = [];
-    let renderedBuffer = await renderBuffer();
-
-    // https://github.com/zhuker/lamejs
-    let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
-    
-    let tempMP3 = mp3Encoder.encodeBuffer(renderedBuffer);
-    mp3.push(tempMP3);
-
-    // get end of mp3
-    tempMP3 = mp3Encoder.flush();
-    mp3.push(tempMP3);
-
-    exportFile(mp3, 'audio/mpeg');
-  };
-
-  const exportFile = (file, fileFormat) => {
-    let blob = new window.Blob([new DataView(file)], {
-      type: fileFormat
-    });
-    downloadBlob(blob);
-  };
-
   const setExportingState = () => {
     setExporting(!exporting);
   }
 
-  const downloadBlob = (blob) => {
-    let anchor = document.createElement('a');
-    let url = window.URL.createObjectURL(blob);
-    anchor.href = url;
-    anchor.download = 'audio.wav';
-    anchor.click();
-    window.URL.revokeObjectURL(url);;
-  }
-
-  // invariant: as long as all the audio is set up through Tone, the render will be correct
-
-  // how to export a range? is there a way to easily do it with Tone? or offlineContext?
-  const renderBuffer = async () => {
-    // OfflineAudioContext(numChannels, length, sampleRate)
-    const offlineContext = new OfflineAudioContext(2, state.endPosition, SAMPLE_RATE);
-    state.recordings.forEach(function(recording) {
-      let source = offlineContext.createBufferSource();
-      source.buffer = bufferFromToneBuffer(recording.buffer);
-      source.connect(offlineContext.destination);
-      source.start();
-    }); 
-    return await offlineContext.startRendering();
-  }
 
   const upload = (files, e) => {
     e.preventDefault();
@@ -278,7 +203,7 @@ function App() {
           receiveRecording={receiveRecording} 
           exporting={exporting}>
         </Recorder>
-        <ExportMenu displayState={exporting} bounce={bounce}></ExportMenu>
+        <ExportMix displayState={exporting} recordings={state.recordings}></ExportMix>
       </styles.TopView>
       <FileDrop 
           onDrop={(files, event) => upload(files, event)}
