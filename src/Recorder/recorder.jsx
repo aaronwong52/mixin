@@ -1,44 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 
-import Waveform from './analyser';
+import { RecordView, RecordButton } from './recorderStyles';
+
+import LiveWaveform from './liveWaveform';
 import * as Tone from 'tone';
 
-const RecordView = styled.div`
-    height: 250px;
-    width: 500px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #1f324d;
-
-    @media only screen and (max-width: 768px) {
-        height: 200px;
-        width: 300px;
-    }
-    border-radius: 10px;
-`;
-
-const RecordButton = styled.button`
-  width: 35px;
-  height: 35px;
-  background-color: transparent;
-  border: none;
-  background: ${props => props.recording
-        ? "url('/images/stop.png') no-repeat;"
-        : "url('/images/record_muted.png') no-repeat;"
-  };
-  background-size: 35px;
-  margin: 8px 0px;
-  :hover {
-        cursor: pointer;
-        box-shadow: 0 0 10px red;
-        border-radius: 50%;
-    }
-`;
-
-function Record({receiveRecording, exporting}) {
+function Recorder({receiveRecording, exporting}) {
 
     const recordingState = useRef(false);
     const [recording, setRecording] = useState(false);
@@ -100,9 +67,9 @@ function Record({receiveRecording, exporting}) {
     return (
         <RecordView>
             <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
-            <Waveform analyser={analyser}></Waveform>
+            <LiveWaveform analyser={analyser}></LiveWaveform>
         </RecordView>
     )
 }
 
-export default Record;
+export default Recorder;

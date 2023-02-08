@@ -1,59 +1,14 @@
 import { useRef, useEffect } from 'react';
 import p5 from 'p5';
 
-import styled from 'styled-components';
+import * as styles from './TransportStyles';
+
 import Draggable from 'react-draggable';
 
-import { Transport } from 'tone';
+import { Transport as ToneTransport } from 'tone';
+import Recording from './recording';
 
-import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
-
-const TransportView = styled.div`
-  width: 100vw;
-  overflow: scroll;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  background-color: #1e2126;
-`;
-
-const TransportTimeline = styled.div`
-  overflow: scroll;
-  display: flex;
-  flex-direction: column;
-  width: 95vw;
-  padding-bottom: 5px;
-  background-color: #bed2ed;
-  border-radius: 4px;
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const RecordingsView = styled.div`
-  position: relative;
-  display: flex;
-  margin-left: 10px;
-  background-color: #1f324d;
-  z-index: 999;
-`;
-
-const RecordingView = styled.div`
-    position: absolute;
-    width: 100px;
-    height: 85px;
-    margin-top: 10px;
-    background-color: #1f324d;
-    border: none;
-    border-radius: 4px;
-    opacity: 0.75;
-    :hover {cursor: pointer;}
-    z-index: 999;
-    
-`;
+import {TRANSPORT_LENGTH, PIX_TO_TIME } from '../utils/constants';
 
 /* 
 
@@ -85,7 +40,7 @@ Transport.seconds to pixels to css
 
 */
 
-function MainTransport({recordings, updatePlayerPosition, 
+function Transport({recordings, updatePlayerPosition, 
   selectRecording, exporting}) {
 
     const draggingRef = useRef(false);
@@ -101,7 +56,7 @@ function MainTransport({recordings, updatePlayerPosition,
         stopSketchClick.current = true; // to stop playhead moving when dragging stops 
         // final mouse position shift !!! for Desktop only, mobile uses touch events?
         let delta = e.clientX - dragStart.current;
-        updatePlayer(delta, recording, index);
+        updatePlayerPosition(delta, recording, index);
         dragStart.current = -1;
       }
 
@@ -112,6 +67,7 @@ function MainTransport({recordings, updatePlayerPosition,
     }
 
     const onDrag = (e) => {
+      console.log("Dragging")
       if (dragStart.current < 0) {
         // initial mouse position
         dragStart.current = e.clientX; // desktop
@@ -123,12 +79,12 @@ function MainTransport({recordings, updatePlayerPosition,
 
     const inflateRecordings = () => {
       return recordings.map((r, index) => (
-        <Draggable key={"rec_clip_" + index}
+        <Draggable key={"drag_rec_clip_" + index}
             onDrag={(e) => onDrag(e)}
             onStop={(e) => onStop(e, r, index)}
             bounds={'#recordingsview'}>
-          <RecordingView className="recording_clip">
-          </RecordingView>
+          <styles.RecordingView className="recording_clip">
+          </styles.RecordingView>
         </Draggable>
       ));
     }	
@@ -159,7 +115,7 @@ function MainTransport({recordings, updatePlayerPosition,
             sketch.textAlign(sketch.CENTER);
             i += 50;
           }
-          let time = Transport.seconds * PIX_TO_TIME;
+          let time = ToneTransport.seconds * PIX_TO_TIME;
           sketch.fill("#bac7db");
           sketch.rect(time + 10, 0, 4, 110, 500); // playline
         };
@@ -181,9 +137,9 @@ function MainTransport({recordings, updatePlayerPosition,
             return;
           }
 
-          Transport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
-          if (Transport.seconds < 0.1) {
-            Transport.seconds = 0;
+          ToneTransport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
+          if (ToneTransport.seconds < 0.1) {
+            ToneTransport.seconds = 0;
           }
         }
       };
@@ -202,14 +158,14 @@ function MainTransport({recordings, updatePlayerPosition,
     }, [recordings]);
 
     return (
-        <TransportView id="transportview">
-          <TransportTimeline id="timeline" ref={transportRef}>
-            <RecordingsView id="recordingsview">
+        <styles.TransportView id="transportview">
+          <styles.TransportTimeline id="timeline" ref={transportRef}>
+            <styles.RecordingsView id="recordingsview">
                 {inflateRecordings()}
-            </RecordingsView>
-          </TransportTimeline>
-        </TransportView>
+            </styles.RecordingsView>
+          </styles.TransportTimeline>
+        </styles.TransportView>
     )
 }
 
-export default MainTransport;
+export default Transport;
