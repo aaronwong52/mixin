@@ -6,8 +6,7 @@ import Waveform from './analyser';
 import * as Tone from 'tone';
 
 const RecordView = styled.div`
-    background-color: #dcf0f3;
-    border-radius: 10px;
+    background-color: #4f8adb;
     height: 250px;
     width: 500px;
     display: flex;

@@ -3,7 +3,6 @@ import p5 from 'p5';
 
 import styled from 'styled-components';
 import Draggable from 'react-draggable';
-import { Transport } from 'tone';
 import Playhead from './playline';
 
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
@@ -14,10 +13,7 @@ const TransportView = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  border: 1px dotted grey;
-  border-bottom: none;
-  border-left: none;
-  border-right: none;
+  background-color: white;
 `;
 
 const TransportTimeline = styled.div`

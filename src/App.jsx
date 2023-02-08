@@ -25,18 +25,29 @@ const View = styled.div`
       display: flex; 
       flex-direction: column; 
       align-items: center;
+      background-color: #3a649e
   `;
 
 const TopView = styled.div`
   display: flex;
   margin: 15px 0px;
+  background-color: #4f8adb;
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
+const BottomView = styled.div`
+  padding: 10px 10px;
 `;
 
 const IconView = styled.div`
   display: flex;
   justify-content: space-evenly;
-  height: 35px;
+  align-items: center;
+  height: 50px;
   width: 200px;
+  border-radius: 4px;
+  background-color: #e6f0ff;
 `;
 
 const PlayButton = styled.button`
@@ -54,6 +65,10 @@ const PlayButton = styled.button`
 
 const DownloadButton = styled(PlayButton)`
   background: url('/images/down.png') no-repeat;
+`;
+
+const RestartButton = styled(PlayButton)`
+  background: url('/images/restart.png') no-repeat;
 `;
 
   function toggle() {
@@ -76,6 +91,7 @@ function App() {
   const drawing = useRef();
 
   const makeChannel = (recording, pan) => {
+    console.log(processor.current);
     const channel = new Tone.Channel({pan}).connect(processor.current);
     let new_player = new Tone.Player({
       url: recording.url,
@@ -103,6 +119,7 @@ function App() {
         ]
       });
       new_player.connect(channel);
+      console.log(channel);
     };
     
     // recording.player is set to this player (check deep assignment with useState)
@@ -178,6 +195,11 @@ function App() {
     toggle();
   };
 
+  const restart = () => {
+    setPlaying(false);
+    Tone.Transport.stop();
+  }
+
   const download = async () => {
     
   };
@@ -204,7 +226,6 @@ function App() {
       await audioContext.audioWorklet.addModule("processor.js");
       const processingNode = new ProcessorWorkletNode(audioContext);
       processingNode.connect(audioContext.destination);
-      console.log(processingNode)
       processor.current = processingNode;
     }
     addAudioWorklet(processor);
@@ -220,10 +241,13 @@ function App() {
         updateRecordings={updateRecordings}
         selectRecording={setSelectedRecording}>
       </MainTransport>
-      <IconView>
-          <PlayButton type="button" id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
-          <DownloadButton type="button" onClick={download}></DownloadButton>
-      </IconView>
+      <BottomView>
+        <IconView>
+            <PlayButton id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
+            <RestartButton onClick={restart}></RestartButton>
+            <DownloadButton onClick={download}></DownloadButton>
+        </IconView>
+      </BottomView>
     </View> 
   )
 }
