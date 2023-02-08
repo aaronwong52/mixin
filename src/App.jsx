@@ -76,7 +76,6 @@ function App() {
     }).sync().start(playPosition.current);
     new_player.buffer.onload = (buffer) => {
       playPosition.current += buffer.duration;
-      console.log(buffer.duration);
       setRecordings(existing => {
         if (existing.length === 0) {
           return [

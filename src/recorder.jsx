@@ -101,7 +101,6 @@ function Record({playPosition, receiveRecording}) {
         recBtn.addEventListener("click", async () => {
             Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
             if (recordingState.current) {
-                console.log(playPosition.current);
                 closeMic();
                 let data = await recorder.stop();
                 let blobUrl = URL.createObjectURL(data);
