@@ -6,6 +6,7 @@ export const AUDIO_FORMATS = {
     mp3: 'audio/mp3',
     wav: 'audio/wav'
 }
+export const WAV_TO_MP3 = 32767.5
 
 export const getDownloadFormat = (fileFormat) => {
     if (fileFormat == AUDIO_FORMATS.mp3) {
