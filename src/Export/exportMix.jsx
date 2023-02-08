@@ -6,7 +6,7 @@ import * as styles from './ExportMixStyles';
 
 import { calculatePlayOffset } from '../Reducer/recordingReducer';
 import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
-import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat } from '../utils/constants';
+import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
 
 function ExportMix({displayState, recordings}) {
@@ -56,7 +56,7 @@ function ExportMix({displayState, recordings}) {
 
     const boostMp3 = (floatBuffer) => {
         return floatBuffer.map((val) => {
-            return val * 3767.5;
+            return val * WAV_TO_MP3;
         })
     }
     
@@ -87,8 +87,11 @@ function ExportMix({displayState, recordings}) {
     };
 
     const exportFile = (file, fileFormat) => {
-        console.log(file);
-        let blob = new window.Blob(file, {
+        let formattedFile = file;
+        if (fileFormat == AUDIO_FORMATS.wav) {
+            formattedFile = [new DataView(file)];
+        }
+        let blob = new window.Blob(formattedFile, {
           type: fileFormat
         });
         downloadBlob(blob, fileFormat);
