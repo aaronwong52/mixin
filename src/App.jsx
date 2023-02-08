@@ -9,6 +9,11 @@ import MainTransport from './mainTransport';
 import Record from './recorder';
 import Editor from './editor';
 
+import { bufferToWav, bufferFromToneBuffer } from './audio-utils';
+
+import Mp3Encoder from './encoder';
+import { SAMPLE_RATE, PIX_TO_TIME } from './utils';
+
 /* 
 
 core functionality (use Router):
@@ -87,11 +92,17 @@ function App() {
   const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
   const [selectedRecording, setSelectedRecording] = useState({});
+  const [endRecordingsPosition, setEndRecordingsPosition] = useState(0);
   const processor = useRef();
   const drawing = useRef();
 
+  const checkEndPosition = (position) => {
+    if (position > endRecordingsPosition) {
+      setEndRecordingsPosition(position);
+    }
+  }
+
   const makeChannel = (recording, pan) => {
-    console.log(processor.current);
     const channel = new Tone.Channel({pan}).connect(processor.current);
     let new_player = new Tone.Player({
       url: recording.url,
@@ -101,25 +112,29 @@ function App() {
       playPosition.current += buffer.duration;
       setRecordings(existing => {
         if (existing.length === 0) {
+          setEndRecordingsPosition(recording.position + buffer.duration);
           return [
             {...recording, 
               duration: buffer.duration, 
               player: new_player, 
-              channel: channel
+              channel: channel,
+              buffer: buffer
             }
           ]
+        } else {
+          checkEndPosition(recording.position + buffer.duration);
+          return [
+            ...existing.slice(0, existing.length),
+            {...recording, 
+              duration: buffer.duration, 
+              player: new_player, 
+              channel: channel,
+              buffer: buffer
+            },
+          ]
         }
-        else return [
-          ...existing.slice(0, existing.length),
-          {...recording, 
-            duration: buffer.duration, 
-            player: new_player, 
-            channel: channel
-          },
-        ]
       });
       new_player.connect(channel);
-      console.log(channel);
     };
     
     // recording.player is set to this player (check deep assignment with useState)
@@ -181,13 +196,27 @@ function App() {
     // So that all transport is handled by transport - all data is passed to where it should be
   }
 
-  const newPlayer = (recording) => {
+  const newPlayer = (data, recording) => {
     recording.player.dispose();
+    let new_pos = recording.position + (data.lastX / PIX_TO_TIME);
+
+    if (new_pos < 0) {new_pos = 0;} // no hiding clips
     let new_player = new Tone.Player({
       url: recording.url,
       loop: false
-    });
-    return new_player;
+    }).sync().start(new_pos);
+
+    new_player.buffer.onload = (buffer) => {
+
+      recording.position = new_pos;
+      recording.player = new_player;
+      recording.buffer = buffer;
+
+      checkEndPosition(new_pos + buffer.duration);
+
+      new_player.connect(recording.channel);
+      updateRecordings(recording, index);
+    }
   }
 
   const onPlay = () => {
@@ -201,8 +230,38 @@ function App() {
   }
 
   const download = async () => {
-    
+    let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
+   
+    let renderedBuffer = await render();
+    let mix = Tone.getContext().createBufferSource();
+    mix.buffer = renderedBuffer;
+    mix.connect(Tone.getContext().rawContext.destination);
+    let wav = bufferToWav(renderedBuffer);
+    let blob = new window.Blob([new DataView(wav)], {
+      type: 'audio/wav'
+    });
+    downloadBlob(blob);
   };
+
+  const downloadBlob = (blob) => {
+    let anchor = document.createElement('a');
+    let url = window.URL.createObjectURL(blob);
+    anchor.href = url;
+    anchor.download = 'audio.wav';
+    anchor.click();
+    window.URL.revokeObjectURL(url);;
+  }
+
+  const render = async () => {
+    const offlineContext = new OfflineAudioContext(2, SAMPLE_RATE * 3, SAMPLE_RATE);
+    recordings.forEach(function(recording) {
+      let source = offlineContext.createBufferSource();
+      source.buffer = bufferFromToneBuffer(recording.buffer);
+      source.connect(offlineContext.destination);
+      source.start();
+    });
+    return await offlineContext.startRendering();
+  }
 
   class ProcessorWorkletNode extends AudioWorkletNode {
     constructor(context) {

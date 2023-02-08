@@ -33,7 +33,7 @@ function Playhead() {
     }, []);
     
     return [
-        <Playline ref={playlineRef}></Playline>
+        <Playline key="playline" ref={playlineRef}></Playline>
     ]
 }
 

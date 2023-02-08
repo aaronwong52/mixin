@@ -63,7 +63,7 @@ function Record({playPosition, receiveRecording}) {
                     url: blobUrl, 
                     size: data.size, 
                     player: null,
-                    channel: null
+                    channel: null,
                 };
 
                 // Tone.Transport.schedule(position); // in seconds ... this should be done in main app after receiving

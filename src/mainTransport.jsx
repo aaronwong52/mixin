@@ -38,7 +38,7 @@ const RecordingsView = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-left: 16px;
+  margin-left: 18px;
   padding-top: 5px;
 `;
 
@@ -91,24 +91,15 @@ function MainTransport({display, recordings, newPlayer,
     const edit = (recording) => {
       selectRecording(recording);
     }
-  
-    // update start time for dropped element's player
-    const updatePlayer = (data, recording, index) => {
-      let new_player = newPlayer(recording);
-      let new_pos = recording.position + (data.lastX / PIX_TO_TIME);
-
-      new_player.sync().start(new_pos);
-      new_player.connect(recording.channel); 
-      recording.player = new_player;
-               
-      updateRecordings(recording, index);
-    }
     
     const onStop = (data, recording, index) => {
+      // onDrag (hacky)
       if (dragging.current) {
         dragging.current = false;
-        updatePlayer(data, recording, index);
+        newPlayer(data, recording);
       }
+
+      // onClick
       else {
         edit(recording);
       }
