@@ -3,7 +3,7 @@ export const SAMPLE_RATE = 44100;
 export const TIMELINE_OFFSET = 2.5;
 export const TRANSPORT_LENGTH = 2000;
 export const AUDIO_FORMATS = {
-    mp3: 'audio/mpeg',
+    mp3: 'audio/mp3',
     wav: 'audio/wav'
 }
 

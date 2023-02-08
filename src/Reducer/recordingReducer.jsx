@@ -46,7 +46,7 @@ export const recordingReducer = (state, action) => {
   
   const updateBuffer = (state, recording) => {
     return updateRecording(state, recording);
-  }
+  };
   
   const updateRecordingPosition = (state, payload) => {
     let oldPosition = payload.recording.position;
@@ -74,7 +74,7 @@ export const recordingReducer = (state, action) => {
         ...state.recordings.slice(clipIndex + 1, existingLength)
       ]
     }
-  }
+  };
   
   const schedulePlayer = (recording) => {
     // cancel current scheduling
@@ -85,16 +85,16 @@ export const recordingReducer = (state, action) => {
   
     let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
     recording.player.sync().start(recording.position + offset);
-  }
+  };
   
   // return offset of playhead in relation to a recording clip
   // returns 0 if negative
-  const calculatePlayOffset = (playPosition, recordingPosition) => {
+  export const calculatePlayOffset = (playPosition, recordingPosition) => {
     if (playPosition < recordingPosition) {
       return 0;
     }
     return playPosition - recordingPosition;
-  }
+  };
   
   // solo: route player to solo channel and solo it
   
