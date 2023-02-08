@@ -7,9 +7,8 @@ import { PIX_TO_TIME, SAMPLE_RATE } from './utils';
 
 const StyledEditor = styled.div`
     width: 100vw;
-    height: 225px;
-    background-color: #fafaf7;
-    margin: 0;
+    height: 175px;
+    margin-bottom: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,7 +24,7 @@ const ControlView = styled.div`
 const ClipMute = styled.button`
     background: ${props => props.muted 
         ? "url('/images/mute.png') no-repeat;"
-        : "url('/images/unmute.png') no-repeat;"
+        : "url('/images/unmute_white.png') no-repeat;"
     };
     width: 25px;
     height: 25px;
@@ -42,13 +41,15 @@ const ClipSolo = styled(ClipMute)`
     font-weight: bold;
     color: ${props => props.solo
         ? "#42bcf5"
-        : "inherit"
+        : "#d1d5de"
     };
 `;
 
 const WaveformView = styled.div`
     height: 175px;
     border: 1px solid black;
+    border-radius: 4px;
+    box-shadow: 0 0 3px #727a87;
 `;
 
 function Editor({recording}) {
@@ -70,26 +71,20 @@ function Editor({recording}) {
                 return;
             }
             const duration = buffer.length / SAMPLE_RATE;
-            sketch.background('#fafaf7');
+            sketch.background('#454a52');
             sketch.beginShape();
-            sketch.noFill();
+            sketch.stroke('#ced4de')
             let i = 0;
             let position = 0;
             while (i < buffer.length) {
                 let sum = 0;
                 let window = 100;
                 for (let p = position; p < position + window; p++) {
-                    if (buffer[p] < 0) {
-                        sum -= buffer[p] * 500;
-                    } else {
-                        sum += buffer[p] * 500;
-                    }
+                    sum += buffer[p] * 500;
                 }
-                let x = sketch.map(
-                    i, 0, buffer.length - 1, 0, width
-                );
+                let x = sketch.map(i, 0, buffer.length - 1, 0, width);
                 let average = (sum * 2) / window;
-                sketch.vertex(x, height / 1.5 - average); // 1.5 since waveform points upwards
+                sketch.vertex(x, height / 2 - average / 3); // 1.5 since waveform points upwards
                 i += window;
                 position += window;
             }
@@ -122,9 +117,7 @@ function Editor({recording}) {
                 // bad 
             }
         };
-        return () => {
-            waveform.remove();
-        }
+        return () => waveform.remove();
     }, [recording, buffer]);
 
     return (

@@ -29,35 +29,43 @@ core functionality (use Router):
 */
 
 const View = styled.div`
-      height: 100vh;
-      display: flex;
-      flex-direction: column; 
-      justify-content: space-between;
-      align-items: center;
-      background-color: #3a649e;
-  `;
+  height: 100vh;
+  display: flex;
+  flex-direction: column; 
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #1e2126, #282f38 50%, #1e2126);
+`;
 
 const TopView = styled.div`
-  display: flex;
-  max-height: 30vh;
-  margin: 15px 0px;
-  background-color: #4f8adb;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-content: space-evenly;
+  width: 95vw;
+  padding: 25px 0px;
   border-radius: 10px;
-  overflow: hidden;
 `;
+
+const Title = styled.h2`
+  font-size: 20px;
+  color: #ced4de;
+`
 
 const MiddleView = styled.div`
   box-shadow: ${props => props.dropping
     ? "0 0 12px #ebeff5"
-    : "none"}
+    : "none"
+  };
+  height: 50vh;
 `
 
 const BottomView = styled.div`
   width: 100vw;
+  height: 85px;
   display: flex;
-  bottom: 10px;
   justify-content: center;
   align-items: center;
+  background-color: #1e2126;
 `;
 
 const IconView = styled.div`
@@ -99,15 +107,6 @@ export const MuteButton = styled(PlayButton)`
     : "url('/images/unmute.png') no-repeat;"
   }
 `;
-
-  function toggle() {
-    if (Tone.Transport.state === "started") {
-      Tone.Transport.pause();
-    }
-    else {
-      Tone.Transport.start();
-    }
-  }
 
 function App() {
   
@@ -169,7 +168,6 @@ function App() {
         ]
       }
     });
-    Tone.Transport.seconds += buffer.duration;
     player.connect(channel);
   }
 
@@ -213,9 +211,23 @@ function App() {
     }
   }
 
+  const toggle = () => {
+    if (Tone.Transport.state === "started") {
+      Tone.Transport.pause();
+      return true;
+    }
+    else if (recordings.length > 0) {
+      Tone.Transport.start();
+      return true;
+    }
+    return false;
+  }
+
   const onPlay = () => {
-    setPlaying(!playing);
-    toggle();
+    let tryPlay = toggle();
+    if (tryPlay) {
+      setPlaying(!playing);
+    }
   };
 
   const restart = () => {
@@ -253,7 +265,6 @@ function App() {
   }
 
   const renderBuffer = async () => {
-    
     // OfflineAudioContext(numChannels, length, sampleRate)
     const offlineContext = new OfflineAudioContext(2, endRecordingsPosition, SAMPLE_RATE);
     recordings.forEach(function(recording) {
@@ -313,6 +324,7 @@ function App() {
   return (
     <View id="Tone" ref={drawing.current}>
       <TopView>
+        <Title>MIXOLOGY</Title>
         <Record receiveRecording={receiveRecording}></Record>
       </TopView>
       <FileDrop onDrop={(files, event) => upload(files, event)}
