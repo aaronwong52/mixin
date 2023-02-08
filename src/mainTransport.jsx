@@ -3,12 +3,14 @@ import p5 from 'p5';
 
 import styled from 'styled-components';
 import Draggable from 'react-draggable';
+import { Transport } from 'tone';
 import Playhead from './playline';
 
 import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 
 const TransportView = styled.div`
   width: 100vw;
+  overflow: scroll;
   display: ${props => props.display ? "none" : "flex"};
   flex-direction: column;
   justify-content: flex-start;
@@ -31,15 +33,10 @@ const TransportTimeline = styled.div`
 `;
 
 const RecordingsView = styled.div`
-  position: relative;
-  overflow: auto; 
-  width: 100%;
-  height: 75px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-left: 18px;
-  padding-top: 5px;
+  position: absolute;
+  overflow: scroll; 
+  margin-left: 10px;
+  
 `;
 
 const RecordingView = styled.div`
@@ -49,6 +46,7 @@ const RecordingView = styled.div`
     border: 1px dashed grey;
     opacity: 0.5;
     :hover {cursor: grab;}
+    z-index: 10;
 `;
 
 /* 
@@ -126,7 +124,7 @@ function MainTransport({display, recordings, newPlayer,
     useEffect(() => {
       const s = (sketch) => {
         let x = TRANSPORT_LENGTH;
-        let y = 25;
+        let y = 100;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
@@ -148,7 +146,17 @@ function MainTransport({display, recordings, newPlayer,
             sketch.textAlign(sketch.CENTER);
             i += 50;
           }
+          let time = (Transport.seconds * PIX_TO_TIME);
+          sketch.fill("#dcf0f3")
+          sketch.rect(time + 10, -20, 4, 100);
         };
+
+        sketch.mouseClicked = (event) => {
+          Transport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
+          if (Transport.seconds < 0.1) {
+            Transport.seconds = 0;
+          }
+        }
       };
       let wavep5 = new p5(s, transportRef.current);
       return () => wavep5.remove();
@@ -164,11 +172,10 @@ function MainTransport({display, recordings, newPlayer,
 
     return (
         <TransportView id="transportview" display={display}>
-            <Playhead></Playhead>
+          <TransportTimeline id="timeline" ref={transportRef}>
             <RecordingsView id="recordingsview">
                 {inflateRecordings()}
             </RecordingsView>
-          <TransportTimeline id="timeline" ref={transportRef}>
           </TransportTimeline>
         </TransportView>
     )

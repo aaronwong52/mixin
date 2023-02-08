@@ -47,10 +47,10 @@ const BottomView = styled.div`
 
 const IconView = styled.div`
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
   align-items: center;
   height: 50px;
-  width: 200px;
+  width: 250px;
   border-radius: 4px;
   background-color: #e6f0ff;
 `;
@@ -65,6 +65,7 @@ const PlayButton = styled.button`
     : "url('/images/play.png') no-repeat;"
   }
   background-size: 35px;
+  -webkit-tap-highlight-color: transparent;
   :hover {cursor: pointer;}
 `;
 
@@ -74,6 +75,13 @@ const DownloadButton = styled(PlayButton)`
 
 const RestartButton = styled(PlayButton)`
   background: url('/images/restart.png') no-repeat;
+`;
+
+const MuteButton = styled(PlayButton)`
+  background: ${props => props.mute 
+    ? "url('/images/unmute.png') no-repeat;"
+    : "url('/images/mute.png') no-repeat;"
+  }
 `;
 
   function toggle() {
@@ -88,12 +96,13 @@ const RestartButton = styled(PlayButton)`
 function App() {
   
   const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
   const [showDetails, setShowDetails] = useState(true);
   const playPosition = useRef(0);
   const [recordings, setRecordings] = useState([]);
   const [selectedRecording, setSelectedRecording] = useState({});
   const [endRecordingsPosition, setEndRecordingsPosition] = useState(0);
-  const processor = useRef();
+  // const processor = useRef();
   const drawing = useRef();
 
   const checkEndPosition = (position) => {
@@ -103,7 +112,7 @@ function App() {
   }
 
   const makeChannel = (recording, pan) => {
-    const channel = new Tone.Channel({pan}).connect(processor.current);
+    const channel = new Tone.Channel({pan}).toDestination();
     let new_player = new Tone.Player({
       url: recording.url,
       loop: false
@@ -229,6 +238,12 @@ function App() {
     Tone.Transport.stop();
   }
 
+  const mute = () => {
+    let mute = Tone.getContext().destination.mute;
+    mute = !mute;
+    setMuted(!muted);
+  }
+
   const download = async () => {
     let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
    
@@ -263,11 +278,11 @@ function App() {
     return await offlineContext.startRendering();
   }
 
-  class ProcessorWorkletNode extends AudioWorkletNode {
-    constructor(context) {
-      super(context, "processor");
-    }
-  }
+  // class ProcessorWorkletNode extends AudioWorkletNode {
+  //   constructor(context) {
+  //     super(context, "processor");
+  //   }
+  // }
 
   useEffect(() => {
     // async function addToneWorklet(processor) {
@@ -279,15 +294,15 @@ function App() {
     //   processor.current = processingNode;
     // }
 
-    async function addAudioWorklet(processor) {
-      const baseAudioContext = Tone.getContext();
-      const audioContext = baseAudioContext.rawContext;
-      await audioContext.audioWorklet.addModule("processor.js");
-      const processingNode = new ProcessorWorkletNode(audioContext);
-      processingNode.connect(audioContext.destination);
-      processor.current = processingNode;
-    }
-    addAudioWorklet(processor);
+    // async function addAudioWorklet(processor) {
+    //   const baseAudioContext = Tone.getContext();
+    //   const audioContext = baseAudioContext.rawContext;
+    //   await audioContext.audioWorklet.addModule("processor.js");
+    //   const processingNode = new ProcessorWorkletNode(audioContext);
+    //   processingNode.connect(audioContext.destination);
+    //   processor.current = processingNode;
+    // }
+    // addAudioWorklet(processor);
   }, []);
 
   return (
@@ -303,6 +318,7 @@ function App() {
       <BottomView>
         <IconView>
             <PlayButton id="play_btn" onClick={onPlay} playState={playing}></PlayButton>
+            <MuteButton onClick={mute} mute={muted}></MuteButton>
             <RestartButton onClick={restart}></RestartButton>
             <DownloadButton onClick={download}></DownloadButton>
         </IconView>
