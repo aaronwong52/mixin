@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import * as Tone from 'tone';
-
 import * as styles from './ExportMixStyles';
 
 import { calculatePlayOffset } from '../Reducer/recordingReducer';
