@@ -26,19 +26,19 @@ const RecordButton = styled.button`
   background-color: transparent;
   border: none;
   background: ${props => props.recording
-    ? "url('/images/stop.png') no-repeat;"
-    : "url('/images/record_muted.png') no-repeat;"
+        ? "url('/images/stop.png') no-repeat;"
+        : "url('/images/record_muted.png') no-repeat;"
   };
   background-size: 35px;
   margin: 8px 0px;
   :hover {
-    cursor: pointer;
-    box-shadow: 0 0 10px red;
-    border-radius: 50%;
-}
+        cursor: pointer;
+        box-shadow: 0 0 10px red;
+        border-radius: 50%;
+    }
 `;
 
-function Record({receiveRecording}) {
+function Record({receiveRecording, exporting}) {
 
     const recordingState = useRef(false);
     const [recording, setRecording] = useState(false);
@@ -51,47 +51,51 @@ function Record({receiveRecording}) {
         mic.connect(analyser);
         mic.connect(recorder);
         mic.open();
-    }
+    };
 
     const closeMic = () => {
         mic.disconnect(recorder);
         mic.disconnect(analyser);
         mic.close();
-    }
+    };
+
+    const toggleRecording = async () => {
+        Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
+        if (recordingState.current) {
+            closeMic();
+            let data = await recorder.stop();
+            let blobUrl = URL.createObjectURL(data);
+            let newRecording = {
+                position: Tone.Transport.seconds,
+                duration: 0, 
+                data: blobUrl, 
+                player: null,
+                index: 0,
+                solo: false,
+                loaded: false
+            };
+            receiveRecording(newRecording);
+            recordingState.current = false;
+            setRecording(false);
+        }
+        else if (!exporting) { // functionality is locked while export menu is open 
+            openMic();
+            recorder.start();
+            recordingState.current = true;
+            setRecording(true);
+        }
+    };
 
     useEffect(() => {
         // for some reason (Tone?) this only works by binding a click listener, DOMException when using onClick prop
         let recBtn = document.getElementById("rec_btn");
 
         // recBtn.disabled = !Tone.UserMedia.supported;
-        recBtn.addEventListener("click", async () => {
-            Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
-            if (recordingState.current) {
-                closeMic();
-                let data = await recorder.stop();
-                let blobUrl = URL.createObjectURL(data);
-                let newRecording = {
-                    position: Tone.Transport.seconds,
-                    duration: 0, 
-                    data: blobUrl, 
-                    player: null,
-                    // id: null, // used by Tone to register events (player sync)
-                    index: 0,
-                    solo: false,
-                    loaded: false
-                };
-                receiveRecording(newRecording);
-                recordingState.current = false;
-                setRecording(false);
-            }
-            else {
-                openMic();
-                recorder.start();
-                recordingState.current = true;
-                setRecording(true);
-            }
-        })
-    }, []);
+        recBtn.addEventListener("click", toggleRecording)
+        return () => {
+            recBtn.removeEventListener("click", toggleRecording);
+        }
+    }, [exporting]);
 
     return (
         <RecordView>

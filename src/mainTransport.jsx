@@ -11,7 +11,7 @@ import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 const TransportView = styled.div`
   width: 100vw;
   overflow: scroll;
-  display: ${props => props.display ? "none" : "flex"};
+  display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
@@ -85,8 +85,8 @@ Transport.seconds to pixels to css
 
 */
 
-function MainTransport({display, recordings, updatePlayer, 
-  selectRecording}) {
+function MainTransport({recordings, updatePlayer, 
+  selectRecording, exporting}) {
 
     const draggingRef = useRef(false);
     const dragStart = useRef(-1);
@@ -98,7 +98,6 @@ function MainTransport({display, recordings, updatePlayer,
       // onDrag
       if (draggingRef.current) {
         draggingRef.current = false;
-        stopSketchClick.current = true;
         // final mouse position shift !!! for Desktop only, mobile uses touch events?
         let delta = e.clientX - dragStart.current;
         updatePlayer(delta, recording, index);
@@ -111,7 +110,7 @@ function MainTransport({display, recordings, updatePlayer,
       }
     }
 
-    const onDrag = (e, data, recording, index) => {
+    const onDrag = (e) => {
       if (dragStart.current < 0) {
         // initial mouse position
         dragStart.current = e.clientX; // desktop
@@ -124,8 +123,8 @@ function MainTransport({display, recordings, updatePlayer,
     const inflateRecordings = () => {
       return recordings.map((r, index) => (
         <Draggable key={"rec_clip_" + index}
-            onDrag={(e, data) => onDrag(e, data, r, index)}
-            onStop={(e, data) => onStop(e, data, r, index)}
+            onDrag={(e) => onDrag(e)}
+            onStop={(e) => onStop(e, r, index)}
             bounds={'#recordingsview'}>
           <RecordingView className="recording_clip">
           </RecordingView>
@@ -165,16 +164,17 @@ function MainTransport({display, recordings, updatePlayer,
         };
 
         sketch.mouseClicked = () => {
+
+          // if mouse out of bounds
           if (sketch.mouseY < 0 || sketch.mouseY > y) {
             return;
           }
-          if (draggingRef.current) {
+
+          // if dragging a clip, or if export menu is open
+          if (draggingRef.current || exporting) {
             return;
           }
-          if (stopSketchClick.current) {
-            stopSketchClick.current = false;
-            return;
-          }
+
           Transport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
           if (Transport.seconds < 0.1) {
             Transport.seconds = 0;
@@ -196,7 +196,7 @@ function MainTransport({display, recordings, updatePlayer,
     }, [recordings]);
 
     return (
-        <TransportView id="transportview" display={display}>
+        <TransportView id="transportview">
           <TransportTimeline id="timeline" ref={transportRef}>
             <RecordingsView id="recordingsview">
                 {inflateRecordings()}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`
@@ -21,7 +22,7 @@ const fadeOut = keyframes`
 `;
 
 const ExportMenuView = styled.div`
-    visibility: ${props => props.display ? 'visible' : 'hidden'};
+    visibility: ${props => props.displayState ? 'visible' : 'hidden'};
     position: absolute;
     top: 200px;
     left: 50px;
@@ -29,7 +30,7 @@ const ExportMenuView = styled.div`
     width: 275px;
     border-radius: 10px;
     background: linear-gradient(to bottom, #282f38, #262d36);
-    animation: 0.2s ${props => props.display ? fadeIn : fadeOut} linear;
+    animation: 0.2s ${props => props.displayState ? fadeIn : fadeOut} linear;
     transition: visibility 0.2s linear;
     border: none;
     box-shadow: 0 0 2px #1e2126;
@@ -48,57 +49,77 @@ const ExportMenuOptions = styled.section`
 
 const ExportMenuOption = styled.div`
     display: flex;
-    justify-content: space-between;
     align-items: center;
     width: 90%;
 `;
 
 const FileTypeButton = styled.button`
-    font-family: Avenir, Arial, sans-serif;
     width: 60px;
     height: 30px;
-    background-color: #ced4de;
+    margin-left: 25px;
+    background-color: ${props => props.fileFormat ? '#33527d' : '#ced4de'};
+    color: ${props => props.fileFormat ? '#ebedef' : 'black'};
     border-radius: 6px;
     border: none;
-    font-weight: bold;
+    font-family: Avenir, Arial, sans-serif;
     :hover {cursor: pointer;}
 `;
 
 const ExportRangeInput = styled.input`
     height: 30px;
+    width: 100px;
+    margin-left: 25px;
     background-color: #ced4de;
-    border-radius: 2px;
+    border-radius: 4px;
     border: none;
+    font-family: Avenir, Arial, sans-serif;
     text-indent: 5px;
 `;
 
 const ExportButton = styled(FileTypeButton)`
     height: 30px;
     width: 100px;
-    font-size: 18px;
-    font-weight: normal;
+    font-size: 16px;
     align-self: center;
+    background-color: #d7dae0;
 `;
 
 function ExportMenu({displayState}) {
 
+    const [fileFormat, setFileFormat] = useState('');
+
+    const onFormatClick = (format) => {
+        setFileFormat(format);
+    }
+    
+    const onBounceClick = () => {
+        
+        // ranges: [start, end]
+        let ranges = document.getElementsByClassName("export_range_input");
+    }
+
     return (
-        <ExportMenuView display={displayState}>
+        <ExportMenuView displayState={displayState}>
             <ExportMenuOptions>
                 <ExportMenuOption>
-                    <h3>Format</h3>
-                    <FileTypeButton>WAV</FileTypeButton>
-                    <FileTypeButton>MP3</FileTypeButton>
+                    <h3>Format:</h3>
+                    <FileTypeButton 
+                        fileFormat={fileFormat == 'wav'}
+                        onClick={() => onFormatClick("wav")}>WAV
+                    </FileTypeButton>
+                    <FileTypeButton 
+                        fileFormat={fileFormat == 'mp3'}
+                        onClick={() => onFormatClick("mp3")}>MP3</FileTypeButton>
                 </ExportMenuOption>
                 <ExportMenuOption>
                     <h3>Start:</h3>
-                    <ExportRangeInput></ExportRangeInput>
+                    <ExportRangeInput className="export_range_input"></ExportRangeInput>
                 </ExportMenuOption>
                 <ExportMenuOption>
                     <h3>End:</h3>
-                    <ExportRangeInput></ExportRangeInput>
+                    <ExportRangeInput className="export_range_input"></ExportRangeInput>
                 </ExportMenuOption>
-                <ExportButton>BOUNCE</ExportButton>
+                <ExportButton onClick={onBounceClick}>Bounce</ExportButton>
             </ExportMenuOptions>
         </ExportMenuView>
     )
