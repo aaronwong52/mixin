@@ -49,20 +49,21 @@ const PlayButton = styled.button`
 `;
 
 const RecordingsView = styled.div`
-  width: 90vw;
-  height: 110px;
+  position: relative;
+  overflow: auto; 
+  width: 100%;
+  height: 75px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 10px;
+  margin-left: 16px;
 `;
 
 const RecordingView = styled.div`
     width: 100px;
     height: 75px;
     background-color: #d6b8f5;
-    border-radius: 2px;
-    margin-right: 15px;
+    border: 1px dashed grey;
 `;
 
 /* 
@@ -88,26 +89,25 @@ block swipe to go back
 
 */
 
-function MainTransport({display, recordings, newPlayer, updateRecordings, toggle}) {
+function MainTransport({display, recordings, newPlayer, 
+  updateRecordings, selectRecording, toggle}) {
 
     const dragging = useRef(false);
     const transportRef = useRef();
-    const length = TRANSPORT_LENGTH;
 
     const edit = (recording) => {
-      console.log(recording);
+      selectRecording(recording);
     }
   
     // update start time for dropped element's player
     const updatePlayer = (data, recording, index) => {
       let new_player = newPlayer(recording);
-      let new_pos = data.lastX / PIX_TO_TIME;
+      let new_pos = recording.position + (data.lastX / PIX_TO_TIME);
 
       new_player.sync().start(new_pos);
       new_player.connect(recording.channel); 
-
+      console.log(new_pos)
       recording.player = new_player;
-      recording.position = new_pos;
       
       updateRecordings(recording, index);
     }
@@ -119,7 +119,7 @@ function MainTransport({display, recordings, newPlayer, updateRecordings, toggle
       }
       else {
         edit(recording);
-      } 
+      }
     }
 
     const onDrag = (e, data, recording, index) => {
@@ -133,9 +133,8 @@ function MainTransport({display, recordings, newPlayer, updateRecordings, toggle
         <Draggable key={"rec_clip_" + index}
             onDrag={(e, data) => onDrag(e, data, r, index)}
             onStop={(e, data) => onStop(data, r, index)}
-            bounds={{left: 0, right: TRANSPORT_LENGTH, top: 0, bottom: 0}}>
-          <RecordingView className="recording_clip"
-            onClick={edit}>
+            bounds={'#recordingsview'}>
+          <RecordingView className="recording_clip">
           </RecordingView>
         </Draggable>
       ));
@@ -143,7 +142,7 @@ function MainTransport({display, recordings, newPlayer, updateRecordings, toggle
 
     useEffect(() => {
       const s = (sketch) => {
-        let x = length;
+        let x = TRANSPORT_LENGTH;
         let y = 75;
 
         sketch.setup = () => {
@@ -156,34 +155,35 @@ function MainTransport({display, recordings, newPlayer, updateRecordings, toggle
           sketch.fill(51)
           sketch.textSize(12);
 
-          sketch.line(0, y-20, x, y-20); // baseline
+          sketch.line(0, y - 20, x, y - 20); // baseline
           sketch.stroke('blue');
-          sketch.line(time, -30, time, y-15);
+          sketch.line(time, -30, time, y - 15);
           sketch.stroke('grey');
 
           let i = 0;
           while (i < x) {
-            sketch.line(i + 10, y-25, i + 10, y-15);
-            sketch.text(i / PIX_TO_TIME, i+10, y);
+            sketch.line(i + 10, y - 25, i + 10, y - 15);
+            sketch.text(i / PIX_TO_TIME, i + 10, y);
             sketch.textAlign(sketch.CENTER);
-            i = i + 50;
+            i += 50;
           }
         };
       };
       let wavep5 = new p5(s, transportRef.current);
+      return () => wavep5.remove();
     }, []);
 
     useEffect(() => {
       let clips = document.getElementsByClassName("recording_clip");
-      for (let c=0; c < clips.length; c++) {
-        clips[c].style.width = (recordings[c].size / 150) + "px";
+      for (let c = 0; c < clips.length; c++) {
+        clips[c].style.width = (recordings[c].duration * PIX_TO_TIME) + "px";
       }
       
     }, [recordings]);
 
     return (
         <TransportView id="transportview" display={display}>
-           <RecordingsView>
+           <RecordingsView id="recordingsview">
               {inflateRecordings()}
             </RecordingsView>
           <TransportTimeline id="timeline" ref={transportRef}>

@@ -101,11 +101,13 @@ function Record({playPosition, receiveRecording}) {
         recBtn.addEventListener("click", async () => {
             Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
             if (recordingState.current) {
+                console.log(playPosition.current);
                 closeMic();
                 let data = await recorder.stop();
                 let blobUrl = URL.createObjectURL(data);
                 let newRecording = {
-                    position: playPosition.current, 
+                    position: playPosition.current,
+                    duration: data.size, 
                     url: blobUrl, 
                     size: data.size, 
                     player: null,
@@ -115,7 +117,6 @@ function Record({playPosition, receiveRecording}) {
                 // Tone.Transport.schedule(position); // in seconds ... this should be done in main app after receiving
                 // along with display of new recording view
 
-                // newRecording = processRecording(newRecording);
                 setRecording(newRecording);
                 setupPlayer(blobUrl);
                 // receiveRecording(newRecording); save for after approval

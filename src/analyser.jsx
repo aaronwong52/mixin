@@ -8,8 +8,8 @@ const StyledWaveform = styled.div`
 
 export default function Waveform(analyser) {
     useEffect(() => {
-      let analyzer = analyser.analyser;
-      if (!analyzer) return;
+      analyser = analyser.analyser;
+      if (!analyser) return;
       const s = (sketch) => {
         let x = 500;
         let y = 150;
@@ -21,11 +21,9 @@ export default function Waveform(analyser) {
         sketch.draw = () => {
           sketch.background('#dcf0f3');
           sketch.noFill();
-          const values = analyzer.getValue();
+          const values = analyser.getValue();
           sketch.beginShape();
-          // sketch.textSize(16); // add db values to waveform
-          // sketch.fill(0, 102, 153);
-          // sketch.text('test', 0, 150);
+          
           for (let i=0; i<values.length; i++) {
             const amplitude = values[i];
             const x = sketch.map(i, 0, values.length - 1, 0, sketch.width);
