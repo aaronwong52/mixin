@@ -10,7 +10,6 @@ import {TRANSPORT_LENGTH, PIX_TO_TIME } from './utils';
 const Playline = styled.div`
   position: absolute;
   left: 0;
-  :hover {cursor: grab};
 `
 
 function Playhead() {
@@ -25,7 +24,7 @@ function Playhead() {
             sketch.draw = () => {
                 let time = (Transport.seconds * PIX_TO_TIME);
                 sketch.background("white");
-                sketch.fill("#5ba3e3")
+                sketch.fill("#dcf0f3")
                 sketch.rect(time + 10, 0, 5, y);
             }
         }

@@ -3,7 +3,7 @@ import * as Tone from 'tone';
 import p5 from 'p5';
 
 import { useState, useEffect, useRef } from 'react';
-import { TRANSPORT_LENGTH } from './utils';
+import { PIX_TO_TIME, SAMPLE_RATE, TRANSPORT_LENGTH } from './utils';
 
 const StyledEditor = styled.div`
     width: 100vw;
@@ -17,7 +17,6 @@ const StyledWaveformView = styled.div`
 
 function Editor({recording}) {
     const [buffer, setBuffer] = useState([]);
-    const [duration, setDuration] = useState(0);
     const editorRef = useRef();
 
     const s = (sketch) => {
@@ -28,6 +27,8 @@ function Editor({recording}) {
             if (buffer.length === 0) {
                 return;
             }
+            const duration = buffer.length / SAMPLE_RATE;
+            const start = findMiddle(duration * PIX_TO_TIME, 0, sketch.windowWidth);
             sketch.background('#fafaf7');
             sketch.beginShape();
             sketch.noFill();
@@ -44,7 +45,7 @@ function Editor({recording}) {
                     }
                 }
                 let average = (sum * 2) / window;
-                let x = sketch.map(i, 0, buffer.length - 1, 50, sketch.width - 50);
+                let x = sketch.map(i, 0, buffer.length - 1, start, start + (duration * PIX_TO_TIME));
                 sketch.vertex(x, sketch.height - average);
                 i += window;
                 position += window;
@@ -53,14 +54,20 @@ function Editor({recording}) {
         }
     }
     
-    // useEffect(() => {
-    //     new p5(s, editorRef.current);
-    // }, []);
+    // given length of an object, and a range, return its middle-est position in this range
+    const findMiddle = (length, start, end) => {
+        if (start >= end) {
+            return -1;
+        }
+        if (length > end - start) {
+            return -1;
+        }
+        return Math.floor((end - start - length) / 2);
+    }
 
     useEffect(() => {
         let waveform = new p5(s, editorRef.current);
         if (Object.keys(recording).length) {
-            setDuration(recording.player.buffer.duration);
             setBuffer(recording.player.buffer._buffer.getChannelData(0));
         };
         return () => {
