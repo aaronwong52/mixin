@@ -1,4 +1,5 @@
 import toWav from 'audiobuffer-to-wav';
+import * as Tone from 'tone';
 
 export const bufferToWav = (buffer) => {
     return toWav(buffer);

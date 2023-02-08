@@ -34,6 +34,7 @@ export const ExportMenuView = styled.div`
     border: none;
     box-shadow: 0 0 2px #1e2126;
     padding: 10px 25px;
+    z-index: 99999
 `;
 
 export const ExportMenuOptions = styled.section`
