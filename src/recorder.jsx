@@ -7,7 +7,7 @@ import * as Tone from 'tone';
 
 const RecordView = styled.div`
     background-color: #dcf0f3;
-    border-radius: 9px;
+    border-radius: 3px;
     height: 250px;
     width: 500px;
     display: flex;

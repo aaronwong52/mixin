@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import p5 from 'p5';
 
 import styled from 'styled-components';
@@ -27,7 +27,9 @@ const TransportTimeline = styled.div`
   display: flex;
   flex-direction: column;
   max-width: 90vw;
-  margin-bottom: 50px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  border: 1px dotted grey;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -59,7 +61,7 @@ const RecordingView = styled.div`
     width: 100px;
     height: 75px;
     background-color: #d6b8f5;
-    border-radius: 10px;
+    border-radius: 2px;
     margin-right: 15px;
 `;
 
@@ -86,29 +88,55 @@ block swipe to go back
 
 */
 
-function MainTransport({display, recordings, updatePlayer, updateRecordings, play}) {
+function MainTransport({display, recordings, newPlayer, updateRecordings, toggle}) {
 
-    let playBtn = document.getElementById("play_btn");
-    const transport = useRef();
+    const dragging = useRef(false);
+    const transportRef = useRef();
     const length = TRANSPORT_LENGTH;
+
+    const edit = (recording) => {
+      console.log(recording);
+    }
   
     // update start time for dropped element's player
-    const onStop = (data, recording, index) => {
-      let new_player = updatePlayer(recording);
+    const updatePlayer = (data, recording, index) => {
+      let new_player = newPlayer(recording);
       let new_pos = data.lastX / PIX_TO_TIME;
+
       new_player.sync().start(new_pos);
       new_player.connect(recording.channel); 
+
       recording.player = new_player;
       recording.position = new_pos;
+      
       updateRecordings(recording, index);
+    }
+    
+    const onStop = (data, recording, index) => {
+      if (dragging.current) {
+        dragging.current = false;
+        updatePlayer(data, recording, index);
+      }
+      else {
+        edit(recording);
+      } 
+    }
+
+    const onDrag = (e, data, recording, index) => {
+      if (e.type === 'mousemove' || e.type === 'touchmove') {
+        dragging.current = true;
+      }
     }
 
     const inflateRecordings = () => {
       return recordings.map((r, index) => (
-        <Draggable key={"rec_clip_" + index} 
+        <Draggable key={"rec_clip_" + index}
+            onDrag={(e, data) => onDrag(e, data, r, index)}
             onStop={(e, data) => onStop(data, r, index)}
             bounds={{left: 0, right: TRANSPORT_LENGTH, top: 0, bottom: 0}}>
-          <RecordingView className="recording_clip"></RecordingView>
+          <RecordingView className="recording_clip"
+            onClick={edit}>
+          </RecordingView>
         </Draggable>
       ));
     }	
@@ -116,17 +144,23 @@ function MainTransport({display, recordings, updatePlayer, updateRecordings, pla
     useEffect(() => {
       const s = (sketch) => {
         let x = length;
-        let y = 30;
+        let y = 75;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
+          let time = (Transport.seconds * PIX_TO_TIME) + 10;
           sketch.background("white");
           sketch.fill(51)
           sketch.textSize(12);
+
           sketch.line(0, y-20, x, y-20); // baseline
+          sketch.stroke('blue');
+          sketch.line(time, -30, time, y-15);
+          sketch.stroke('grey');
+
           let i = 0;
           while (i < x) {
             sketch.line(i + 10, y-25, i + 10, y-15);
@@ -136,7 +170,7 @@ function MainTransport({display, recordings, updatePlayer, updateRecordings, pla
           }
         };
       };
-      let wavep5 = new p5(s, transport.current);
+      let wavep5 = new p5(s, transportRef.current);
     }, []);
 
     useEffect(() => {
@@ -149,12 +183,12 @@ function MainTransport({display, recordings, updatePlayer, updateRecordings, pla
 
     return (
         <TransportView id="transportview" display={display}>
-          <TransportTimeline id="timeline" ref={transport}>
-            <RecordingsView>
+           <RecordingsView>
               {inflateRecordings()}
             </RecordingsView>
+          <TransportTimeline id="timeline" ref={transportRef}>
           </TransportTimeline>
-            <PlayButton type="button" id="play_btn" onClick={play}></PlayButton>
+            <PlayButton type="button" id="play_btn" onClick={toggle}></PlayButton>
         </TransportView>
     )
 }

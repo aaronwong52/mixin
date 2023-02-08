@@ -4,8 +4,8 @@ import styled from 'styled-components';
 
 import * as Tone from 'tone';
 import MainTransport from './mainTransport';
-import Tree from './treeview';
 import Record from './recorder';
+import Editor from './editor';
 
 /* 
 
@@ -31,7 +31,6 @@ const TopView = styled.div`
   width: 100vw;
   display: flex;
   justify-content: flex-start;
-  margin-bottom: 100px;
 `;
 
 const Button = styled.button`
@@ -56,8 +55,8 @@ const RecordButton = styled(Button)`
   background-size: 35px;
   `;
 
-  function play() {
-    Tone.Transport.start();
+  function toggle() {
+    Tone.Transport.toggle();
   }
 
 function App() {
@@ -111,7 +110,6 @@ function App() {
         ...existing.slice(index, existing.length)
       ]
     });
-    console.log(recordings);
   }
 
   // const saveRecording = (recording) => {
@@ -148,7 +146,7 @@ function App() {
     // So that all transport is handled by transport - all data is passed to where it should be
   }
 
-  const updatePlayer = (recording) => {
+  const newPlayer = (recording) => {
     recording.player.dispose();
     let new_player = new Tone.Player({
       url: recording.url,
@@ -166,8 +164,9 @@ function App() {
       <TopView>
         <Record playPosition={playPosition} receiveRecording={receiveRecording}></Record>
       </TopView>
-      <MainTransport recordings={recordings} updatePlayer={updatePlayer}
-        updateRecordings={updateRecordings} play={play}>
+      <Editor></Editor>
+      <MainTransport recordings={recordings} newPlayer={newPlayer}
+        updateRecordings={updateRecordings} toggle={toggle}>
       </MainTransport>
     </View> 
   )
