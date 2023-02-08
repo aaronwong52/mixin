@@ -34,7 +34,6 @@ const RecordButton = styled.button`
 function Record({playPosition, receiveRecording}) {
 
     const recordingState = useRef(false);
-    const [recording, setRecording] = useState(null);
 
     const recorder = new Tone.Recorder();
     const mic = new Tone.UserMedia();
@@ -65,12 +64,10 @@ function Record({playPosition, receiveRecording}) {
                 let newRecording = {
                     position: Tone.Transport.seconds,
                     duration: data.size, 
-                    url: blobUrl, 
-                    size: data.size, 
+                    data: blobUrl, 
                     player: null,
                     channel: null,
                 };
-                setRecording(newRecording);
                 receiveRecording(newRecording);
                 recordingState.current = false;
             }
