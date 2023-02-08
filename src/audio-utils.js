@@ -8,7 +8,6 @@ export const bufferToWav = (buffer) => {
 }
 
 export const bufferFromToneBuffer = (toneBuffer) => {
-    // console.log(toneBuffer._buffer.getChannelData(0));
     return toneBuffer._buffer;
 }
 
@@ -28,7 +27,6 @@ export const fromArray = (array, sampleRate) => {
         numberOfChannels: 2, 
         sampleRate: SAMPLE_RATE
     });
-    console.log(audioBuffer);
     // array.forEach(function(channelArray) {
     //     if (!(channelArray instanceof Float32Array)) {
     //         channelArray = new Float32Array(channelArray);

@@ -13,6 +13,11 @@ const RecordView = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    @media only screen and (max-width: 768px) {
+        height: 200px;
+        width: 300px;
+    }
 `;
 
 const RecordButton = styled.button`
@@ -58,17 +63,13 @@ function Record({playPosition, receiveRecording}) {
                 let data = await recorder.stop();
                 let blobUrl = URL.createObjectURL(data);
                 let newRecording = {
-                    position: playPosition.current,
+                    position: Tone.Transport.seconds,
                     duration: data.size, 
                     url: blobUrl, 
                     size: data.size, 
                     player: null,
                     channel: null,
                 };
-
-                // Tone.Transport.schedule(position); // in seconds ... this should be done in main app after receiving
-                // along with display of new recording view
-
                 setRecording(newRecording);
                 receiveRecording(newRecording);
                 recordingState.current = false;
