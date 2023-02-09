@@ -6,9 +6,9 @@ import * as styles from './TransportStyles';
 import Draggable from 'react-draggable';
 
 import { Transport as ToneTransport } from 'tone';
-import Recording from './recording';
+import ChannelHeader from './channelHeader';
 
-import {TRANSPORT_LENGTH, PIX_TO_TIME } from '../utils/constants';
+import {PIX_TO_TIME } from '../utils/constants';
 
 /* 
 
@@ -40,7 +40,7 @@ Transport.seconds to pixels to css
 
 */
 
-function Transport({recordings, updatePlayerPosition, 
+function Transport({recordings, updateTransportPosition, updatePlayerPosition, 
   selectRecording, exporting}) {
 
     const draggingRef = useRef(false);
@@ -67,7 +67,6 @@ function Transport({recordings, updatePlayerPosition,
     }
 
     const onDrag = (e) => {
-      console.log("Dragging")
       if (dragStart.current < 0) {
         // initial mouse position
         dragStart.current = e.clientX; // desktop
@@ -75,7 +74,7 @@ function Transport({recordings, updatePlayerPosition,
       if (e.type === 'mousemove' || e.type === 'touchmove') {
         draggingRef.current = true;
       }
-    }
+    };
 
     const inflateRecordings = () => {
       return recordings.map((r, index) => (
@@ -91,15 +90,15 @@ function Transport({recordings, updatePlayerPosition,
 
     useEffect(() => {
       const s = (sketch) => {
-        let x = TRANSPORT_LENGTH;
-        let y = 140;
+        let x = sketch.windowWidth;
+        let y = 50;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
         };
 
         sketch.draw = () => {
-          sketch.background("#bed2ed");
+          sketch.background("#ced4de");
           sketch.fill(51)
           sketch.textSize(12);
 
@@ -118,6 +117,7 @@ function Transport({recordings, updatePlayerPosition,
           let time = ToneTransport.seconds * PIX_TO_TIME;
           sketch.fill("#bac7db");
           sketch.rect(time + 10, 0, 4, 110, 500); // playline
+          sketch.rect(0, 0, 1, 110, 500);
         };
 
         sketch.mouseClicked = () => {
@@ -141,6 +141,7 @@ function Transport({recordings, updatePlayerPosition,
           if (ToneTransport.seconds < 0.1) {
             ToneTransport.seconds = 0;
           }
+          updateTransportPosition();
         }
       };
       let transportp5 = new p5(s, transportRef.current);
@@ -159,10 +160,13 @@ function Transport({recordings, updatePlayerPosition,
 
     return (
         <styles.TransportView id="transportview">
-          <styles.TransportTimeline id="timeline" ref={transportRef}>
+          <styles.ChannelView>
+            <ChannelHeader channelName="Header"></ChannelHeader>
             <styles.RecordingsView id="recordingsview">
                 {inflateRecordings()}
             </styles.RecordingsView>
+          </styles.ChannelView>
+          <styles.TransportTimeline id="timeline" ref={transportRef}>
           </styles.TransportTimeline>
         </styles.TransportView>
     )

@@ -9,6 +9,8 @@ export const recordingReducer = (state, action) => {
         return updateBuffer(state, action.payload);
       case 'updateRecordingPosition':
         return updateRecordingPosition(state, action.payload);
+      case 'updateTransportPosition':
+        return updateTransportPosition(state, action.payload);
       case 'soloClip':
         return soloClip(state, action.payload);
       case 'unsoloClip':
@@ -17,7 +19,7 @@ export const recordingReducer = (state, action) => {
   };
   
   const scheduleRecording = (state, recording) => {  
-    schedulePlayer(recording, Tone.Transport.seconds);
+    recording.id = schedulePlayer(recording, Tone.Transport.seconds);
     recording.player.connect(state.channel);
     return addRecording(state, recording);
   };
@@ -54,8 +56,15 @@ export const recordingReducer = (state, action) => {
     ? 0     // no hiding clips
     : oldPosition + (payload.delta / PIX_TO_TIME)
   
-    schedulePlayer(payload.recording);
+    payload.recording.id = schedulePlayer(payload.recording);
     return updateRecording(state, payload.recording);
+  };
+
+  const updateTransportPosition = (state, payload) => {
+    state.recordings.forEach((recording) => {
+      schedulePlayer(recording); // go through and update Transport scheduling based on new transport position
+    });
+    return state;
   };
   
   const updateRecording = (state, recording) => {
@@ -76,15 +85,20 @@ export const recordingReducer = (state, action) => {
     }
   };
   
+  // returns id of scheduled Transport event
   const schedulePlayer = (recording) => {
     // cancel current scheduling
-    // Tone.Transport.clear(recording.id);
+    Tone.Transport.clear(recording.id);
   
     // replace with player.sync.start(offset)
     // because scheduling things on the transport is not built to support playback in the middle of a sample via player
-  
     let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
-    recording.player.sync().start(recording.position + offset);
+    return Tone.Transport.schedule((time) => {
+      // callback runs at time, so offset can be calculated using time
+      let _offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
+      console.log(_offset);
+      recording.player.start(0, _offset); // make sure this time parameter is relative to Transport time and not time from now
+    }, recording.position + offset);
   };
   
   // return offset of playhead in relation to a recording clip

@@ -7,6 +7,7 @@ import { FileDrop } from 'react-file-drop';
 import { createPlayer } from '../utils/audio-utils';
 
 import { recordingReducer } from '../Reducer/recordingReducer';
+import { calculatePlayOffset } from '../Reducer/recordingReducer';
 import Transport from '../Transport/transport';
 import Recorder from '../Recorder/recorder';
 import Editor from '../Editor/editor';
@@ -93,19 +94,28 @@ function App() {
         delta: delta
       }}
     );
-  }
+  };
+
+  const updateTransportPosition = () => {
+    dispatch({type: 'updateTransportPosition',
+      payload: {
+        time: Tone.Transport.seconds
+      }}
+    );
+  };  
 
   const toggle = () => {
     if (Tone.Transport.state === "started") {
       Tone.Transport.pause();
       return true;
     }
+
     else if (state.recordings.length > 0) {
       Tone.Transport.start();
       return true;
     }
     return false;
-  }
+  };
 
   const onPlay = () => {
     if (exporting) {
@@ -216,7 +226,8 @@ function App() {
             exporting={exporting}>
           </Editor>
           <Transport 
-            recordings={state.recordings} 
+            recordings={state.recordings}
+            updateTransportPosition={updateTransportPosition}
             updatePlayerPosition={updatePlayerPosition}
             selectRecording={setSelectedRecording} 
             exporting={exporting}>
