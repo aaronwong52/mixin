@@ -1,15 +1,16 @@
 import styled from 'styled-components';
 
 export const ChannelHeader = styled.div`
-    position: fixed;
+    position: sticky;
+    left: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #142c4f;
-    border-radius: 4px;
-    width: 6vw;
-    height: 95px;
-    z-index: 99;
+    border-radius: 8px 0px 0px 0px;
+    min-width: 100px;
+    height: 100px;
+    z-index: 3;
 `
 
 export const ChannelName = styled.h3`

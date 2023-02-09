@@ -14,6 +14,10 @@ export const createPlayer = (recording) => {
 
 export const bufferFromToneBuffer = (toneBuffer) => {
     return toneBuffer._buffer;
+};
+
+export const modulo = (n, d) => {
+    return ((n % d) + d) % d;
 }
 
 // export const concat = (one, space, two) => {

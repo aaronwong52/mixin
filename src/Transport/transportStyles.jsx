@@ -7,7 +7,7 @@ export const TransportView = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   box-sizing: border-box;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-left: 5vw;
   background-color: #282f38;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
@@ -19,8 +19,14 @@ export const TransportView = styled.div`
 
 export const Channel = styled.div`
   display: flex;
+  position: relative;
   width: 2075px;
-  min-height: 85px;
+  min-height: 100px;
+
+  background-size: 25px 25px;
+  background-image:
+  linear-gradient(to right, rgba(206, 212, 222, 0.1) 1px, transparent 1px),
+  linear-gradient(to bottom, rgba(206, 212, 222, 0.1) 1px, transparent 1px);
 `;
 
 export const ChannelView = styled.div`
@@ -28,58 +34,51 @@ export const ChannelView = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  box-sizing: border-box;
-  min-height: 85px;
-
 `;
 
 export const RecordingsView = styled.div`
   position: relative;
   display: flex;
   justify-content: flex-start;
+  align-items: center;
   box-sizing: border-box;
   background-origin: padding-box;
   background-clip: padding-box;
   width: 2050px;
-  min-height: 85px;
-  margin-left: 6vw;
-  padding: 0px 10px;
-  background-color: #282f38;
-  background-size: 25px 25px;
-  background-image:
-  linear-gradient(to right, rgba(169, 169, 169, 0.15) 1px, transparent 1px),
-  linear-gradient(to bottom, rgba(169, 169, 169, 0.15) 1px, transparent 1px);
+  height: 80px;
+  background-color: rgba(40, 47, 56, 0.5);  
 `;
 
 export const RecordingView = styled.div`
     width: 100px;
-    height: 85px;
-    background-color: #0f284d;
+    height: 80px;
+    background-color: rgba(15, 40, 77, 0.6);
     border: none;
     border-radius: 4px;
     :hover {cursor: pointer;}
-
 `;
 
 export const TransportTimeline = styled.div`
   display: flex;
+  width: 2075px;
+  position: relative;
 `
 
 export const TimelinePadding = styled.div`
-  position: fixed;
+  position: sticky;
+  left: 0;
   height: 50px;
-  width: 6vw;
+  min-width: 100px;
   background-color: #282f38;
-  z-index: 9999;
-  border-radius: 4px;
-
+  border-radius: 0px 0px 0px 8px;
+  z-index: 10;
 `;
 
 export const Timeline = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: 6vw;
   box-sizing: border-box;
   background-color: #282f38;
+  z-index: 0;
 `;
 

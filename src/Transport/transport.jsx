@@ -8,6 +8,7 @@ import Draggable from 'react-draggable';
 import { Transport as ToneTransport } from 'tone';
 import ChannelHeader from './channelHeader';
 
+import { modulo } from '../utils/audio-utils';
 import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
 
 /* 
@@ -81,7 +82,8 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
         <Draggable key={"drag_rec_clip_" + index}
             onDrag={(e) => onDrag(e)}
             onStop={(e) => onStop(e, r, index)}
-            bounds={'#recordingsview'}>
+            bounds={'#recordingsview'}
+            grid={[25, 25]}>
           <styles.RecordingView className="recording_clip">
           </styles.RecordingView>
         </Draggable>
@@ -103,20 +105,26 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
           sketch.textSize(12);
 
           
-          sketch.line(0, y - 30, x, y - 30); // baseline
+          sketch.line(0, y - 50, x, y - 50); // baseline
 
           let i = 0;
           while (i < x) {
-            sketch.line(i + 10, y - 35, i + 10, y - 25);
             sketch.fill('white');
-            sketch.text(i / PIX_TO_TIME, i + 10, y - 10);
-            sketch.stroke('grey');
+            if (modulo(i, 50) == 0) {
+              if (i != 0) {
+                sketch.text(i / PIX_TO_TIME, i, y - 25); // seconds
+              }
+              sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
+            } else {
+              sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
+            }
+            sketch.stroke(206, 212, 222, 30);
             sketch.textAlign(sketch.CENTER);
-            i += 50;
+            i += 25;
           }
           let time = ToneTransport.seconds * PIX_TO_TIME;
           sketch.fill("#bac7db");
-          sketch.rect(time + 10, 0, 4, 110, 500); // playline
+          sketch.rect(time + 0.5, 0, 1, 50, 4); // playline
         };
 
         sketch.mouseClicked = () => {
@@ -166,7 +174,7 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
                     {inflateRecordings()}
                 </styles.RecordingsView>
               </styles.ChannelView>
-            </styles.Channel>
+          </styles.Channel>
           <styles.TransportTimeline>
             <styles.TimelinePadding></styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
