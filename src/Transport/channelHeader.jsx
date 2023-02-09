@@ -16,6 +16,8 @@ export default function ChannelHeader({channelName}) {
         if (event.key === 'Enter') {
             setName(tempName.current);
             setEditingName(false);
+        } else if (event.key === 'Escape') {
+            setEditingName(false);
         }
     }
 
@@ -24,7 +26,7 @@ export default function ChannelHeader({channelName}) {
     }
 
     return [
-        <div>
+        <styles.ChannelHeader>
             {editingName ? (
                 <styles.ChannelNameInput type="text" 
                     onChange={handleEdit}
@@ -32,8 +34,8 @@ export default function ChannelHeader({channelName}) {
                     placeholder={name}>
                 </styles.ChannelNameInput>
             ) : (
-                <styles.ChannelHeader onDoubleClick={handleDoubleClick}>{name}</styles.ChannelHeader>
+                <styles.ChannelName onDoubleClick={handleDoubleClick}>{name}</styles.ChannelName>
             )}
-        </div>
+        </styles.ChannelHeader>
     ]
 }

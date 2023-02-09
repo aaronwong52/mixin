@@ -1,29 +1,36 @@
 import styled from 'styled-components';
 
 export const TransportView = styled.div`
-  width: 100vw;
   overflow: scroll;
+  width: 92vw;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: flex-end;
-  margin-right: 10vw;
-  background-color: #1e2126;
+  box-sizing: border-box;
+  border-radius: 4px;
+  margin-left: 5vw;
+  background-color: #282f38;
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const Channel = styled.div`
+  display: flex;
+  width: 2075px;
+  min-height: 85px;
 `;
 
 export const ChannelView = styled.div`
-  position: relative;
+  overflow: scroll;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  left: 0;
-  border-radius: 4px 4px 0px 0px;
   box-sizing: border-box;
-  width: 92vw;
   min-height: 85px;
-  padding: 0px 10px;
-  background-color: #282f38;
-  z-index: 999;
+
 `;
 
 export const RecordingsView = styled.div`
@@ -31,36 +38,48 @@ export const RecordingsView = styled.div`
   display: flex;
   justify-content: flex-start;
   box-sizing: border-box;
-  width: 85vw;
+  background-origin: padding-box;
+  background-clip: padding-box;
+  width: 2050px;
   min-height: 85px;
-  padding: 5px 0px;
+  margin-left: 6vw;
+  padding: 0px 10px;
   background-color: #282f38;
-  z-index: 999;
+  background-size: 25px 25px;
+  background-image:
+  linear-gradient(to right, rgba(169, 169, 169, 0.15) 1px, transparent 1px),
+  linear-gradient(to bottom, rgba(169, 169, 169, 0.15) 1px, transparent 1px);
 `;
 
 export const RecordingView = styled.div`
     width: 100px;
     height: 85px;
-    background-color: #1f324d;
+    background-color: #0f284d;
     border: none;
     border-radius: 4px;
-    opacity: 0.75;
     :hover {cursor: pointer;}
-    z-index: 999;
+
 `;
 
 export const TransportTimeline = styled.div`
-  overflow: scroll;
+  display: flex;
+`
+
+export const TimelinePadding = styled.div`
+  position: fixed;
+  height: 50px;
+  width: 6vw;
+  background-color: #282f38;
+  z-index: 9999;
+  border-radius: 4px;
+
+`;
+
+export const Timeline = styled.div`
   display: flex;
   flex-direction: column;
-  width: 92vw;
-  box-sizing: border-box;
-  border-radius: 0px 0px 4px 4px;
   padding-left: 6vw;
-  background-color: #ced4de;
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  box-sizing: border-box;
+  background-color: #282f38;
 `;
+

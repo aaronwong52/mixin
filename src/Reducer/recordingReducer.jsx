@@ -85,19 +85,22 @@ export const recordingReducer = (state, action) => {
     }
   };
   
+  /* 
+    called when 
+      1. recording is created, setting scheduling for that recording
+      2. recording is moved, updating scheduling for that recording
+      3. playhead is updated, updating scheduling based on new play position for all recordings
+  */
   // returns id of scheduled Transport event
   const schedulePlayer = (recording) => {
     // cancel current scheduling
     Tone.Transport.clear(recording.id);
   
-    // replace with player.sync.start(offset)
-    // because scheduling things on the transport is not built to support playback in the middle of a sample via player
     let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
+
     return Tone.Transport.schedule((time) => {
-      // callback runs at time, so offset can be calculated using time
       let _offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
-      console.log(_offset);
-      recording.player.start(0, _offset); // make sure this time parameter is relative to Transport time and not time from now
+      recording.player.start(0, _offset); 
     }, recording.position + offset);
   };
   

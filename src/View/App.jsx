@@ -7,7 +7,6 @@ import { FileDrop } from 'react-file-drop';
 import { createPlayer } from '../utils/audio-utils';
 
 import { recordingReducer } from '../Reducer/recordingReducer';
-import { calculatePlayOffset } from '../Reducer/recordingReducer';
 import Transport from '../Transport/transport';
 import Recorder from '../Recorder/recorder';
 import Editor from '../Editor/editor';

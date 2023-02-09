@@ -8,7 +8,7 @@ import Draggable from 'react-draggable';
 import { Transport as ToneTransport } from 'tone';
 import ChannelHeader from './channelHeader';
 
-import {PIX_TO_TIME } from '../utils/constants';
+import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
 
 /* 
 
@@ -90,7 +90,7 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
 
     useEffect(() => {
       const s = (sketch) => {
-        let x = sketch.windowWidth;
+        let x = TRANSPORT_LENGTH;
         let y = 50;
 
         sketch.setup = () => {
@@ -98,26 +98,25 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
         };
 
         sketch.draw = () => {
-          sketch.background("#ced4de");
+          sketch.background("#282f38");
           sketch.fill(51)
           sketch.textSize(12);
 
+          
           sketch.line(0, y - 30, x, y - 30); // baseline
-          sketch.line(10, 0, x, 0);
-          sketch.stroke('blue');
-          sketch.stroke('grey');
 
           let i = 0;
           while (i < x) {
             sketch.line(i + 10, y - 35, i + 10, y - 25);
+            sketch.fill('white');
             sketch.text(i / PIX_TO_TIME, i + 10, y - 10);
+            sketch.stroke('grey');
             sketch.textAlign(sketch.CENTER);
             i += 50;
           }
           let time = ToneTransport.seconds * PIX_TO_TIME;
           sketch.fill("#bac7db");
           sketch.rect(time + 10, 0, 4, 110, 500); // playline
-          sketch.rect(0, 0, 1, 110, 500);
         };
 
         sketch.mouseClicked = () => {
@@ -160,13 +159,18 @@ function Transport({recordings, updateTransportPosition, updatePlayerPosition,
 
     return (
         <styles.TransportView id="transportview">
-          <styles.ChannelView>
-            <ChannelHeader channelName="Header"></ChannelHeader>
-            <styles.RecordingsView id="recordingsview">
-                {inflateRecordings()}
-            </styles.RecordingsView>
-          </styles.ChannelView>
-          <styles.TransportTimeline id="timeline" ref={transportRef}>
+          <styles.Channel>
+              <ChannelHeader channelName="Audio"></ChannelHeader>
+              <styles.ChannelView>
+                <styles.RecordingsView id="recordingsview">
+                    {inflateRecordings()}
+                </styles.RecordingsView>
+              </styles.ChannelView>
+            </styles.Channel>
+          <styles.TransportTimeline>
+            <styles.TimelinePadding></styles.TimelinePadding>
+            <styles.Timeline id="timeline" ref={transportRef}>
+            </styles.Timeline>
           </styles.TransportTimeline>
         </styles.TransportView>
     )

@@ -1,9 +1,22 @@
 import styled from 'styled-components';
 
-export const ChannelHeader = styled.h3`
+export const ChannelHeader = styled.div`
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #142c4f;
+    border-radius: 4px;
     width: 6vw;
-  color: #ced4de;
-  font-size: 18px;
+    height: 95px;
+    z-index: 99;
+`
+
+export const ChannelName = styled.h3`
+    text-align: center;
+    width: 6vw;
+    color: #ced4de;
+    font-size: 18px;
 `;
 
 export const ChannelNameInput = styled.input`
@@ -21,4 +34,5 @@ export const ChannelNameInput = styled.input`
     :-ms-input-placeholder {
         color: #ced4de;
     }
+
 `;
