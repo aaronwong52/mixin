@@ -6,7 +6,7 @@ export const View = styled.div`
   flex-direction: column; 
   justify-content: flex-start;
   align-items: center;
-  background: linear-gradient(to right, #1e2126, #282f38 50%, #1e2126);
+  background: linear-gradient(to right, #1e2126, #1c2026 50%, #1e2126);
 `;
 
 export const TopView = styled.div`

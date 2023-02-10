@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import * as Tone from 'tone';
+
 import * as styles from './ExportMixStyles';
 
 import { calculatePlayOffset } from '../Reducer/recordingReducer';
@@ -7,7 +9,7 @@ import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
 import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
 
-function ExportMix({displayState, recordings}) {
+function ExportMix({displayState, channels}) {
 
     const [fileFormat, setFileFormat] = useState('');
 
@@ -107,11 +109,13 @@ function ExportMix({displayState, recordings}) {
     const renderBuffer = async (ranges) => {
         // OfflineAudioContext(numChannels, length, sampleRate)
         const offlineContext = new OfflineAudioContext(2, SAMPLE_RATE * ranges[1], SAMPLE_RATE);
-        recordings.forEach(function(recording) {
-          let source = offlineContext.createBufferSource();
-          source.buffer = bufferFromToneBuffer(recording.data);
-          source.connect(offlineContext.destination);
-          source.start(recording.position, calculatePlayOffset(ranges[0], recording.position));
+        channels.forEach(function(channel) {
+          channel.recordings.forEach(function(recording) {
+            let source = offlineContext.createBufferSource();
+            source.buffer = bufferFromToneBuffer(recording.data);
+            source.connect(offlineContext.destination);
+            source.start(recording.position, calculatePlayOffset(ranges[0], recording.position));
+          })
         }); 
         return await offlineContext.startRendering();
     };

@@ -1,4 +1,4 @@
-import { useRef, useState, useReducer } from 'react'
+import { useRef, useEffect, useState, useReducer } from 'react'
 
 import * as styles from './AppStyles';
 
@@ -12,6 +12,8 @@ import Recorder from '../Recorder/recorder';
 import Editor from '../Editor/editor';
 import TransportClock from '../Transport/transportClock';
 import ExportMix from '../Export/exportMix';
+
+import { StateContext, StateDispatchContext } from '../Transport/StateContext';
 
 /* 
 
@@ -44,10 +46,10 @@ how to fix this:
 */
 
 const initialState = {
-    recordings: [],
+    channels: [],
+    selectedChannel: null,
     endPosition: 0,
-    channel: new Tone.Channel().toDestination(),
-    soloChannel: new Tone.Channel().toDestination()
+    soloChannel: null,
 };
 
 // app serves to put views together and act as a data processor + connector to the reducer
@@ -86,26 +88,18 @@ function App() {
     }
   };
 
-  const updatePlayerPosition = (delta, recording, index) => {
-    dispatch({type: 'updateRecordingPosition', 
-      payload: {
-        recording: recording,
-        delta: delta
-      }}
-    );
-  }
-
   const toggle = () => {
     if (Tone.Transport.state === "started") {
       Tone.Transport.pause();
       return true;
     }
-    else if (state.recordings.length > 0) {
+
+    else if (state.channels.length > 0) {
       Tone.Transport.start();
       return true;
     }
     return false;
-  }
+  };
 
   const onPlay = () => {
     if (exporting) {
@@ -188,50 +182,57 @@ function App() {
       loaded: true
     };
     receiveRecording(newRecording);
-  }
+  };
+
+  useEffect(() => {
+    dispatch({type: 'initializeChannels', payload: {}});
+  }, [])
 
   return (
-    <styles.View id="Tone" ref={drawing.current}>
-      <styles.TopView>
-        <styles.MixologyMenu>
-          <styles.MenuLabels>
-            <styles.Title>MIXOLOGY</styles.Title>
-            <styles.MenuOption onClick={setExportingState}>Export</styles.MenuOption>
-          </styles.MenuLabels>
-        </styles.MixologyMenu>
-        <Recorder 
-          receiveRecording={receiveRecording} 
-          exporting={exporting}>
-        </Recorder>
-        <ExportMix displayState={exporting} recordings={state.recordings}></ExportMix>
-      </styles.TopView>
-      <FileDrop 
-          onDrop={(files, event) => upload(files, event)}
-          onFrameDragEnter={(event) => setDropping(true)}
-          onFrameDragLeave={(event) => setDropping(false)}>
-        <styles.MiddleView dropping={dropping}>
-          <Editor 
-            recording={selectedRecording} 
-            solo={solo}
-            exporting={exporting}>
-          </Editor>
-          <Transport 
-            recordings={state.recordings} 
-            updatePlayerPosition={updatePlayerPosition}
-            selectRecording={setSelectedRecording} 
-            exporting={exporting}>
-          </Transport>
-        </styles.MiddleView>
-      </FileDrop>
-      <styles.ControlView>
-          <styles.PlayButton id="play_btn" onClick={onPlay} playState={playing}></styles.PlayButton>
-          <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
-          <styles.RestartButton onClick={restart}></styles.RestartButton>
-          <styles.ClockArea>
-            <TransportClock></TransportClock>
-          </styles.ClockArea>
-      </styles.ControlView>
-    </styles.View> 
+    <StateContext.Provider value={state}>
+      <StateDispatchContext.Provider value={dispatch}>
+        <styles.View id="Tone" ref={drawing.current}>
+          <styles.TopView>
+            <styles.MixologyMenu>
+              <styles.MenuLabels>
+                <styles.Title>MIXOLOGY</styles.Title>
+                <styles.MenuOption onClick={setExportingState}>Export</styles.MenuOption>
+              </styles.MenuLabels>
+            </styles.MixologyMenu>
+            <Recorder 
+              receiveRecording={receiveRecording} 
+              exporting={exporting}>
+            </Recorder>
+            <ExportMix displayState={exporting} channels={state.channels}></ExportMix>
+          </styles.TopView>
+          <FileDrop 
+              onDrop={(files, event) => upload(files, event)}
+              onFrameDragEnter={(event) => setDropping(true)}
+              onFrameDragLeave={(event) => setDropping(false)}>
+            <styles.MiddleView dropping={dropping}>
+              <Editor 
+                recording={selectedRecording} 
+                solo={solo}
+                exporting={exporting}>
+              </Editor>
+              <Transport 
+                selectRecording={setSelectedRecording} 
+                exporting={exporting}>
+              </Transport>
+            </styles.MiddleView>
+          </FileDrop>
+          <button onClick={() => dispatch({type: 'addChannel', payload: {}})}>Add channel</button>
+          <styles.ControlView>
+              <styles.PlayButton id="play_btn" onClick={onPlay} playState={playing}></styles.PlayButton>
+              <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
+              <styles.RestartButton onClick={restart}></styles.RestartButton>
+              <styles.ClockArea>
+                <TransportClock></TransportClock>
+              </styles.ClockArea>
+          </styles.ControlView>
+        </styles.View>
+      </StateDispatchContext.Provider>
+    </StateContext.Provider> 
   )
 }
 

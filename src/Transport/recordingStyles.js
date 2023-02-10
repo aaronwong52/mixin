@@ -8,8 +8,7 @@ export const RecordingView = styled.div`
     background-color: #1f324d;
     border: none;
     border-radius: 4px;
-    opacity: 0.75;
     :hover {cursor: pointer;}
-    z-index: 999;
+    z-index: 9999;
     
 `;

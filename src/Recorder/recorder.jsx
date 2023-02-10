@@ -38,6 +38,7 @@ function Recorder({receiveRecording, exporting}) {
                 data: blobUrl, 
                 player: null,
                 index: 0,
+                channel: 0, // index
                 solo: false,
                 loaded: false
             };
