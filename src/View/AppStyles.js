@@ -37,6 +37,7 @@ export const Title = styled.h2`
 
 export const MenuOption = styled.h3`
   font-size: 18px;
+  width: fit-content;
   margin: 35px 0px;
   :hover {cursor: pointer; color: white;}
 `;
