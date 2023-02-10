@@ -62,7 +62,7 @@ function Transport({selectRecording, exporting}) {
     const updateTransportPosition = () => {
       dispatch({type: 'updateTransportPosition',
           payload: {
-          time: ToneTransport.seconds
+            time: ToneTransport.seconds
           }}
       );
     };  
