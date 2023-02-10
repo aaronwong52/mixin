@@ -1,7 +1,7 @@
 import { useRef, useEffect, useContext} from 'react';
 import p5 from 'p5';
 
-import * as styles from './TransportStyles';
+import * as styles from './transportStyles';
 
 import { Transport as ToneTransport } from 'tone';
 import Channel from './channel';
