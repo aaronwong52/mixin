@@ -9,7 +9,7 @@ export const createPlayer = (recording) => {
     return new Tone.Player({
       url: recording.data,
       loop: false
-    });
+    }).sync();
 };
 
 export const bufferFromToneBuffer = (toneBuffer) => {

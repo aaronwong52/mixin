@@ -78,7 +78,7 @@ export const recordingReducer = (state, action) => {
   
   const scheduleRecording = (state, recording) => {  
     let selectedChannel = state.selectedChannel;
-    recording.id = schedulePlayer(recording, Tone.Transport.seconds);
+    schedulePlayer(recording);
     if (!selectedChannel) {
       recording.player.connect(state.channels[0].channel);
     } else {
@@ -90,7 +90,6 @@ export const recordingReducer = (state, action) => {
   const addRecording = (state, recording) => {
     let channels = state.channels;
     let channelIndex = (state.selectedChannel ? state.selectedChannel - 1 : 0);
-    console.log(channelIndex)
     let newIndex = channels[channelIndex].recordings.length;
     recording.index = newIndex;
     recording.channel = channelIndex;
@@ -145,11 +144,7 @@ export const recordingReducer = (state, action) => {
   };
 
   const updateTransportPosition = (state, payload) => {
-    state.channels.forEach((channel) => {
-      channel.recordings.forEach((recording) => {
-        schedulePlayer(recording); // go through and update Transport scheduling based on new transport position
-      });
-    });
+    updatePlayerPositions(state, payload.time);
     return state;
   };
   
@@ -203,22 +198,25 @@ export const recordingReducer = (state, action) => {
     called when 
       1. recording is created, setting scheduling for that recording
       2. recording is moved, updating scheduling for that recording
-      3. playhead is updated, updating scheduling based on new play position for all recordings
   */
-  // returns id of scheduled Transport event
   const schedulePlayer = (recording) => {
-    // cancel current scheduling
-    Tone.Transport.clear(recording.id);
-  
-    let offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
-
-    // rewrite to just loop through channels and recordings and use our own play logic
-    // won't be more expensive than scheduling with Tone, surely
-    return Tone.Transport.schedule((time) => {
-      let _offset = calculatePlayOffset(Tone.Transport.seconds, recording.position);
-      recording.player.start(0, _offset); 
-    }, 0);
+      recording.player.unsync();
+      recording.player.sync().start(recording.position); 
   };
+
+  // for when playhead is updated, updating scheduling based on new play position for all recordings
+  // what if instead of calling player.start(), we just store an offset?
+  const updatePlayerPositions = (state, time) => {
+    state.channels.forEach((channel) => {
+      channel.recordings.forEach((recording) => {
+        if (time >= recording.position) {
+          let offset = calculatePlayOffset(time, recording.position);
+          recording.player.unsync();
+          recording.player.sync().start(time, offset);
+        }
+      })
+    })
+  }
   
   // return offset of playhead in relation to a recording clip
   // returns 0 if negative
