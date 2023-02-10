@@ -3,6 +3,10 @@ import * as Tone from 'tone';
 
 export const recordingReducer = (state, action) => {
     switch (action.type) {
+      case 'initializeChannels':
+        return initializeChannels(state, action.payload);
+      case 'addChannel':
+        return addChannel(state, action.payload);
       case 'scheduleRecording':
         return scheduleRecording(state, action.payload);
       case 'updateBuffer':
@@ -17,32 +21,87 @@ export const recordingReducer = (state, action) => {
         return unsoloClip(state, action.payload);
     }
   };
+
+  const getNewChannel = (index) => {
+    return {
+      channel: new Tone.Channel().toDestination(),
+      name: 'Audio 1',
+      recordings: [],
+      index: index
+    }
+  }
+
+  const initializeChannels = (state, payload) => {
+    let firstChannel = getNewChannel(0);
+    return {
+      ...state,
+      channels: [
+        firstChannel
+      ],
+      soloChannel: new Tone.Channel().toDestination(),
+      selectedChannel: firstChannel
+    }
+  };
+
+  const addChannel = (state, payload) => {
+    let newIndex = state.channels.length;
+    
+    // base case will never happen since it's initialized with 1 channel
+    let newChannel = getNewChannel(newIndex);
+    return {
+      ...state,
+      channels: [
+        ...state.channels.slice(0, newIndex),
+        newChannel
+      ],
+      selectedChannel: newChannel 
+    }
+  }
   
   const scheduleRecording = (state, recording) => {  
     recording.id = schedulePlayer(recording, Tone.Transport.seconds);
-    recording.player.connect(state.channel);
+    recording.player.connect(state.selectedChannel.channel);
     return addRecording(state, recording);
   };
   
   const addRecording = (state, recording) => {
-    recording.index = state.recordings.length;
-    if (state.recordings.length === 0) {
+    let channels = state.channels;
+    let channelIndex = recording.channel;
+    let newIndex = channels[channelIndex].recordings.length;
+    recording.index = newIndex;
+    if (newIndex === 0) {
       return {
-        ...state,
-        recordings: [recording], endPosition: recording.position + recording.duration
+        ...state, 
+        channels: [
+          ...channels.slice(0, channelIndex),
+          {...channels[channelIndex], 
+            recordings: [
+              {...recording},
+            ]
+          },
+          ...channels.slice(channelIndex + 1, channels.length)
+        ],
+        endPosition: recording.position + recording.duration,
       };
     } else {
       let newEndPosition = recording.position + recording.duration > state.endPosition
         ? recording.position
         : state.endPosition;
-      return {
-        ...state,
-        recordings: [
-          ...state.recordings.slice(0, state.recordings.length),
-          recording
-        ],
-        endPosition: newEndPosition
-      };
+        return {
+          ...state, 
+          channels: [
+            ...channels.slice(0, channelIndex),
+            {...recording.channel, 
+              recordings: [
+                ...channels[channelIndex].recordings.slice(0, newIndex),
+                {...recording},
+                ...channels[channelIndex].recordings.slice(newIndex + 1, channels.length)
+              ]
+            },
+            ...channels.slice(channelIndex + 1, state.channels.length)
+          ],
+          endPosition: newEndPosition
+        };
     }
   };
   
@@ -61,28 +120,43 @@ export const recordingReducer = (state, action) => {
   };
 
   const updateTransportPosition = (state, payload) => {
-    state.recordings.forEach((recording) => {
-      schedulePlayer(recording); // go through and update Transport scheduling based on new transport position
+    state.channels.forEach((channel) => {
+      channel.recordings.forEach((recording) => {
+        schedulePlayer(recording); // go through and update Transport scheduling based on new transport position
+      });
     });
     return state;
   };
   
   const updateRecording = (state, recording) => {
     let clipIndex = recording.index;
-    let existingLength = state.recordings.length;
+    let channelIndex = recording.channel;
+    let existingLength = state.channels[channelIndex].length;
     if (existingLength === 1) {
       return {
-       ...state, 
-       recordings: [{...recording}]
+        ...state, 
+        channels: [
+          {...state.channels.slice(0, channelIndex),
+            recordings: [{
+              ...recording
+          }],
+            ...state.channels.slice(channelIndex + 1, state.channels.length)
+          }
+        ]
       };
     } else return {
-      ...state,
-      recordings: [
-        ...state.recordings.slice(0, clipIndex),
-        {...recording},
-        ...state.recordings.slice(clipIndex + 1, existingLength)
+      ...state, 
+      channels: [
+        {...state.channels.slice(0, channelIndex),
+          recordings: [
+            ...state.channels[channelIndex].recordings.slice(0, clipIndex),
+            {...recording},
+            ...state.channels[channelIndex].recordings.slice(clipIndex + 1, existingLength)
+          ],
+          ...state.channels.slice(channelIndex + 1, state.channels.length)
+        }
       ]
-    }
+    };
   };
   
   /* 
@@ -124,7 +198,7 @@ export const recordingReducer = (state, action) => {
   
   const unsoloClip = (state, payload) => {
     payload.recording.player.disconnect(); // disconnect() -> disconnect all
-    payload.recording.player.connect(state.channel); // reconnect to original channel
+    payload.recording.player.connect(payload.recording.channel); // reconnect to original channel
     state.soloChannel.solo = false;
     payload.recording.solo = false;
     return updateRecording(state, payload.recording);
