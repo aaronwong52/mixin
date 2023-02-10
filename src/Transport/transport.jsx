@@ -1,7 +1,7 @@
 import { useRef, useEffect, useContext} from 'react';
 import p5 from 'p5';
 
-import * as styles from './TransportStyles';
+import * as styles from './transportStyles';
 
 import { Transport as ToneTransport } from 'tone';
 import Channel from './channel';
@@ -46,14 +46,18 @@ function Transport({selectRecording, exporting}) {
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
 
-    const inflateChannels = () => {     
-      return state.channels.map((c) => (
+    const inflateChannels = () => {
+      return state.channels.map((c, index) => (
         <Channel channelName = {c.name} 
-        recordings = {c.recordings}
+        channelData = {{...c, index: index}}
         selectRecording = {selectRecording}>
         </Channel>
       ));
     };
+
+    const deselectChannels = () => {
+      dispatch({type: 'deselectAllChannels', payload: {}});
+    }
 
     const updateTransportPosition = () => {
       dispatch({type: 'updateTransportPosition',
@@ -87,17 +91,17 @@ function Transport({selectRecording, exporting}) {
               if (i != 0) {
                 sketch.text(i / PIX_TO_TIME, i, y - 25); // seconds
               }
-              sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
+              sketch.line(i + 0.5, y - 50, i + 1, y - 40); // dashes
             } else {
-              sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
+              sketch.line(i + 1, y - 50, i + 1, y - 45); // dashes
             }
-            sketch.stroke(206, 212, 222, 30);
+            sketch.stroke(206, 212, 222, 20);
             sketch.textAlign(sketch.CENTER);
             i += 25;
           }
           let time = ToneTransport.seconds * PIX_TO_TIME;
           sketch.fill("#bac7db");
-          sketch.rect(time + 0.5, 0, 1, 50, 4); // playline
+          sketch.rect(time + 1, 0, 1, 50, 4); // playline
         };
 
         sketch.mouseClicked = () => {
@@ -110,11 +114,6 @@ function Transport({selectRecording, exporting}) {
           if (exporting) {
             return;
           }
-          
-          // if (stopSketchClick.current) {
-          //   stopSketchClick.current = false;
-          //   return;
-          // }
 
           ToneTransport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
           if (ToneTransport.seconds < 0.1) {
@@ -127,22 +126,12 @@ function Transport({selectRecording, exporting}) {
       return () => transportp5.remove();
     }, []);
 
-    useEffect(() => {
-      let clips = document.getElementsByClassName("recording_clip");
-      for (let c = 0; c < clips.length; c++) {
-        clips[c].style.width = (state.channels[0].recordings[c].duration * PIX_TO_TIME) + "px";
-        if (!clips[c].style.left) {
-          console.log(state.channels[0].recordings[c].position);
-          clips[c].style.left = (state.channels[0].recordings[c].position * PIX_TO_TIME) + "px";
-        }
-      }
-    }, [state.channels]);
-
     return (
         <styles.TransportView id="transportview">
           {inflateChannels()}
           <styles.TransportTimeline>
-            <styles.TimelinePadding></styles.TimelinePadding>
+            <styles.TimelinePadding onClick={deselectChannels}>
+            </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
             </styles.Timeline>
           </styles.TransportTimeline>

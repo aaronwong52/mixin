@@ -47,7 +47,7 @@ how to fix this:
 
 const initialState = {
     channels: [],
-    selectedChannel: null,
+    selectedChannel: 0,
     endPosition: 0,
     soloChannel: null,
 };

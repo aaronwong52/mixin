@@ -15,7 +15,7 @@ export const ChannelHeader = styled.div`
 
 export const ChannelName = styled.h3`
     text-align: center;
-    width: 6vw;
+    width: 75px;
     color: #ced4de;
     font-size: 18px;
 `;
@@ -23,7 +23,8 @@ export const ChannelName = styled.h3`
 export const ChannelNameInput = styled.input`
     color: #ced4de;
     font-size: 18px;
-    width: 6vw;
+    font-weight: bold;
+    width: 75px;
     background-color: #474e59;
     border: none;
     border-radius: 2px;
@@ -41,8 +42,8 @@ export const Channel = styled.div`
   display: flex;
   position: relative;
   width: 2075px;
+  border: ${props => props.selected ? '1px solid green' : '1px solid transparent'};
   min-height: 100px;
-
   background-size: 25px 25px;
   background-image:
   linear-gradient(to right, rgba(206, 212, 222, 0.1) 1px, transparent 1px),
