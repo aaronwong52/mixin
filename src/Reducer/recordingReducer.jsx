@@ -52,6 +52,14 @@ export const recordingReducer = (state, action) => {
     
     // base case will never happen since it's initialized with 1 channel
     let newChannel = getNewChannel(newIndex);
+    console.log({
+      ...state,
+      channels: [
+        ...state.channels.slice(0, newIndex),
+        newChannel
+      ],
+      selectedChannel: newIndex + 1
+    })
     return {
       ...state,
       channels: [
@@ -90,10 +98,24 @@ export const recordingReducer = (state, action) => {
   const addRecording = (state, recording) => {
     let channels = state.channels;
     let channelIndex = (state.selectedChannel ? state.selectedChannel - 1 : 0);
+    console.log(state.selectedChannel);
     let newIndex = channels[channelIndex].recordings.length;
     recording.index = newIndex;
     recording.channel = channelIndex;
     if (newIndex === 0) {
+      console.log({
+        ...state, 
+        channels: [
+          ...channels.slice(0, channelIndex),
+          {...channels[channelIndex], 
+            recordings: [
+              {...recording},
+            ]
+          },
+          ...channels.slice(channelIndex + 1, channels.length)
+        ],
+        endPosition: recording.position + recording.duration,
+      })
       return {
         ...state, 
         channels: [
@@ -153,18 +175,18 @@ export const recordingReducer = (state, action) => {
     let channelIndex = recording.channel;
     let existingLength = state.channels[channelIndex].recordings.length;
     if (existingLength === 1) {
-      console.log({
-        ...state, 
-        channels: [
-          ...state.channels.slice(0, channelIndex),
-          {...state.channels[channelIndex],
-            recordings: [{
-              ...recording
-            }],
-          },
-          ...state.channels.slice(channelIndex + 1, state.channels.length)
-        ]
-      })
+      // console.log({
+      //   ...state, 
+      //   channels: [
+      //     ...state.channels.slice(0, channelIndex),
+      //     {...state.channels[channelIndex],
+      //       recordings: [{
+      //         ...recording
+      //       }],
+      //     },
+      //     ...state.channels.slice(channelIndex + 1, state.channels.length)
+      //   ]
+      // })
       return {
         ...state, 
         channels: [

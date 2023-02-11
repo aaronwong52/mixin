@@ -39,6 +39,9 @@ export default function Channel({channelName, channelData, selectRecording}) {
       useEffect(() => {
         function handleClickOutside(event) {
           if (ref.current && !ref.current.contains(event.target)) {
+            if (event.target.id = "rec_btn") {
+              return;
+            }
             // clicked outside
             dispatch({type: 'deselectAllChannels', payload: {}});
           }
