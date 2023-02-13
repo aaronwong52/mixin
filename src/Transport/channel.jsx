@@ -15,9 +15,9 @@ export default function Channel({channelName, channelData, selectRecording}) {
     const draggingRef = useRef(false);
 
     const inputWrapperRef = useRef(null);
-    const channelWrapperRef = useRef(null);
+    // const channelWrapperRef = useRef(null);
     useOutsideInput(inputWrapperRef);
-    useOutsideChannel(channelWrapperRef);
+    // useOutsideChannel(channelWrapperRef);
 
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
@@ -35,18 +35,18 @@ export default function Channel({channelName, channelData, selectRecording}) {
       }, [ref])
     }
 
-    function useOutsideChannel(ref) {
-      useEffect(() => {
-        function handleClickOutside(event) {
-          if (ref.current && !ref.current.contains(event.target)) {
-            // clicked outside
-            dispatch({type: 'deselectAllChannels', payload: {}});
-          }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-      }, [ref])
-    }
+    // function useOutsideChannel(ref) {
+    //   useEffect(() => {
+    //     function handleClickOutside(event) {
+    //       if (ref.current && !ref.current.contains(event.target)) {
+    //         // clicked outside
+    //         dispatch({type: 'deselectAllChannels', payload: {}});
+    //       }
+    //     }
+    //     document.addEventListener("mousedown", handleClickOutside);
+    //     return () => document.removeEventListener("mousedown", handleClickOutside);
+    //   }, [ref])
+    // }
 
     const updatePlayerPosition = (delta, recording, index) => {
         dispatch({type: 'updateRecordingPosition', 
@@ -130,9 +130,9 @@ export default function Channel({channelName, channelData, selectRecording}) {
       }, [channelData]);
 
     return [
-        <styles.Channel selected={channelData.index + 1 == state.selectedChannel}
-            onClick={handleSelect}
-            ref={channelWrapperRef}>
+        <styles.Channel selected={channelData.index == state.selectedChannel}
+            onClick={handleSelect}>
+            {/* // ref={channelWrapperRef} */}
             <styles.ChannelHeader>
                 {editingName ? (
                     <styles.ChannelNameInput type="text" id="channelNameInput"

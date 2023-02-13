@@ -55,10 +55,6 @@ function Transport({selectRecording, exporting}) {
       ));
     };
 
-    const deselectChannels = () => {
-      dispatch({type: 'deselectAllChannels', payload: {}});
-    }
-
     const updateTransportPosition = () => {
       dispatch({type: 'updateTransportPosition',
           payload: {
@@ -130,7 +126,7 @@ function Transport({selectRecording, exporting}) {
         <styles.TransportView id="transportview">
           {inflateChannels()}
           <styles.TransportTimeline>
-            <styles.TimelinePadding onClick={deselectChannels}>
+            <styles.TimelinePadding>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
             </styles.Timeline>
