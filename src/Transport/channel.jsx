@@ -5,7 +5,7 @@ import { StateContext, StateDispatchContext } from "./StateContext";
 import Draggable from 'react-draggable';
 import * as styles from './channelStyles';
 
-export default function Channel({channelName, channelData, selectRecording}) {
+export default function Channel({channelName, channelData}) {
 
     const [editingName, setEditingName] = useState(false);
     const [name, setName] = useState(channelName);
@@ -15,9 +15,9 @@ export default function Channel({channelName, channelData, selectRecording}) {
     const draggingRef = useRef(false);
 
     const inputWrapperRef = useRef(null);
-    const channelWrapperRef = useRef(null);
+    const recordingsWrapperRef = useRef(null);
     useOutsideInput(inputWrapperRef);
-    useOutsideChannel(channelWrapperRef);
+    useOutsideRecordings(recordingsWrapperRef);
 
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
@@ -35,7 +35,7 @@ export default function Channel({channelName, channelData, selectRecording}) {
       }, [ref])
     }
 
-    function useOutsideChannel(ref) {
+    function useOutsideRecordings(ref) {
       useEffect(() => {
         function handleClickOutside(event) {
           if (ref.current && !ref.current.contains(event.target)) {
@@ -43,7 +43,7 @@ export default function Channel({channelName, channelData, selectRecording}) {
               return;
             }
             // clicked outside
-            dispatch({type: 'deselectAllChannels', payload: {}});
+            dispatch({type: 'deselectRecordings', payload: {}});
           }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -54,8 +54,8 @@ export default function Channel({channelName, channelData, selectRecording}) {
     const updatePlayerPosition = (delta, recording, index) => {
         dispatch({type: 'updateRecordingPosition', 
             payload: {
-            recording: recording,
-            delta: delta
+              recording: recording,
+              delta: delta
             }}
         );
     };
@@ -73,7 +73,7 @@ export default function Channel({channelName, channelData, selectRecording}) {
   
         // onClick
         else {
-          selectRecording(recording);
+          dispatch({type: 'selectRecording', payload: recording})
         }
       }
   
@@ -113,9 +113,12 @@ export default function Channel({channelName, channelData, selectRecording}) {
           <Draggable key={"drag_rec_clip_" + index}
               onDrag={(e) => onDrag(e)}
               onStop={(e) => onStop(e, r, index)}
-              bounds={'#recordingsview'}
-              grid={[25, 25]}>
-            <styles.RecordingView className={"recording_clip_" + channelData.index}>
+              bounds={'#recordingsview'}>
+              {/* grid={[25, 25]} */}
+            <styles.RecordingView
+              ref={recordingsWrapperRef}
+              selected = {r.id == state.selectedRecording.id} 
+              className = {"recording_clip_" + channelData.index}>
             </styles.RecordingView>
           </Draggable>
         ));
@@ -133,9 +136,8 @@ export default function Channel({channelName, channelData, selectRecording}) {
       }, [channelData]);
 
     return [
-        <styles.Channel selected={channelData.index + 1 == state.selectedChannel}
-            onClick={handleSelect}
-            ref={channelWrapperRef}>
+        <styles.Channel selected={channelData.index == state.selectedChannel}
+            onClick={handleSelect}>
             <styles.ChannelHeader>
                 {editingName ? (
                     <styles.ChannelNameInput type="text" id="channelNameInput"

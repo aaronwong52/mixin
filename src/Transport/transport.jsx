@@ -40,7 +40,7 @@ Transport.seconds to pixels to css
 
 */
 
-function Transport({selectRecording, exporting}) {
+function Transport({exporting}) {
 
     const transportRef = useRef();
     const state = useContext(StateContext);
@@ -49,15 +49,10 @@ function Transport({selectRecording, exporting}) {
     const inflateChannels = () => {
       return state.channels.map((c, index) => (
         <Channel channelName = {c.name} 
-        channelData = {{...c, index: index}}
-        selectRecording = {selectRecording}>
+        channelData = {{...c, index: index}}>
         </Channel>
       ));
     };
-
-    const deselectChannels = () => {
-      dispatch({type: 'deselectAllChannels', payload: {}});
-    }
 
     const updateTransportPosition = () => {
       dispatch({type: 'updateTransportPosition',
@@ -81,7 +76,6 @@ function Transport({selectRecording, exporting}) {
           sketch.fill(51)
           sketch.textSize(12);
 
-          
           sketch.line(0, y - 50, x, y - 50); // baseline
 
           let i = 0;
@@ -115,7 +109,7 @@ function Transport({selectRecording, exporting}) {
             return;
           }
 
-          ToneTransport.seconds = (sketch.mouseX - 10) / PIX_TO_TIME;
+          ToneTransport.seconds = (sketch.mouseX + 1) / PIX_TO_TIME;
           if (ToneTransport.seconds < 0.1) {
             ToneTransport.seconds = 0;
           }
@@ -130,7 +124,7 @@ function Transport({selectRecording, exporting}) {
         <styles.TransportView id="transportview">
           {inflateChannels()}
           <styles.TransportTimeline>
-            <styles.TimelinePadding onClick={deselectChannels}>
+            <styles.TimelinePadding>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
             </styles.Timeline>

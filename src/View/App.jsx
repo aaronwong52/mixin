@@ -47,6 +47,7 @@ how to fix this:
 
 const initialState = {
     channels: [],
+    selectedRecording: {},
     selectedChannel: 0,
     endPosition: 0,
     soloChannel: null,
@@ -132,9 +133,9 @@ function App() {
   // soloes or un soloes
   const solo = (soloState) => { 
     if (soloState) {
-      dispatch({type: 'unsoloClip',  payload: selectedRecording});
+      dispatch({type: 'unsoloClip',  payload: state.selectedRecording});
     } else {
-      dispatch({type: 'soloClip',  payload: selectedRecording});
+      dispatch({type: 'soloClip',  payload: state.selectedRecording});
     }
   }
   
@@ -211,12 +212,11 @@ function App() {
               onFrameDragLeave={(event) => setDropping(false)}>
             <styles.MiddleView dropping={dropping}>
               <Editor 
-                recording={selectedRecording} 
+                recording={state.selectedRecording} 
                 solo={solo}
                 exporting={exporting}>
               </Editor>
               <Transport 
-                selectRecording={setSelectedRecording} 
                 exporting={exporting}>
               </Transport>
             </styles.MiddleView>

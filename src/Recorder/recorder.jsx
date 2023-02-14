@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 
 import { RecordView, RecordButton } from './recorderStyles';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import LiveWaveform from './liveWaveform';
 import * as Tone from 'tone';
 
@@ -33,14 +35,15 @@ function Recorder({receiveRecording, exporting}) {
             let data = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
             let newRecording = {
+                id: uuidv4(), // unique identifier for each recording irregardless of channel
                 position: Tone.Transport.seconds,
                 duration: 0, 
                 data: blobUrl, 
                 player: null,
                 index: 0,
-                channel: 0, // index
+                channel: 0, // index of channel
                 solo: false,
-                loaded: false
+                loaded: false,
             };
             receiveRecording(newRecording);
             recordingState.current = false;
