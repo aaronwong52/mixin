@@ -74,7 +74,7 @@ export const RecordingView = styled.div`
     position: absolute;
     width: 100px;
     height: 80px;
-    background-color: rgba(15, 40, 77, 0.6);
+    background-color: ${props => props.selected ? 'rgba(29, 75, 143, 0.6)' : 'rgba(15, 40, 77, 0.6)'};
     border: none;
     border-radius: 4px;
     :hover {cursor: pointer;}

@@ -9,6 +9,10 @@ export const recordingReducer = (state, action) => {
         return selectChannel(state, action.payload);
       case 'addChannel':
         return addChannel(state, action.payload);
+      case 'selectRecording':
+        return selectRecording(state, action.payload);
+      case 'deselectRecordings':
+        return deselectRecordings(state, action.payload);
       case 'scheduleRecording':
         return scheduleRecording(state, action.payload);
       case 'updateBuffer':
@@ -21,6 +25,8 @@ export const recordingReducer = (state, action) => {
         return soloClip(state, action.payload);
       case 'unsoloClip':
         return unsoloClip(state, action.payload);
+      default: 
+        return;
     }
   };
 
@@ -67,6 +73,22 @@ export const recordingReducer = (state, action) => {
     }
   };
 
+  const selectRecording = (state, recording) => {
+    return {
+      ...state,
+      selectedRecording: recording
+    };
+  };
+
+  // currently only one recording is selected at a time
+  // deselection by deselecting all
+  const deselectRecordings = (state, payload) => {
+    return {
+      ...state,
+      selectedRecording: {}
+    };
+  };
+
   const scheduleRecording = (state, recording) => {  
     let selectedChannel = state.selectedChannel;
     schedulePlayer(recording);
@@ -74,13 +96,13 @@ export const recordingReducer = (state, action) => {
     return addRecording(state, recording);
   };
 
-  // adds new recording to its channel
+  // all logic for adding / updating recordings
   const _setRecording = (state, recording, action) => {
     let channels = state.channels;
     let channelIndex = recording.channel;
     let numRecordings = channels[channelIndex].recordings.length;
 
-    if ( !numRecordings ) {
+    if ( !numRecordings ) { // if no recordings on selected channel
       return {
         ...state, 
         channels: [
@@ -93,10 +115,9 @@ export const recordingReducer = (state, action) => {
           ...channels.slice(channelIndex + 1, channels.length)
         ]
       };
-    } else {
+    } else { // if there are already recordings on selected channel
       switch (action.type) {
-        case 'add': // append recording to end
-        console.log("Adding")
+        case 'add': // append new recording to end
           return {
             ...state, 
             channels: [
@@ -110,8 +131,7 @@ export const recordingReducer = (state, action) => {
               ...channels.slice(channelIndex + 1, channels.length)
             ],
           };
-          case 'update': // update recording at recording.index
-          console.log("updating")
+          case 'update': // update (replace) recording at recording.index
             let newEndPosition = recording.position + recording.duration > state.endPosition
             ? recording.position
             : state.endPosition;
@@ -131,7 +151,6 @@ export const recordingReducer = (state, action) => {
             endPosition: newEndPosition
           };
         }
-      
     }
   };
   
@@ -188,7 +207,7 @@ export const recordingReducer = (state, action) => {
           recording.player.sync().start(time, offset);
         }
       })
-    })
+    });
   }
   
   // return offset of playhead in relation to a recording clip
@@ -202,17 +221,17 @@ export const recordingReducer = (state, action) => {
   
   // solo: route player to solo channel and solo it
   
-  const soloClip = (state, payload) => {
-    payload.recording.player.connect(state.soloChannel);
+  const soloClip = (state, recording) => {
+    recording.player.connect(state.soloChannel);
     state.soloChannel.solo = true;
-    payload.recording.solo = true;
-    return updateRecording(state, payload.recording);
+    recording.solo = true;
+    return updateRecording(state, recording);
   };
   
-  const unsoloClip = (state, payload) => {
-    payload.recording.player.disconnect(); // disconnect() -> disconnect all
-    payload.recording.player.connect(payload.recording.channel); // reconnect to original channel
+  const unsoloClip = (state, recording) => {
+    recording.player.disconnect(); // disconnect() -> disconnect all
+    recording.player.connect(state.channels[recording.channel].channel); // reconnect to original channel
     state.soloChannel.solo = false;
-    payload.recording.solo = false;
-    return updateRecording(state, payload.recording);
+    recording.solo = false;
+    return updateRecording(state, recording);
   };
