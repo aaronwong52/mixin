@@ -61,7 +61,6 @@ function App() {
   const [muted, setMuted] = useState(false);
   const [state, dispatch] = useReducer(recordingReducer, initialState);
   
-  const [selectedRecording, setSelectedRecording] = useState({});
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
   const drawing = useRef();

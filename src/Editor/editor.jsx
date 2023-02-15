@@ -10,7 +10,7 @@ import { TRANSPORT_LENGTH } from '../utils/constants';
 function Editor({recording, solo, exporting}) {
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
-    const [showRange, setShowRange] = useState(false);
+    const [highlighting, setHighlighting] = useState(false);
     const zoom = useRef(3);
     const editorRef = useRef();
 
@@ -55,6 +55,10 @@ function Editor({recording, solo, exporting}) {
         return (Object.keys(recording).length && !exporting);
     }
 
+    const _clearBuffer = () => {
+        setBuffer([]);
+    }
+
     const mute = () => {
         if (!checkEnabled()) {
             return;
@@ -74,7 +78,7 @@ function Editor({recording, solo, exporting}) {
         if (!checkEnabled()) {
             return;
         }
-        setShowRange(true);
+        setHighlighting(true);
     }
 
     useEffect(() => {
@@ -83,9 +87,11 @@ function Editor({recording, solo, exporting}) {
             try {
                 setBuffer(recording.player.buffer._buffer.getChannelData(0));
             } catch (e) {
-                // bad 
+                console.log(e);
             }
-        };
+        } else if (buffer.length) {
+            _clearBuffer();
+        }
         return () => waveform.remove();
     }, [recording, buffer]);
 
@@ -94,10 +100,10 @@ function Editor({recording, solo, exporting}) {
             <styles.ControlView>
                 <styles.ClipMute id="editorButton" onClick={mute} muted={muted}></styles.ClipMute>
                 <styles.ClipSolo id="editorButton" onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
-                <styles.Scissors id="editorButton" onClick={trimClip}></styles.Scissors>
+                <styles.Crop id="editorButton" onClick={trimClip}></styles.Crop>
             </styles.ControlView>
             <styles.EditorWaveform ref={editorRef}>
-                {useDragRange()}
+                {useDragRange(highlighting)}
             </styles.EditorWaveform>
         </styles.Editor>
     )

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 
 const DragRangeView = styled.div`
     position: absolute;
-    display: flex;
+    display: ${props => props.highlighting ? 'flex' : 'none'};
     width: 100%;
     height: 175px;
 `;
@@ -26,16 +26,16 @@ const HighlightArea = styled.div`
 const DragHandleLeft = styled.div`
     width: 2px;
     height: 175px;
-    background-color: green;
+    background-color: rgba(69, 114, 181, 0.7);
     padding: 0px 1px;
     z-index: 100;
-    :hover {cursor: pointer;}
+    :hover {cursor: col-resize;}
 `;
 
 const DragHandleRight = styled(DragHandleLeft)`
 `;
 
-export default function useDragRange() {
+export default function useDragRange(highlighting) {
 
     const dragStartLeft = useRef(-1);
     const dragStartRight = useRef(-1);
@@ -79,7 +79,7 @@ export default function useDragRange() {
     }, [])
 
     return [
-        <DragRangeView id="drag_range_view">
+        <DragRangeView highlighting={highlighting} id="drag_range_view">
             <Draggable bounds={"#drag_range_view"}
                 onDrag={(e) => onDragLeft(e)}>
                 <DragHandleLeft id="drag_handle_left"></DragHandleLeft>

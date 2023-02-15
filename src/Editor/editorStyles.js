@@ -16,19 +16,19 @@ export const ControlView = styled.div`
     height: 175px;
 `;
 
-export const Scissors = styled.button`
-    background: url('/images/scissors.png') no-repeat;
+export const Crop = styled.button`
+    background: url('/images/crop.png') no-repeat;
     width: 30px;
     height: 30px;
     padding: 0;
     background-color: transparent;
-    background-size: 25px;
+    background-size: 30px;
     border: none;
     :hover {cursor: pointer;}
     -webkit-tap-highlight-color: transparent;
 `;
 
-export const ClipMute = styled(Scissors)`
+export const ClipMute = styled(Crop)`
     background: ${props => props.muted 
         ? "url('/images/mute_white.png') no-repeat;"
         : "url('/images/unmute_white.png') no-repeat;"
