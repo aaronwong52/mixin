@@ -3,6 +3,7 @@ import p5 from 'p5';
 import { useState, useEffect, useRef } from 'react';
 import * as styles from './editorStyles';
 import * as Tone from 'tone';
+import useDragRange from './useDragRange';
 import { TRANSPORT_LENGTH } from '../utils/constants';
 
 // recording is selectedRecording prop
@@ -91,11 +92,12 @@ function Editor({recording, solo, exporting}) {
     return (
         <styles.Editor>
             <styles.ControlView>
-                <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
-                <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
-                <styles.Scissors onClick={trimClip}></styles.Scissors>
+                <styles.ClipMute id="editorButton" onClick={mute} muted={muted}></styles.ClipMute>
+                <styles.ClipSolo id="editorButton" onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
+                <styles.Scissors id="editorButton" onClick={trimClip}></styles.Scissors>
             </styles.ControlView>
             <styles.EditorWaveform ref={editorRef}>
+                {useDragRange()}
             </styles.EditorWaveform>
         </styles.Editor>
     )

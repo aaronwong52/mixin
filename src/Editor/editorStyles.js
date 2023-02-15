@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 export const Editor = styled.div`
-    width: 100vw;
     height: 175px;
     margin-bottom: 40px;
     display: flex;
@@ -47,6 +46,7 @@ export const ClipSolo = styled(ClipMute)`
 `;
 
 export const EditorWaveform = styled.div`
+    position: relative;
     height: 175px;
     border-radius: 4px;
     box-shadow: 0 0 3px #727a87;
