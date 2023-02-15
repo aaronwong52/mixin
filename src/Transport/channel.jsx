@@ -39,6 +39,9 @@ export default function Channel({channelName, channelData}) {
       useEffect(() => {
         function handleClickOutside(event) {
           if (ref.current && !ref.current.contains(event.target)) {
+            if (event.target.id != "recordingsview") {
+              return;
+            }
             // clicked outside
             dispatch({type: 'deselectRecordings', payload: {}});
           }
@@ -74,15 +77,15 @@ export default function Channel({channelName, channelData}) {
         }
       }
   
-      const onDrag = (e) => {
-        if (dragStart.current < 0) {
-          // initial mouse position
-          dragStart.current = e.clientX; // desktop
-        }
-        if (e.type === 'mousemove' || e.type === 'touchmove') {
-          draggingRef.current = true;
-        }
-      };
+    const onDrag = (e) => {
+      if (dragStart.current < 0) {
+        // initial mouse position
+        dragStart.current = e.clientX; // desktop
+      }
+      if (e.type === 'mousemove' || e.type === 'touchmove') {
+        draggingRef.current = true;
+      }
+    };
 
     const handleEdit = (event) => {
         tempName.current = event.target.value;
