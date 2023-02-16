@@ -17,7 +17,10 @@ export const ControlView = styled.div`
 `;
 
 export const Crop = styled.button`
-    background: url('/images/crop.png') no-repeat;
+    background: ${props => props.started
+        ? "url('/images/checkmark.png') no-repeat;"
+        : "url('/images/crop.png') no-repeat;"
+    };
     width: 30px;
     height: 30px;
     padding: 0;

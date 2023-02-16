@@ -45,7 +45,7 @@ export default function useDragRange(highlighting, setPoints) {
     // stop handlers report distance from ends
     const onStopLeft = (e) => {
         let delta = e.clientX - dragStartLeft.current;
-        setPoints('start', delta); // call these when crop button is completed, not here!
+        setPoints('start', delta); // sent to editor for dispatch
     };
 
     const onStopRight = (e) => {

@@ -13,7 +13,7 @@ import Editor from '../Editor/editor';
 import TransportClock from '../Transport/transportClock';
 import ExportMix from '../Export/exportMix';
 
-import { StateContext, StateDispatchContext } from '../Transport/StateContext';
+import { StateContext, StateDispatchContext } from '../utils/StateContext';
 
 /* 
 
@@ -117,6 +117,11 @@ function App() {
     }
     setPlaying(false);
     Tone.Transport.stop();
+    dispatch({type: 'updateTransportPosition',
+      payload: {
+        time: Tone.Transport.seconds
+      }}
+    );
   }
 
   const mute = () => {

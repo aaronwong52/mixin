@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 
 import { PIX_TO_TIME } from "../utils/constants";
-import { StateContext, StateDispatchContext } from "./StateContext";
+import { StateContext, StateDispatchContext } from "../utils/StateContext";
 import Draggable from 'react-draggable';
 import * as styles from './channelStyles';
 
@@ -128,10 +128,9 @@ export default function Channel({channelName, channelData}) {
         let clips = document.getElementsByClassName("recording_clip_" + channelData.index);
         let recordings = channelData.recordings;
         for (let c = 0; c < clips.length; c++) {
-          clips[c].style.width = (recordings[c].duration * PIX_TO_TIME) + "px";
-          if (!clips[c].style.left) {
-            clips[c].style.left = (recordings[c].position * PIX_TO_TIME) + "px";
-          }
+          let width = recordings[c].duration - recordings[c].start;
+          clips[c].style.width = (width * PIX_TO_TIME) + "px";
+          clips[c].style.left = (recordings[c].start * PIX_TO_TIME) + "px";
         }
       }, [channelData]);
 

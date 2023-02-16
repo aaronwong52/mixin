@@ -21,6 +21,8 @@ export const recordingReducer = (state, action) => {
         return updateRecordingPosition(state, action.payload);
       case 'updateTransportPosition':
         return updateTransportPosition(state, action.payload);
+      case 'cropRecording':
+        return cropRecording(state, action.payload);
       case 'soloClip':
         return soloClip(state, action.payload);
       case 'unsoloClip':
@@ -136,7 +138,7 @@ export const recordingReducer = (state, action) => {
             ? recording.start + recording.duration
             : state.endPosition;
           return {
-            ...state, 
+            ...state,
             channels: [
               ...channels.slice(0, channelIndex),
               {...channels[channelIndex], 
@@ -169,12 +171,14 @@ export const recordingReducer = (state, action) => {
   };
   
   const updateRecordingPosition = (state, payload) => {
-    let oldPosition = payload.recording.start;
-    let newPosition = oldPosition + (payload.delta / PIX_TO_TIME);
-    if (newPosition < 0) {
+    let oldStart = payload.recording.start;
+    let newStart = oldStart + (payload.delta / PIX_TO_TIME);
+    payload.recording.position += (payload.delta / PIX_TO_TIME);
+    if (newStart < 0) {
       payload.recording.start = 0;
     } else {
-      payload.recording.start = newPosition;
+      payload.recording.start = newStart;
+
     }
     schedulePlayer(payload.recording);
     return updateRecording(state, payload.recording);
@@ -184,6 +188,14 @@ export const recordingReducer = (state, action) => {
     updatePlayerPositions(state, payload.time);
     return state;
   };
+
+  const cropRecording = (state, payload) => {
+    let recording = payload.recording;
+    recording.start += payload.leftDelta;
+    recording.duration -= payload.rightDelta;
+    _schedulePlayer(recording, recording.start);
+    return _setRecording(state, recording, {type: 'update'});
+  }
   
   const updateRecording = (state, recording) => {
     schedulePlayer(recording);
@@ -192,7 +204,9 @@ export const recordingReducer = (state, action) => {
   
   const _schedulePlayer = (recording, offset) => {
     recording.player.unsync();
-    recording.player.sync().start(recording.start, offset, recording.duration);
+    let startPos = (recording.start - recording.position) + offset;
+    recording.player.sync().start(startPos, startPos);
+    recording.player.stop(recording.duration);
   }
   /* 
     called when 
@@ -209,6 +223,7 @@ export const recordingReducer = (state, action) => {
       channel.recordings.forEach((recording) => {
         if (time >= recording.start) {
           let offset = calculatePlayOffset(time, recording.start);
+          console.log(offset);
           _schedulePlayer(recording, offset);
         }
       })

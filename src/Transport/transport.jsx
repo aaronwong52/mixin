@@ -8,7 +8,7 @@ import Channel from './channel';
 
 import { modulo } from '../utils/audio-utils';
 import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
-import { StateContext, StateDispatchContext } from './StateContext';
+import { StateContext, StateDispatchContext } from '../utils/StateContext';
 
 /* 
 
@@ -54,10 +54,10 @@ function Transport({exporting}) {
       ));
     };
 
-    const updateTransportPosition = () => {
+    const updateTransportPosition = (time) => {
       dispatch({type: 'updateTransportPosition',
           payload: {
-            time: ToneTransport.seconds
+            time: time
           }}
       );
     };  
@@ -108,12 +108,13 @@ function Transport({exporting}) {
           if (exporting) {
             return;
           }
-
-          ToneTransport.seconds = (sketch.mouseX + 1) / PIX_TO_TIME;
-          if (ToneTransport.seconds < 0.1) {
-            ToneTransport.seconds = 0;
+          
+          let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
+          if (newPosition < 0.1) {
+            newPosition = 0;
           }
-          updateTransportPosition();
+          ToneTransport.seconds = newPosition;
+          updateTransportPosition(newPosition);
         }
       };
       let transportp5 = new p5(s, transportRef.current);
