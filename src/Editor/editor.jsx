@@ -5,6 +5,7 @@ import * as styles from './editorStyles';
 import * as Tone from 'tone';
 import useDragRange from './useDragRange';
 import { TRANSPORT_LENGTH } from '../utils/constants';
+import { map } from '../utils/audio-utils';
 
 // recording is selectedRecording prop
 function Editor({recording, solo, exporting}) {
@@ -44,8 +45,7 @@ function Editor({recording, solo, exporting}) {
             }
             sketch.endShape();
             let toneTime = Tone.Transport.seconds;
-            let recordingEnd = recording.position + recording.duration;
-            let timeScaled = sketch.map(toneTime, recording.position, recordingEnd, 0, width);
+            let timeScaled = sketch.map(toneTime, recording.start, recording.end, 0, width);
             sketch.stroke("#868e9c");
             sketch.rect(timeScaled, 0, 1, 175, 0); // playline
         }
@@ -53,17 +53,25 @@ function Editor({recording, solo, exporting}) {
 
     const checkEnabled = () => {
         return (Object.keys(recording).length && !exporting);
-    }
+    };
+    
+    const _reset = () => {
+        _clearBuffer();
+        setHighlighting(false);
+    };
 
     const _clearBuffer = () => {
         setBuffer([]);
-    }
+    };
 
+    // mutating recording state directly for Tone operations
     const mute = () => {
         if (!checkEnabled()) {
             return;
         }
-        recording.player.mute = true;
+        muted 
+            ? recording.player.mute = false
+            : recording.player.mute = true;
         setMuted(!muted);
     };
 
@@ -74,11 +82,38 @@ function Editor({recording, solo, exporting}) {
         solo(recording.solo);
     };
 
-    const trimClip = () => {
+    // crop does not modify audio data
+    // start and end points are used to calculate offset and duration for Tone player
+
+    // !!! crop button should switch to check mark to complete
+    const cropClip = () => {
         if (!checkEnabled()) {
             return;
         }
-        setHighlighting(true);
+        setHighlighting(!highlighting);
+    };
+
+    const setPoints = (type, delta) => {
+
+        delta = map(delta, 0, TRANSPORT_LENGTH / 2.5, 0, recording.duration); // get point position in seconds
+
+        // is it computationally or logically expensive to actually go in and slice the buffer?
+
+        // computationally not expensive. should be able to just go into the buffer and slice out a range (within react guidelines)
+
+        // logically - if we don't slice it and just store cut points - how does that affect the UI?
+        // do we display the full clip and the full waveform in the editor? If we don't, why are we storing that data?
+        // there can be an option to undo crops, and/or to make them permanent?
+
+        // let's just build it out this way safely first
+        if (type == 'start') {
+            recording.start += delta;
+            // dispatch 
+
+        } else if (type == 'end') {
+            recording.duration -= delta;
+            // dispatch 
+        }
     }
 
     useEffect(() => {
@@ -90,7 +125,7 @@ function Editor({recording, solo, exporting}) {
                 console.log(e);
             }
         } else if (buffer.length) {
-            _clearBuffer();
+            _reset();
         }
         return () => waveform.remove();
     }, [recording, buffer]);
@@ -100,10 +135,10 @@ function Editor({recording, solo, exporting}) {
             <styles.ControlView>
                 <styles.ClipMute id="editorButton" onClick={mute} muted={muted}></styles.ClipMute>
                 <styles.ClipSolo id="editorButton" onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
-                <styles.Crop id="editorButton" onClick={trimClip}></styles.Crop>
+                <styles.Crop id="editorButton" onClick={cropClip}></styles.Crop>
             </styles.ControlView>
             <styles.EditorWaveform ref={editorRef}>
-                {useDragRange(highlighting)}
+                {useDragRange(highlighting, setPoints)}
             </styles.EditorWaveform>
         </styles.Editor>
     )

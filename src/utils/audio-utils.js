@@ -18,6 +18,11 @@ export const bufferFromToneBuffer = (toneBuffer) => {
 
 export const modulo = (n, d) => {
     return ((n % d) + d) % d;
+};
+
+export const map = (val, start1, end1, start2, end2) => {
+    let newVal = (val - start1) * (end2 - start2) / (end1 - start1) + start1;
+    return Math.min(Math.max(newVal, start2) , end2);
 }
 
 // export const concat = (one, space, two) => {

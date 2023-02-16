@@ -132,8 +132,8 @@ export const recordingReducer = (state, action) => {
             ],
           };
           case 'update': // update (replace) recording at recording.index
-            let newEndPosition = recording.position + recording.duration > state.endPosition
-            ? recording.position
+            let newEndPosition = recording.start + recording.duration > state.endPosition
+            ? recording.start + recording.duration
             : state.endPosition;
           return {
             ...state, 
@@ -159,6 +159,7 @@ export const recordingReducer = (state, action) => {
     let channelIndex = state.selectedChannel;
     let newIndex = channels[channelIndex].recordings.length;
     recording.index = newIndex;
+    recording.start = recording.position;
     recording.channel = channelIndex;
     return _setRecording(state, recording, {type: 'add'});
   };
@@ -168,11 +169,13 @@ export const recordingReducer = (state, action) => {
   };
   
   const updateRecordingPosition = (state, payload) => {
-    let oldPosition = payload.recording.position;
-    payload.recording.position = (oldPosition + (payload.delta / PIX_TO_TIME) < 0)
-      ? 0     // no hiding clips
-      : oldPosition + (payload.delta / PIX_TO_TIME)
-  
+    let oldPosition = payload.recording.start;
+    let newPosition = oldPosition + (payload.delta / PIX_TO_TIME);
+    if (newPosition < 0) {
+      payload.recording.start = 0;
+    } else {
+      payload.recording.start = newPosition;
+    }
     schedulePlayer(payload.recording);
     return updateRecording(state, payload.recording);
   };
@@ -183,32 +186,34 @@ export const recordingReducer = (state, action) => {
   };
   
   const updateRecording = (state, recording) => {
+    schedulePlayer(recording);
     return _setRecording(state, recording, {type: 'update'});
   };
   
+  const _schedulePlayer = (recording, offset) => {
+    recording.player.unsync();
+    recording.player.sync().start(recording.start, offset, recording.duration);
+  }
   /* 
     called when 
       1. recording is created, setting scheduling for that recording
       2. recording is moved, updating scheduling for that recording
   */
   const schedulePlayer = (recording) => {
-      recording.player.unsync();
-      recording.player.sync().start(recording.position); 
+      let offset = calculatePlayOffset(Tone.Transport.seconds, recording.start);
+      _schedulePlayer(recording, offset);
   };
 
-  // for when playhead is updated, updating scheduling based on new play position for all recordings
-  // what if instead of calling player.start(), we just store an offset?
   const updatePlayerPositions = (state, time) => {
-    state.channels.forEach((channel) => {
+    state.channels.forEach((channel) => {     
       channel.recordings.forEach((recording) => {
-        if (time >= recording.position) {
-          let offset = calculatePlayOffset(time, recording.position);
-          recording.player.unsync();
-          recording.player.sync().start(time, offset);
+        if (time >= recording.start) {
+          let offset = calculatePlayOffset(time, recording.start);
+          _schedulePlayer(recording, offset);
         }
       })
     });
-  }
+  };
   
   // return offset of playhead in relation to a recording clip
   // returns 0 if negative
