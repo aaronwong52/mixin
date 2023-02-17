@@ -13,7 +13,7 @@ import Editor from '../Editor/editor';
 import TransportClock from '../Transport/transportClock';
 import ExportMix from '../Export/exportMix';
 
-import { StateContext, StateDispatchContext } from '../Transport/StateContext';
+import { StateContext, StateDispatchContext } from '../utils/StateContext';
 
 /* 
 
@@ -61,7 +61,6 @@ function App() {
   const [muted, setMuted] = useState(false);
   const [state, dispatch] = useReducer(recordingReducer, initialState);
   
-  const [selectedRecording, setSelectedRecording] = useState({});
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
   const drawing = useRef();
@@ -78,12 +77,12 @@ function App() {
     recording.player = createPlayer(recording);
     
     if (typeof(recording.data) == "string") { // from recorder
-      dispatch({type: 'scheduleRecording', payload: recording}); // buffer should load before re-render
       recording.player.buffer.onload = (buffer) => {
         recording.data = buffer;
         recording.duration = buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
       };
+      dispatch({type: 'scheduleRecording', payload: recording});
     } else {
       dispatch({type: 'scheduleRecording', payload: recording});
     }
@@ -118,6 +117,11 @@ function App() {
     }
     setPlaying(false);
     Tone.Transport.stop();
+    dispatch({type: 'updateTransportPosition',
+      payload: {
+        time: Tone.Transport.seconds
+      }}
+    );
   }
 
   const mute = () => {
@@ -149,10 +153,8 @@ function App() {
     setDropping(false);
     if (files) {
       if (files[0].type !== "audio/mpeg" && files[0].type !== "audio/wav") {
-        // alert user
         return;
       } else {
-        // move on
         let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
         audioReader.readAsArrayBuffer(files[0]);
         audioReader.onload = async () => {
