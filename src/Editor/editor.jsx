@@ -37,20 +37,22 @@ function Editor({recording, solo, exporting}) {
             sketch.stroke('#ced4de')
 
             let toneTime = Tone.Transport.seconds;
-            let recordingEnd = recording.start + recording.duration;
-            let timeScaled = sketch.map(toneTime, recording.start, recordingEnd, 0, width);
-            let startInBuffer = sketch.map(recording.start, recording.position, recordingEnd, 0, buffer.length);
+            let trueEnd = recording.position + recording.player._buffer.duration; // uncropped duration is here
+            let timeScaled = sketch.map(toneTime, recording.start, recording.duration, 0, width);
+
+            let sampleStart = Math.round(sketch.map(recording.start, recording.position, trueEnd, 0, buffer.length));
+            let sampleEnd = Math.round(sketch.map(recording.duration, recording.position, trueEnd, 0, buffer.length));
             
-            let i = startInBuffer;
+            let i = sampleStart;
             let position = i;
 
-            while (i < buffer.length) {
+            while (i < sampleEnd) {
                 let sum = 0;
                 let window = 100;
                 for (let p = position; p < position + window; p++) {
                     sum += buffer[p] * 500;
                 }
-                let x = sketch.map(i, startInBuffer, buffer.length, 0, width);
+                let x = sketch.map(i, sampleStart, sampleEnd, 0, width);
                 let average = (sum * 2) / window;
                 sketch.vertex(x, height / 2 - average);
                 i += window;
@@ -97,7 +99,6 @@ function Editor({recording, solo, exporting}) {
     // crop does not modify audio data
     // start and end points are used to calculate offset and duration for Tone player
 
-    // !!! crop button should switch to check mark to complete
     const cropClip = () => {
         if (!checkEnabled()) {
             return;
@@ -108,10 +109,6 @@ function Editor({recording, solo, exporting}) {
                 leftDelta: cropLeft,
                 rightDelta: cropRight,
             }});
-            // need to update selectedRecording since editor depends on it
-            // change data schema so that selectedRecording is [c][r]? instead of a reference
-            // that way there's never confusion since selectedRecording will just point to a recording, no duplicates
-            // then just get it by accessing state
         }
         setHighlighting(!highlighting);
     };
@@ -128,6 +125,8 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
+        console.log(buffer)
+        console.log(recording)
         let waveform = new p5(s, editorRef.current);
         if (Object.keys(recording).length) {
             try {
@@ -139,7 +138,7 @@ function Editor({recording, solo, exporting}) {
             _reset();
         }
         return () => waveform.remove();
-    }, [recording, buffer]);
+    }, [recording.start, buffer]);
 
     return (
         <styles.Editor>

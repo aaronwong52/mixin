@@ -1,5 +1,6 @@
 import { PIX_TO_TIME } from '../utils/constants';
 import * as Tone from 'tone';
+import { v4 as uuidv4 } from 'uuid';
 
 export const recordingReducer = (state, action) => {
     switch (action.type) {
@@ -9,12 +10,16 @@ export const recordingReducer = (state, action) => {
         return selectChannel(state, action.payload);
       case 'addChannel':
         return addChannel(state, action.payload);
+      case 'deleteChannel':
+        return deleteChannel(state, action.payload);
       case 'selectRecording':
         return selectRecording(state, action.payload);
       case 'deselectRecordings':
         return deselectRecordings(state, action.payload);
       case 'scheduleRecording':
         return scheduleRecording(state, action.payload);
+      case 'deleteRecording':
+        return deleteRecording(state, action.payload);
       case 'updateBuffer':
         return updateBuffer(state, action.payload);
       case 'updateRecordingPosition':
@@ -37,6 +42,7 @@ export const recordingReducer = (state, action) => {
       channel: new Tone.Channel().toDestination(),
       name: 'Audio ' + (index + 1),
       recordings: [],
+      id: uuidv4(),
       index: index
     }
   }
@@ -49,29 +55,41 @@ export const recordingReducer = (state, action) => {
         firstChannel
       ],
       soloChannel: new Tone.Channel().toDestination(),
-      selectedChannel: 0
+      selectedChannel: firstChannel.id
     }
   };
 
   const addChannel = (state, payload) => {
-    let newIndex = state.channels.length;
+    let newLength = state.channels.length;
     
     // base case will never happen since it's initialized with 1 channel
-    let newChannel = getNewChannel(newIndex);
+    let newChannel = getNewChannel(newLength);
     return {
       ...state,
       channels: [
-        ...state.channels.slice(0, newIndex),
+        ...state.channels.slice(0, newLength),
         newChannel
       ],
-      selectedChannel: newIndex
+      selectedChannel: newChannel.id
     }
   };
 
-  const selectChannel = (state, index) => {
+  const deleteChannel = (state, payload) => {
     return {
       ...state,
-      selectedChannel: index
+      channels: [
+        ...state.channels.filter((channel) => channel.id == payload.id) // is cleanup needed?
+      ],
+      selectedRecording: payload.id == state.selectedRecording.channel // reset selected if on this channel
+        ? {}
+        : state.selectedRecording
+    }
+  }
+
+  const selectChannel = (state, id) => {
+    return {
+      ...state,
+      selectedChannel: id
     }
   };
 
@@ -92,16 +110,49 @@ export const recordingReducer = (state, action) => {
   };
 
   const scheduleRecording = (state, recording) => {  
-    let selectedChannel = state.selectedChannel;
+    let channelIndex = _findIndex(state.channels, state.selectedChannel);
     schedulePlayer(recording);
-    recording.player.connect(state.channels[selectedChannel].channel);
+    recording.player.connect(state.channels[channelIndex].channel);
     return addRecording(state, recording);
+  };
+
+  // moves a recording to a new channel
+  // payload.recording, payload.newChannelIndex
+  const adjustRecordingChannel = (state, payload) => {
+    let channels = state.channels;
+    let currChannelId = payload.recording.channel;
+
+    // how? pop one recording, push it to another channel?
+  };
+
+  const _findIndex = (channels, id) => {
+    return channels.findIndex((channel) => channel.id == id);
+  }
+
+  const deleteRecording = (state, payload) => {
+    let channels = state.channels;
+    let channelIndex = _findIndex(channels, state.selectedRecording.channel);
+    return {
+      ...state,
+      channels: [
+        ...channels.slice(0, channelIndex),
+        {...channels[channelIndex],
+          recordings: [{
+            ...channels[channelIndex].filter((recording) => {
+              recording.id != state.selectedRecording.id;
+            })
+          }]
+        },
+        ...channels.slice(channelIndex + 1, channels.length)
+      ],
+      selectedRecording: {}
+    }
   };
 
   // all logic for adding / updating recordings
   const _setRecording = (state, recording, action) => {
     let channels = state.channels;
-    let channelIndex = recording.channel;
+    let channelIndex = _findIndex(channels, recording.channel);
     let numRecordings = channels[channelIndex].recordings.length;
 
     if ( !numRecordings ) { // if no recordings on selected channel
@@ -127,7 +178,7 @@ export const recordingReducer = (state, action) => {
               {...channels[channelIndex], 
                 recordings: [
                   ...channels[channelIndex].recordings.slice(0, numRecordings),
-                  {...recording, channel: channelIndex},
+                  {...recording},
                 ]
               },
               ...channels.slice(channelIndex + 1, channels.length)
@@ -144,12 +195,15 @@ export const recordingReducer = (state, action) => {
               {...channels[channelIndex], 
                 recordings: [
                   ...channels[channelIndex].recordings.slice(0, recording.index),
-                  {...recording, channel: channelIndex},
+                  {...recording},
                   ...channels[channelIndex].recordings.slice(recording.index + 1, numRecordings)
                 ]
               },
               ...channels.slice(channelIndex + 1, channels.length)
             ],
+            selectedRecording: (recording.id == state.selectedRecording.id)
+              ? recording
+              : state.selectedRecording,
             endPosition: newEndPosition
           };
         }
@@ -157,12 +211,12 @@ export const recordingReducer = (state, action) => {
   };
   
   const addRecording = (state, recording) => {
-    let channels = state.channels;
-    let channelIndex = state.selectedChannel;
-    let newIndex = channels[channelIndex].recordings.length;
-    recording.index = newIndex;
+    let channelIndex = _findIndex(state.channels, state.selectedChannel);
+    let recordingIndex = state.channels[channelIndex].recordings.length;
+
+    recording.index = recordingIndex;
     recording.start = recording.position;
-    recording.channel = channelIndex;
+    recording.channel = state.selectedChannel;
     return _setRecording(state, recording, {type: 'add'});
   };
   
@@ -191,9 +245,10 @@ export const recordingReducer = (state, action) => {
 
   const cropRecording = (state, payload) => {
     let recording = payload.recording;
+
     recording.start += payload.leftDelta;
     recording.duration -= payload.rightDelta;
-    _schedulePlayer(recording, recording.start);
+    schedulePlayer(recording);
     return _setRecording(state, recording, {type: 'update'});
   }
   
@@ -205,6 +260,7 @@ export const recordingReducer = (state, action) => {
   const _schedulePlayer = (recording, offset) => {
     recording.player.unsync();
     let startPos = (recording.start - recording.position) + offset;
+    
     recording.player.sync().start(startPos, startPos);
     recording.player.stop(recording.duration);
   }
@@ -223,7 +279,6 @@ export const recordingReducer = (state, action) => {
       channel.recordings.forEach((recording) => {
         if (time >= recording.start) {
           let offset = calculatePlayOffset(time, recording.start);
-          console.log(offset);
           _schedulePlayer(recording, offset);
         }
       })
@@ -250,7 +305,8 @@ export const recordingReducer = (state, action) => {
   
   const unsoloClip = (state, recording) => {
     recording.player.disconnect(); // disconnect() -> disconnect all
-    recording.player.connect(state.channels[recording.channel].channel); // reconnect to original channel
+    let channelIndex = _findIndex(state.channels, recording.channel)
+    recording.player.connect(state.channels[channelIndex].channel); // reconnect to original channel
     state.soloChannel.solo = false;
     recording.solo = false;
     return updateRecording(state, recording);

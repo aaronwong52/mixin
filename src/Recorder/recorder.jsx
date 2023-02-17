@@ -36,13 +36,13 @@ function Recorder({receiveRecording, exporting}) {
             let blobUrl = URL.createObjectURL(data);
             let newRecording = {
                 id: uuidv4(), // unique identifier for each recording irregardless of channel
+                index: 0,
+                channel: 0, // id of channel
                 position: Tone.Transport.seconds, // initial position at playhead
                 duration: 0,
                 start: 0,
                 data: blobUrl, 
                 player: null,
-                index: 0,
-                channel: 0, // index of channel
                 solo: false,
                 loaded: false,
             };

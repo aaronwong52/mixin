@@ -105,7 +105,12 @@ export default function Channel({channelName, channelData}) {
     };
 
     const handleSelect = () => {
-      dispatch({type: 'selectChannel', payload: channelData.index});
+      dispatch({type: 'selectChannel', payload: channelData.id});
+    };
+
+    // deletes selected recording
+    const handleDelete = () => {
+      dispatch({type: 'deleteRecording', payload: {}})
     };
 
     const inflateRecordings = () => {
