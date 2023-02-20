@@ -79,7 +79,7 @@ function App() {
     if (typeof(recording.data) == "string") { // from recorder
       recording.player.buffer.onload = (buffer) => {
         recording.data = buffer;
-        recording.duration = buffer.duration;
+        recording.duration = recording.start + buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
       };
       dispatch({type: 'scheduleRecording', payload: recording});

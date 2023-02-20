@@ -49,7 +49,7 @@ function Transport({exporting}) {
     const inflateChannels = () => {
       return state.channels.map((c, index) => (
         <Channel channelName = {c.name} 
-        channelData = {{...c, index: index}}>
+          channelData = {{...c, index: index}}>
         </Channel>
       ));
     };

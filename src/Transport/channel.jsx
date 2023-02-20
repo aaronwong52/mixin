@@ -1,18 +1,23 @@
 import { useState, useEffect, useRef, useContext } from "react";
+import Recording from "./recording";
 
 import { PIX_TO_TIME } from "../utils/constants";
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 import Draggable from 'react-draggable';
 import * as styles from './channelStyles';
+import useKeyPress from "../utils/useKeyPress";
 
 export default function Channel({channelName, channelData}) {
 
     const [editingName, setEditingName] = useState(false);
     const [name, setName] = useState(channelName);
+    
     const tempName = useRef('');
 
     const dragStart = useRef(-1);
     const draggingRef = useRef(false);
+
+    const keyPress = useKeyPress();
 
     const inputWrapperRef = useRef(null);
     const recordingsWrapperRef = useRef(null);
@@ -51,7 +56,7 @@ export default function Channel({channelName, channelData}) {
       }, [ref])
     }
 
-    const updatePlayerPosition = (delta, recording, index) => {
+    const updatePlayerPosition = (delta, recording) => {
         dispatch({type: 'updateRecordingPosition', 
             payload: {
               recording: recording,
@@ -60,14 +65,14 @@ export default function Channel({channelName, channelData}) {
         );
     };
 
-    const onStop = (e, recording, index) => {
+    const onStop = (e, recording) => {
 
         // onDrag
         if (draggingRef.current) {
           draggingRef.current = false;
           // final mouse position shift !!! for Desktop only, mobile uses touch events?
           let delta = e.clientX - dragStart.current;
-          updatePlayerPosition(delta, recording, index);
+          updatePlayerPosition(delta, recording);
           dragStart.current = -1;
         }
   
@@ -88,11 +93,13 @@ export default function Channel({channelName, channelData}) {
     };
 
     const handleEdit = (event) => {
+        event.stopPropagation();
         tempName.current = event.target.value;
     };
 
     const handleEnter = (event) => {
-        if (event.key === 'Enter') {
+        event.stopPropagation();
+        if (event.key === 'Enter' && tempName.current != '') {
             setName(tempName.current);
             setEditingName(false);
         } else if (event.key === 'Escape') {
@@ -109,40 +116,33 @@ export default function Channel({channelName, channelData}) {
     };
 
     // deletes selected recording
-    const handleDelete = () => {
-      dispatch({type: 'deleteRecording', payload: {}})
+    const deleteSelectedRecording = () => {
+      dispatch({type: 'deleteSelectedRecording', payload: {}})
     };
 
     const inflateRecordings = () => {
         return channelData.recordings.map((r, index) => (
-          <Draggable key={"drag_rec_clip_" + index}
-              onDrag={(e) => onDrag(e)}
-              onStop={(e) => onStop(e, r, index)}
-              bounds={'#recordingsview'}>
-              {/* grid={[25, 25]} */}
-            <styles.RecordingView
-              ref={recordingsWrapperRef}
-              selected = {r.id == state.selectedRecording.id} 
-              className = {"recording_clip_" + channelData.index}>
-            </styles.RecordingView>
-          </Draggable>
+          <Recording r={r}
+            onDrag={onDrag}
+            onStop={onStop}
+            selected={state.selectedRecording}>
+          </Recording>
         ));
     };
 
-    useEffect(() => {
-        let clips = document.getElementsByClassName("recording_clip_" + channelData.index);
-        let recordings = channelData.recordings;
-        for (let c = 0; c < clips.length; c++) {
-          let width = recordings[c].duration - recordings[c].start;
-          clips[c].style.width = (width * PIX_TO_TIME) + "px";
+      useEffect(() => {
+        switch(keyPress) {
+          case 'Escape':
 
-          // clip.style.left should be only set if it hasn't been initialized yet - drag handlers will set position otherwise
-          if (!clips[c].style.left) {
-            clips[c].style.left = (recordings[c].start * PIX_TO_TIME) + "px";
-          }
+          case 'Backspace':
+            if (state.selectedRecording != {}) {
+              deleteSelectedRecording();
+            }
 
+          default: 
+            return;
         }
-      }, [channelData]);
+      }, [keyPress])
 
     return [
         <styles.Channel selected={channelData.index == state.selectedChannel}

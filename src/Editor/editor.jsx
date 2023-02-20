@@ -125,8 +125,6 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
-        console.log(buffer)
-        console.log(recording)
         let waveform = new p5(s, editorRef.current);
         if (Object.keys(recording).length) {
             try {
