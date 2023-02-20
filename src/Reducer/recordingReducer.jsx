@@ -221,19 +221,24 @@ export const recordingReducer = (state, action) => {
   };
   
   const updateBuffer = (state, recording) => {
+    schedulePlayer(recording);
     return updateRecording(state, recording);
   };
   
   const updateRecordingPosition = (state, payload) => {
-    let oldStart = payload.recording.start;
-    let newStart = oldStart + (payload.delta / PIX_TO_TIME);
-    payload.recording.position += (payload.delta / PIX_TO_TIME);
-    if (newStart < 0) {
-      payload.recording.start = 0;
-    } else {
-      payload.recording.start = newStart;
 
+    payload.recording.position += (payload.delta / PIX_TO_TIME);
+    payload.recording.start += payload.delta / PIX_TO_TIME;
+    payload.recording.duration += (payload.delta / PIX_TO_TIME);
+
+    if (payload.recording.start < 0) {
+      payload.recording.start = 0;
     }
+
+    if (payload.recording.duration <= 0) {
+      // console.log("Something went wrong here");
+    }
+
     schedulePlayer(payload.recording);
     return updateRecording(state, payload.recording);
   };
@@ -253,24 +258,20 @@ export const recordingReducer = (state, action) => {
   }
   
   const updateRecording = (state, recording) => {
-    schedulePlayer(recording);
     return _setRecording(state, recording, {type: 'update'});
   };
   
+  // internal method to shift start point of a recording
   const _schedulePlayer = (recording, offset) => {
     recording.player.unsync();
-    let startPos = (recording.start - recording.position) + offset;
-    
-    recording.player.sync().start(startPos, startPos);
+    let startPos = (recording.start + (recording.start - recording.position)) + offset;
+
+    recording.player.sync().start(startPos, offset);
     recording.player.stop(recording.duration);
-  }
-  /* 
-    called when 
-      1. recording is created, setting scheduling for that recording
-      2. recording is moved, updating scheduling for that recording
-  */
+  };
+
   const schedulePlayer = (recording) => {
-      let offset = calculatePlayOffset(Tone.Transport.seconds, recording.start);
+      let offset = calculatePlayOffset(Tone.Transport.seconds, recording);
       _schedulePlayer(recording, offset);
   };
 
@@ -278,7 +279,7 @@ export const recordingReducer = (state, action) => {
     state.channels.forEach((channel) => {     
       channel.recordings.forEach((recording) => {
         if (time >= recording.start) {
-          let offset = calculatePlayOffset(time, recording.start);
+          let offset = calculatePlayOffset(time, recording);
           _schedulePlayer(recording, offset);
         }
       })
@@ -287,11 +288,11 @@ export const recordingReducer = (state, action) => {
   
   // return offset of playhead in relation to a recording clip
   // returns 0 if negative
-  export const calculatePlayOffset = (playPosition, recordingPosition) => {
-    if (playPosition < recordingPosition) {
+  export const calculatePlayOffset = (playPosition, recording) => {
+    if (playPosition < recording.start || playPosition >= recording.duration) {
       return 0;
     }
-    return playPosition - recordingPosition;
+    return playPosition - recording.start;
   };
   
   // solo: route player to solo channel and solo it
@@ -303,6 +304,7 @@ export const recordingReducer = (state, action) => {
     return updateRecording(state, recording);
   };
   
+  // does player.disconnect() cancel start()?
   const unsoloClip = (state, recording) => {
     recording.player.disconnect(); // disconnect() -> disconnect all
     let channelIndex = _findIndex(state.channels, recording.channel)

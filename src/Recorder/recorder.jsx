@@ -38,9 +38,9 @@ function Recorder({receiveRecording, exporting}) {
                 id: uuidv4(), // unique identifier for each recording irregardless of channel
                 index: 0,
                 channel: 0, // id of channel
-                position: Tone.Transport.seconds, // initial position at playhead
-                duration: 0,
-                start: 0,
+                position: Tone.Transport.seconds, // same as recording.start, pre-crop
+                duration: 0, // exact position in seconds when recording should stop (real duration in player.buffer)
+                start: 0, // exact position in seconds when recording should start
                 data: blobUrl, 
                 player: null,
                 solo: false,

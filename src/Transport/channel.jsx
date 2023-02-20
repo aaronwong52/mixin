@@ -135,7 +135,12 @@ export default function Channel({channelName, channelData}) {
         for (let c = 0; c < clips.length; c++) {
           let width = recordings[c].duration - recordings[c].start;
           clips[c].style.width = (width * PIX_TO_TIME) + "px";
-          clips[c].style.left = (recordings[c].start * PIX_TO_TIME) + "px";
+
+          // clip.style.left should be only set if it hasn't been initialized yet - drag handlers will set position otherwise
+          if (!clips[c].style.left) {
+            clips[c].style.left = (recordings[c].start * PIX_TO_TIME) + "px";
+          }
+
         }
       }, [channelData]);
 
