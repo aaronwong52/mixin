@@ -119,7 +119,7 @@ function App() {
     Tone.Transport.stop();
     dispatch({type: 'updateTransportPosition',
       payload: {
-        time: Tone.Transport.seconds
+        time: 0
       }}
     );
   }
@@ -223,7 +223,6 @@ function App() {
               </Transport>
             </styles.MiddleView>
           </FileDrop>
-          <button onClick={() => dispatch({type: 'addChannel', payload: {}})}>Add channel</button>
           <styles.ControlView>
               <styles.PlayButton id="play_btn" onClick={onPlay} playState={playing}></styles.PlayButton>
               <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>

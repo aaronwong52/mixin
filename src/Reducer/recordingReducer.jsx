@@ -236,19 +236,16 @@ export const recordingReducer = (state, action) => {
     return updateRecording(state, recording);
   };
   
+  // error handling in the case where delta exceeds transport limits
+  // calculate when delta causes r.start to be 0, and hard limit it at that point
   const updateRecordingPosition = (state, payload) => {
-
-    payload.recording.position += (payload.delta / PIX_TO_TIME);
-    payload.recording.start += payload.delta / PIX_TO_TIME;
-    payload.recording.duration += (payload.delta / PIX_TO_TIME);
-
-    if (payload.recording.start < 0) {
-      payload.recording.start = 0;
+    let delta = payload.delta / PIX_TO_TIME;
+    if (payload.recording.start + delta < 0) {
+      delta = Math.abs(payload.recording.start) * -1; // so r.start + delta = 0
     }
-
-    if (payload.recording.duration <= 0) {
-      // console.log("Something went wrong here");
-    }
+    payload.recording.position += delta;
+    payload.recording.start += delta;
+    payload.recording.duration += delta;
 
     schedulePlayer(payload.recording);
     return updateRecording(state, payload.recording);
@@ -264,6 +261,7 @@ export const recordingReducer = (state, action) => {
 
     recording.start += payload.leftDelta;
     recording.duration -= payload.rightDelta;
+
     schedulePlayer(recording);
     return _setRecording(state, recording, {type: 'update'});
   }
@@ -278,10 +276,10 @@ export const recordingReducer = (state, action) => {
 
     // catch all calculation of start position
     // represents start of recording, including potential crop, adjusted for playhead position
-    let startPosition = (recording.start + (recording.start - recording.position)) + offset;
+    let startOffset = recording.start - recording.position + offset;
 
     // offset is passed again here because the recording starts and then seeks to the same offset position
-    recording.player.sync().start(startPosition, offset);
+    recording.player.sync().start(recording.position + startOffset, startOffset);
     recording.player.stop(recording.duration);
   };
 

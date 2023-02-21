@@ -114,7 +114,8 @@ function Editor({recording, solo, exporting}) {
     };
 
     const setPoints = (type, delta) => {
-        delta = map(delta, 0, TRANSPORT_LENGTH / 2.5, 0, recording.duration); // get point position in seconds
+        let recordingLength = recording.duration - recording.start;
+        delta = map(delta, 0, TRANSPORT_LENGTH / 2.5, 0, recordingLength); // get point position in seconds
 
         if (type == 'start') {
             setCropLeft(delta);

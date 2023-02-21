@@ -30,18 +30,16 @@ export default function Recording({r, onDrag, onStop, selected}) {
 
     useEffect(() => {
         let recording = document.getElementById("recording_clip_" + r.id);
-        let width = r.duration - r.start;
-        recording.style.width = (width * PIX_TO_TIME) + "px";
-        if (!recording.style.left) {
-            recording.style.left = (r.start * PIX_TO_TIME) + "px";
-        }
+        let clipWidth = r.duration - r.start;
+        recording.style.width = (clipWidth * PIX_TO_TIME) + "px";
     }, [r]);
 
     return [
         <Draggable key={"drag_rec_clip_" + r.id}
             onDrag={(e) => onDrag(e)}
             onStop={(e) => onStop(e, r)}
-            bounds={'#recordingsview'}>
+            bounds={'#recordingsview'}
+            position={{x: r.start * PIX_TO_TIME, y: 0}}>
             {/* grid={[25, 25]} */}
             <styles.RecordingView
                 ref={recordingsWrapperRef}

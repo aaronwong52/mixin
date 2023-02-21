@@ -123,6 +123,8 @@ function Transport({exporting}) {
 
     return (
         <styles.TransportView id="transportview">
+          <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+          </styles.AddChannelButton>
           {inflateChannels()}
           <styles.TransportTimeline>
             <styles.TimelinePadding>

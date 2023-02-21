@@ -145,7 +145,7 @@ export default function Channel({channelName, channelData}) {
       }, [keyPress])
 
     return [
-        <styles.Channel selected={channelData.index == state.selectedChannel}
+        <styles.Channel selected={channelData.id == state.selectedChannel}
             onClick={handleSelect}>
             <styles.ChannelHeader>
                 {editingName ? (
