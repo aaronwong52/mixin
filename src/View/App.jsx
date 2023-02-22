@@ -63,6 +63,7 @@ function App() {
   
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
+
   const drawing = useRef();
 
   const audioReader = new FileReader();

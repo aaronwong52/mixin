@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import Recording from "./recording";
 
-import { PIX_TO_TIME } from "../utils/constants";
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
-import Draggable from 'react-draggable';
+import { SnapContext } from './SnapContext';
+
 import * as styles from './channelStyles';
 import useKeyPress from "../utils/useKeyPress";
 
@@ -26,6 +26,8 @@ export default function Channel({channelName, channelData}) {
 
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
+
+    const snapState = useContext(SnapContext);
 
     function useOutsideInput(ref) {
       useEffect(() => {
@@ -56,23 +58,23 @@ export default function Channel({channelName, channelData}) {
       }, [ref])
     }
 
-    const updatePlayerPosition = (delta, recording) => {
+    const updatePlayerPosition = (newPosition, recording, snapState) => {
         dispatch({type: 'updateRecordingPosition', 
             payload: {
               recording: recording,
-              delta: delta
+              newPosition: newPosition,
+              snapState: snapState
             }}
         );
     };
 
-    const onStop = (e, recording) => {
+    const onStop = (e, data, recording) => {
 
         // onDrag
         if (draggingRef.current) {
           draggingRef.current = false;
-          // final mouse position shift !!! for Desktop only, mobile uses touch events?
-          let delta = e.clientX - dragStart.current;
-          updatePlayerPosition(delta, recording);
+   
+          updatePlayerPosition(data.x, recording, snapState);
           dragStart.current = -1;
         }
   
@@ -80,8 +82,8 @@ export default function Channel({channelName, channelData}) {
         else {
           dispatch({type: 'selectRecording', payload: recording})
         }
-      }
-  
+    };
+    
     const onDrag = (e) => {
       if (dragStart.current < 0) {
         // initial mouse position

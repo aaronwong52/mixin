@@ -1,8 +1,14 @@
 import styled from 'styled-components';
 
-export const TransportView = styled.div`
+// https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
+export const SpanWrap = styled.span`
   position: relative;
-  overflow: scroll;
+  display: block;
+`;
+
+export const TransportView = styled.div`
+  overflow-x: scroll;
+  overflow-y: visible;
   width: 92vw;
   display: flex;
   flex-direction: column;
@@ -19,10 +25,10 @@ export const TransportView = styled.div`
 `;
 
 export const TransportTimeline = styled.div`
+  position: relative;
   display: flex;
   width: 2075px;
-  position: relative;
-`
+`;
 
 export const TimelinePadding = styled.div`
   position: sticky;
@@ -59,4 +65,31 @@ export const AddChannelButton = styled.button`
   }
 `;
 
+export const SnapView = styled.div`
+  position: absolute;
+  right: 10px;
+  top: -60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 75px;
+  color: white;
+  font-size: 18px;
+`;
+
+export const SnapToggle = styled.button`
+  width: 25px;
+  height: 25px;
+  background: url('/images/power_white.png'); no-repeat;
+  background-size: 25px;
+  border: none;
+  border-radius: 50%;
+
+  opacity: ${props => props.snapState ? '0.8' : '0.2'};
+  box-shadow: ${props => props.snapState ? '0 -2.5px 12px #185cab' : 'none'};
+
+  :hover {
+    cursor: pointer;
+  }
+`;
 

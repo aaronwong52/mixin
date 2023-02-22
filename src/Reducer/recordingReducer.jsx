@@ -239,12 +239,13 @@ export const recordingReducer = (state, action) => {
   // error handling in the case where delta exceeds transport limits
   // calculate when delta causes r.start to be 0, and hard limit it at that point
   const updateRecordingPosition = (state, payload) => {
-    let delta = payload.delta / PIX_TO_TIME;
-    if (payload.recording.start + delta < 0) {
-      delta = Math.abs(payload.recording.start) * -1; // so r.start + delta = 0
+    let newPosition = payload.newPosition / PIX_TO_TIME;
+    let delta = newPosition - payload.recording.start;
+    if (payload.recording.start + newPosition < 0) {
+      newPosition = Math.abs(payload.recording.start) * -1; // so r.start + delta = 0
     }
     payload.recording.position += delta;
-    payload.recording.start += delta;
+    payload.recording.start = newPosition;
     payload.recording.duration += delta;
 
     schedulePlayer(payload.recording);
