@@ -63,6 +63,7 @@ function App() {
   
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
+
   const drawing = useRef();
 
   const audioReader = new FileReader();
@@ -79,7 +80,7 @@ function App() {
     if (typeof(recording.data) == "string") { // from recorder
       recording.player.buffer.onload = (buffer) => {
         recording.data = buffer;
-        recording.duration = buffer.duration;
+        recording.duration = recording.start + buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
       };
       dispatch({type: 'scheduleRecording', payload: recording});
@@ -119,7 +120,7 @@ function App() {
     Tone.Transport.stop();
     dispatch({type: 'updateTransportPosition',
       payload: {
-        time: Tone.Transport.seconds
+        time: 0
       }}
     );
   }
@@ -223,7 +224,6 @@ function App() {
               </Transport>
             </styles.MiddleView>
           </FileDrop>
-          <button onClick={() => dispatch({type: 'addChannel', payload: {}})}>Add channel</button>
           <styles.ControlView>
               <styles.PlayButton id="play_btn" onClick={onPlay} playState={playing}></styles.PlayButton>
               <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>

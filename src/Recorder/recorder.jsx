@@ -35,12 +35,11 @@ function Recorder({receiveRecording, exporting}) {
             let data = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
             let newRecording = {
-                id: uuidv4(), // unique identifier for each recording irregardless of channel
-                index: 0,
-                channel: 0, // id of channel
-                position: Tone.Transport.seconds, // initial position at playhead
-                duration: 0,
-                start: 0,
+                id: uuidv4(),
+                channel: null, // id of channel
+                position: Tone.Transport.seconds, // start of recording - same as recording.start, but is not mutated by cropping
+                duration: 0, // exact position in seconds when recording should stop (real duration in player.buffer)
+                start: Tone.Transport.seconds, // exact position in seconds when recording should start
                 data: blobUrl, 
                 player: null,
                 solo: false,

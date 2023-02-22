@@ -1,4 +1,4 @@
-import { useRef, useEffect, useContext} from 'react';
+import { useRef, useEffect, useContext, useState} from 'react';
 import p5 from 'p5';
 
 import * as styles from './transportStyles';
@@ -8,7 +8,9 @@ import Channel from './channel';
 
 import { modulo } from '../utils/audio-utils';
 import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
+
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
+import { SnapContext } from './SnapContext';
 
 /* 
 
@@ -46,10 +48,12 @@ function Transport({exporting}) {
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
 
+    const [snapState, setSnapState] = useState(false);
+
     const inflateChannels = () => {
       return state.channels.map((c, index) => (
         <Channel channelName = {c.name} 
-        channelData = {{...c, index: index}}>
+          channelData = {{...c, index: index}}>
         </Channel>
       ));
     };
@@ -122,15 +126,28 @@ function Transport({exporting}) {
     }, []);
 
     return (
+      <styles.SpanWrap>
         <styles.TransportView id="transportview">
-          {inflateChannels()}
+          <SnapContext.Provider value={snapState}>
+            {inflateChannels()}
+          </SnapContext.Provider>
           <styles.TransportTimeline>
             <styles.TimelinePadding>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
             </styles.Timeline>
+            <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+            </styles.AddChannelButton>
           </styles.TransportTimeline>
         </styles.TransportView>
+        <styles.SnapView>
+          <p>Snap</p>
+          <styles.SnapToggle 
+            snapState={snapState} 
+            onClick={() => setSnapState(!snapState)}>
+          </styles.SnapToggle>
+        </styles.SnapView>
+      </styles.SpanWrap>
     )
 }
 
