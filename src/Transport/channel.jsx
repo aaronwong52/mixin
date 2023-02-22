@@ -10,7 +10,6 @@ import useKeyPress from "../utils/useKeyPress";
 export default function Channel({channelName, channelData}) {
 
     const [editingName, setEditingName] = useState(false);
-    const [name, setName] = useState(channelName);
     
     const tempName = useRef('');
 
@@ -20,9 +19,7 @@ export default function Channel({channelName, channelData}) {
     const keyPress = useKeyPress();
 
     const inputWrapperRef = useRef(null);
-    const recordingsWrapperRef = useRef(null);
     useOutsideInput(inputWrapperRef);
-    useOutsideRecordings(recordingsWrapperRef);
 
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
@@ -35,22 +32,6 @@ export default function Channel({channelName, channelData}) {
           if (ref.current && !ref.current.contains(event.target)) {
             // clicked outside
             setEditingName(false);
-          }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-      }, [ref])
-    }
-
-    function useOutsideRecordings(ref) {
-      useEffect(() => {
-        function handleClickOutside(event) {
-          if (ref.current && !ref.current.contains(event.target)) {
-            if (event.target.id != "recordingsview") {
-              return;
-            }
-            // clicked outside
-            dispatch({type: 'deselectRecordings', payload: {}});
           }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -102,7 +83,10 @@ export default function Channel({channelName, channelData}) {
     const handleEnter = (event) => {
         event.stopPropagation();
         if (event.key === 'Enter' && tempName.current != '') {
-            setName(tempName.current);
+            dispatch({
+              type: 'editChannelName', 
+              payload: {channelId: channelData.id, name: tempName.current}
+            });
             setEditingName(false);
         } else if (event.key === 'Escape') {
             setEditingName(false);
@@ -111,6 +95,8 @@ export default function Channel({channelName, channelData}) {
 
     const handleDoubleClick = () => {
         setEditingName(true);
+        let input = document.getElementById('channelNameInput');
+        input.click();
     };
 
     const handleSelect = () => {
@@ -119,11 +105,15 @@ export default function Channel({channelName, channelData}) {
 
     // deletes selected recording
     const deleteSelectedRecording = () => {
-      dispatch({type: 'deleteSelectedRecording', payload: {}})
+      dispatch({type: 'deleteSelectedRecording', payload: state.selectedRecording});
     };
 
+    const deleteSelectedChannel = () => {
+      dispatch({type: 'deleteSelectedChannel', payload: state.selectedChannel});
+    }
+
     const inflateRecordings = () => {
-        return channelData.recordings.map((r, index) => (
+        return channelData.recordings.map((r) => (
           <Recording r={r}
             onDrag={onDrag}
             onStop={onStop}
@@ -136,9 +126,18 @@ export default function Channel({channelName, channelData}) {
         switch(keyPress) {
           case 'Escape':
 
+           /* on backspace pressed:
+              if a recording is selected:
+                  delete the recording
+              
+              else if a channel is selected:
+                  delete the channel (and its recordings)
+            */
           case 'Backspace':
-            if (state.selectedRecording != {}) {
+            if (Object.keys(state.selectedRecording).length != 0) {
               deleteSelectedRecording();
+            } else if (state.selectedChannel && state.channels.length > 1) {
+              deleteSelectedChannel();
             }
 
           default: 
@@ -155,10 +154,11 @@ export default function Channel({channelName, channelData}) {
                         ref={inputWrapperRef}
                         onChange={handleEdit}
                         onKeyDown={handleEnter}
-                        placeholder={name}>
+                        placeholder={channelName}
+                        autoFocus={true}>
                     </styles.ChannelNameInput>
                 ) : (
-                    <styles.ChannelName onDoubleClick={handleDoubleClick}>{name}</styles.ChannelName>
+                    <styles.ChannelName onDoubleClick={handleDoubleClick}>{channelName}</styles.ChannelName>
                 )}
             </styles.ChannelHeader>
             <styles.ChannelView>

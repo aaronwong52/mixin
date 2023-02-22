@@ -19,7 +19,7 @@ export default function Recording({r, onDrag, onStop, selected}) {
             function handleClickOutside(event) {
             if (ref.current && !ref.current.contains(event.target)) {
                 if (event.target.id != "recordingsview") {
-                return;
+                    return;
                 }
                 // clicked outside
                 dispatch({type: 'deselectRecordings', payload: {}});

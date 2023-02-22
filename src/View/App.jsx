@@ -48,7 +48,7 @@ how to fix this:
 const initialState = {
     channels: [],
     selectedRecording: {},
-    selectedChannel: 0,
+    selectedChannel: 0, // id-based system, set to 0 when no channels are selected
     endPosition: 0,
     soloChannel: null,
 };
@@ -123,7 +123,7 @@ function App() {
         time: 0
       }}
     );
-  }
+  };
 
   const mute = () => {
     if (exporting) {
@@ -132,7 +132,7 @@ function App() {
     let mute = Tone.getContext().destination.mute;
     mute = !mute;
     setMuted(!muted);
-  }
+  };
 
   // takes current solo state (boolean)
   // soloes or un soloes
@@ -142,11 +142,11 @@ function App() {
     } else {
       dispatch({type: 'soloClip',  payload: state.selectedRecording});
     }
-  }
+  };
   
   const setExportingState = () => {
     setExporting(!exporting);
-  }
+  };
 
 
   const upload = (files, e) => {
@@ -174,7 +174,7 @@ function App() {
         }
       } 
     }
-  }
+  };
 
   const newRecordingFromBuffer = (buffer) => {
     let newRecording = {
@@ -190,7 +190,7 @@ function App() {
 
   useEffect(() => {
     dispatch({type: 'initializeChannels', payload: {}});
-  }, [])
+  }, []);
 
   return (
     <StateContext.Provider value={state}>

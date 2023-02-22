@@ -50,6 +50,30 @@ function Transport({exporting}) {
 
     const [snapState, setSnapState] = useState(false);
 
+    const channelsWrapperRef = useRef(null);
+    useOutsideChannels(channelsWrapperRef);
+
+    function useOutsideChannels(ref) {
+      useEffect(() => {
+        function handleClickOutside(event) {
+          if (ref.current && !ref.current.contains(event.target)) {
+            if (event.target.tagName == 'BUTTON') {
+              return;
+            }
+            // clicked outside ref
+
+            // Deselecting channels is not actually a useful function
+            // Better to have one selected at all times
+            // Support for selecting multiple channels and recordings would be nice
+
+            // dispatch({type: 'deselectAllChannels', payload: {}});
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, [ref])
+    }
+
     const inflateChannels = () => {
       return state.channels.map((c, index) => (
         <Channel channelName = {c.name} 
@@ -127,7 +151,7 @@ function Transport({exporting}) {
 
     return (
       <styles.SpanWrap>
-        <styles.TransportView id="transportview">
+        <styles.TransportView id="transportview" ref={channelsWrapperRef}>
           <SnapContext.Provider value={snapState}>
             {inflateChannels()}
           </SnapContext.Provider>
