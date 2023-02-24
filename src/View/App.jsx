@@ -75,7 +75,7 @@ function App() {
 
   // receive from Recorder -> add to store and send to Transport
   const receiveRecording = (recording) => {
-    recording.player = createPlayer(recording);
+    recording.player = createPlayer(recording.data);
     
     if (typeof(recording.data) == "string") { // from recorder
       recording.player.buffer.onload = (buffer) => {
@@ -83,9 +83,9 @@ function App() {
         recording.duration = recording.start + buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
       };
-      dispatch({type: 'scheduleRecording', payload: recording});
+      dispatch({type: 'scheduleNewRecording', payload: recording});
     } else {
-      dispatch({type: 'scheduleRecording', payload: recording});
+      dispatch({type: 'scheduleNewRecording', payload: recording});
     }
   };
 

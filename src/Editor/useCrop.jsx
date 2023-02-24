@@ -2,11 +2,10 @@ import Draggable from "react-draggable";
 import styled from 'styled-components';
 
 import { useEffect, useRef } from "react";
-import { TRANSPORT_LENGTH } from "../utils/constants";
 
 const DragRangeView = styled.div`
     position: absolute;
-    display: ${props => props.highlighting ? 'flex' : 'none'};
+    display: ${props => props.cropping ? 'flex' : 'none'};
     width: 100%;
     height: 175px;
 `;
@@ -18,7 +17,7 @@ const RightPadding = styled(LeftPadding)`
     
 `;
 
-const HighlightArea = styled.div`
+const CropArea = styled.div`
     flex-grow: 1;
     flex-shrink: 1;
     background-color: rgba(29, 75, 143, 0.4);
@@ -36,7 +35,7 @@ const DragHandleLeft = styled.div`
 const DragHandleRight = styled(DragHandleLeft)`
 `;
 
-export default function useDragRange(highlighting, setPoints) {
+export default function useCrop(cropping, setPoints) {
 
     const dragStartLeft = useRef(-1);
     const dragStartRight = useRef(-1);
@@ -95,14 +94,14 @@ export default function useDragRange(highlighting, setPoints) {
     }, [])
 
     return [
-        <DragRangeView highlighting={highlighting} id="drag_range_view">
+        <DragRangeView cropping={cropping} id="drag_range_view">
             <Draggable bounds={"#drag_range_view"}
                 onStop={(e) => onStopLeft(e)}
                 onDrag={(e) => onDragLeft(e)}>
                 <DragHandleLeft id="drag_handle_left"></DragHandleLeft>
             </Draggable>
             <LeftPadding id="range_left_padding"></LeftPadding>
-            <HighlightArea id="drag_highlight"></HighlightArea>
+            <CropArea id="drag_highlight"></CropArea>
             <Draggable axis="none" bounds={"#drag_range_view"}
                 onStop={(e) => onStopRight(e)}
                 onDrag={(e) => onDragRight(e)}>

@@ -5,9 +5,9 @@ export const bufferToWav = (buffer) => {
     return toWav(buffer);
 }
 
-export const createPlayer = (recording) => {
+export const createPlayer = (data) => {
     return new Tone.Player({
-      url: recording.data,
+      url: data,
       loop: false
     }).sync();
 };

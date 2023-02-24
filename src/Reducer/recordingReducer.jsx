@@ -1,4 +1,5 @@
 import { PIX_TO_TIME } from '../utils/constants';
+import { createPlayer } from '../utils/audio-utils';
 import * as Tone from 'tone';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,8 +21,8 @@ export const recordingReducer = (state, action) => {
         return selectRecording(state, action.payload);
       case 'deselectRecordings':
         return deselectRecordings(state, action.payload);
-      case 'scheduleRecording':
-        return scheduleRecording(state, action.payload);
+      case 'scheduleNewRecording':
+        return scheduleNewRecording(state, action.payload);
       case 'deleteSelectedRecording':
         return _deleteRecording(state, action.payload);
       case 'updateBuffer':
@@ -32,6 +33,10 @@ export const recordingReducer = (state, action) => {
         return updateTransportPosition(state, action.payload);
       case 'cropRecording':
         return cropRecording(state, action.payload);
+      case 'addSplitRecording':
+        return addSplitRecording(state, action.payload);
+      case 'updateSplitRecording':
+        return updateSplitRecording(state, action.payload);
       case 'soloClip':
         return soloClip(state, action.payload);
       case 'unsoloClip':
@@ -146,10 +151,15 @@ export const recordingReducer = (state, action) => {
     };
   };
 
-  const scheduleRecording = (state, recording) => {
-    let channelIndex = _findChannelIndex(state.channels, state.selectedChannel);
+  const _scheduleRecording = (state, recording) => {
+    let channelIndex = _findChannelIndex(state.channels, recording.channel);
     schedulePlayer(recording);
     recording.player.connect(state.channels[channelIndex].channel);
+  }
+
+  const scheduleNewRecording = (state, recording) => {
+    recording.channel = state.selectedChannel;
+    _scheduleRecording(state, recording);
     return addRecording(state, recording);
   };
 
@@ -186,7 +196,6 @@ export const recordingReducer = (state, action) => {
           recordings: [
             ...channels[channelIndex].recordings.filter((recording) => {
               if (recording.id == selectedRecording.id) {
-                
                 recording.player.dispose();
               }
               return recording.id != selectedRecording.id;
@@ -224,7 +233,7 @@ export const recordingReducer = (state, action) => {
       switch (action.type) {
 
         // append new recording to end
-        case 'add': 
+        case 'add':
           return {
             ...state, 
             channels: [
@@ -265,8 +274,6 @@ export const recordingReducer = (state, action) => {
   };
   
   const addRecording = (state, recording) => {
-    let channelIndex = _findChannelIndex(state.channels, state.selectedChannel);
-
     recording.start = recording.position;
     recording.channel = state.selectedChannel;
     return _setRecording(state, recording, {type: 'add'});
@@ -306,6 +313,49 @@ export const recordingReducer = (state, action) => {
 
     schedulePlayer(recording);
     return _setRecording(state, recording, {type: 'update'});
+  };
+
+  /* 
+    1. create new recording
+    2. set 1st recording duration to split point
+    3. set 2nd recording start to split point
+    3. set 2nd recording position to (split point - crop offset)
+    4. set 2nd recording duration to 1st recording previous duration
+    4. split buffer at split point
+    5. update recording players with the buffer halves
+  */
+  const addSplitRecording = (state, payload) => {
+    let splitPoint = payload.splitPoint;
+    let originalRecording = payload.recording;
+    let originalBuffer = originalRecording.player.buffer;
+
+    let secondBuffer = originalBuffer.slice(splitPoint, originalRecording.duration);
+
+    let cropOffset = originalRecording.start - originalRecording.position;
+  
+    let newRecording = {
+      id: uuidv4(),
+      channel: originalRecording.channel, // id of channel
+      position: splitPoint - cropOffset,
+      duration: originalRecording.duration,
+      start: splitPoint,
+      data: {}, 
+      player: createPlayer(secondBuffer),
+      solo: false,
+      loaded: true,
+    };
+    _scheduleRecording(state, newRecording);
+    return _setRecording(state, newRecording, {type: 'add'});
+  };
+
+  const updateSplitRecording = (state, payload) => {
+    let originalRecording = payload.recording;
+    let originalBuffer = originalRecording.player.buffer;
+    let firstBuffer = originalBuffer.slice(0, payload.splitPoint);
+    originalBuffer.dispose();
+    originalRecording.player.buffer = firstBuffer;
+    originalRecording.duration = payload.splitPoint;
+    return _setRecording(state, originalRecording, {type: 'update'});
   }
   
   const updateRecording = (state, recording) => {
