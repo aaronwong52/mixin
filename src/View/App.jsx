@@ -79,14 +79,19 @@ function App() {
   const receiveRecording = (recording) => {
     recording.player = createPlayer(recording.data);
     
-    if (typeof(recording.data) == "string") { // from recorder
+    // recording.data is blobUrl
+    if (typeof(recording.data) == "string") {
       recording.player.buffer.onload = (buffer) => {
         recording.data = buffer;
         recording.duration = recording.start + buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
+        Tone.Transport.seconds = recording.duration;
+        dispatch({type: 'updateTransportPosition', payload: {time: recording.duration}});
       };
       dispatch({type: 'scheduleNewRecording', payload: recording});
-    } else {
+    } 
+    // recording.data is the buffer itself
+    else {
       dispatch({type: 'scheduleNewRecording', payload: recording});
     }
   };
@@ -179,11 +184,13 @@ function App() {
   };
 
   const newRecordingFromBuffer = (buffer) => {
+    let recordingTime = Tone.Transport.seconds;
     let newRecording = {
-      position: Tone.Transport.seconds,
-      duration: buffer.duration, 
+      position: recordingTime,
+      start: recordingTime,
+      duration: recordingTime + buffer.duration, 
       data: buffer,
-      player: newPlayer,
+      player: null,
       channel: null,
       loaded: true
     };
@@ -193,7 +200,7 @@ function App() {
   useEffect(() => {
     dispatch({type: 'initializeChannels', payload: {}});
   }, []);
-  
+
   return (
     <StateContext.Provider value={state}>
       <StateDispatchContext.Provider value={dispatch}>
@@ -204,12 +211,12 @@ function App() {
                 <styles.Title>MIXIN</styles.Title>
                 <styles.MenuOption onClick={setExportingState}>Export</styles.MenuOption>
               </styles.MenuLabels>
+              <ExportMix displayState={exporting} channels={state.channels}></ExportMix>
             </styles.MixologyMenu>
             <Recorder 
               receiveRecording={receiveRecording} 
               exporting={exporting}>
             </Recorder>
-            <ExportMix displayState={exporting} channels={state.channels}></ExportMix>
           </styles.TopView>
           <FileDrop 
               onDrop={(files, event) => upload(files, event)}

@@ -13,7 +13,6 @@ export const TopView = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   justify-content: space-evenly;
-
   padding: 25px 25px;
   border-radius: 10px;
 `;
@@ -22,8 +21,11 @@ export const MixologyMenu = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
   justify-content: space-evenly;
+  height: 12vh;
   color: #ced4de;
+  margin-top: 20px;
   margin-left: 25px;
 `;
 
@@ -31,14 +33,14 @@ export const MenuLabels = styled.div`
 `;
 
 export const Title = styled.h2`
-  font-size: 24px;
+  font-size: 30px;
   margin-bottom: 0px;
 `;
 
 export const MenuOption = styled.h3`
   font-size: 18px;
   width: fit-content;
-  margin: 35px 0px;
+  margin: 35px 10px;
   :hover {cursor: pointer; color: white;}
 `;
 

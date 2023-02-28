@@ -23,8 +23,7 @@ const fadeOut = keyframes`
 export const ExportMenuView = styled.div`
     visibility: ${props => props.displayState ? 'visible' : 'hidden'};
     position: absolute;
-    top: 200px;
-    left: 50px;
+    top: calc(12vh + 15px);
     height: 350px;
     width: 275px;
     border-radius: 10px;
@@ -33,6 +32,7 @@ export const ExportMenuView = styled.div`
     transition: visibility 0.2s linear;
     border: none;
     box-shadow: 0 0 2px #1e2126;
+    margin-left: 10px;
     padding: 10px 25px;
     z-index: 99999;
 `;

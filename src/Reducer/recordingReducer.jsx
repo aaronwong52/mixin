@@ -224,63 +224,44 @@ export const recordingReducer = (state, action) => {
     let channelIndex = _findChannelIndex(channels, recording.channel);
     let recordingIndex = _findRecordingIndex(channels[channelIndex].recordings, recording.id);
     let numRecordings = channels[channelIndex].recordings.length;
+    switch (action.type) {
 
-     // if there are no recordings on the selected channel
-    if ( !numRecordings ) {
-      return {
-        ...state, 
-        channels: [
-          ...channels.slice(0, channelIndex),
-          {...channels[channelIndex],
-            recordings: [{
-              ...recording
-            }]
-          },
-          ...channels.slice(channelIndex + 1, channels.length)
-        ]
-      };
-    } else { // if there are already recordings on selected channel
-      switch (action.type) {
-
-        // append new recording to end
-        case 'add':
-          return {
-            ...state, 
-            channels: [
-              ...channels.slice(0, channelIndex),
-              {...channels[channelIndex], 
-                recordings: [
-                  ...channels[channelIndex].recordings.slice(0, numRecordings),
-                  {...recording},
-                ]
-              },
-              ...channels.slice(channelIndex + 1, channels.length)
-            ],
-          };
-          case 'update': // update (replace) recording at recordingIndex
-            let newEndPosition = recording.start + recording.duration > state.endPosition
-            ? recording.start + recording.duration
-            : state.endPosition;
-          return {
-            ...state,
-            channels: [
-              ...channels.slice(0, channelIndex),
-              {...channels[channelIndex], 
-                recordings: [
-                  ...channels[channelIndex].recordings.slice(0, recordingIndex),
-                  {...recording},
-                  ...channels[channelIndex].recordings.slice(recordingIndex + 1, numRecordings)
-                ]
-              },
-              ...channels.slice(channelIndex + 1, channels.length)
-            ],
-            selectedRecording: (recording.id == state.selectedRecording.id)
-              ? recording
-              : state.selectedRecording,
-            endPosition: newEndPosition
-          };
-        }
-    }
+      // append new recording to end
+      case 'add':
+        return {
+          ...state, 
+          channels: [
+            ...channels.slice(0, channelIndex),
+            {...channels[channelIndex], 
+              recordings: [...channels[channelIndex].recordings.slice(0, numRecordings), {...recording}]
+            },
+            ...channels.slice(channelIndex + 1, channels.length)
+          ],
+        };
+        // update (replace) recording at recordingIndex
+        case 'update': 
+          let newEndPosition = recording.start + recording.duration > state.endPosition
+          ? recording.start + recording.duration
+          : state.endPosition;
+        return {
+          ...state,
+          channels: [
+            ...channels.slice(0, channelIndex),
+            {...channels[channelIndex], 
+              recordings: [
+                ...channels[channelIndex].recordings.slice(0, recordingIndex),
+                {...recording},
+                ...channels[channelIndex].recordings.slice(recordingIndex + 1, numRecordings)
+              ]
+            },
+            ...channels.slice(channelIndex + 1, channels.length)
+          ],
+          selectedRecording: (recording.id == state.selectedRecording.id)
+            ? recording
+            : state.selectedRecording,
+          endPosition: newEndPosition
+        };
+      }
   };
   
   const addRecording = (state, recording) => {
@@ -365,6 +346,7 @@ export const recordingReducer = (state, action) => {
     let originalRecording = payload.recording;
     let originalBuffer = originalRecording.player.buffer;
     let firstBuffer = originalBuffer.slice(0, payload.splitPoint);
+
     originalBuffer.dispose();
     originalRecording.player.buffer = firstBuffer;
     originalRecording.duration = payload.splitPoint;

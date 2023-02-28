@@ -23,7 +23,7 @@ function Editor({recording, solo, exporting}) {
     const editorRef = useRef();
 
     // resize canvas on window resize!
-    const s = (sketch) => {
+    const waveformSketch = (sketch) => {
         let width = EDITOR_LENGTH;
         let height = 175;
         sketch.setup = () => {
@@ -164,7 +164,7 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
-        let waveform = new p5(s, editorRef.current);
+        let waveform = new p5(waveformSketch, editorRef.current);
         if (Object.keys(recording).length) {
             try {
                 setBuffer(recording.player.buffer._buffer.getChannelData(0));
