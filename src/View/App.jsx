@@ -51,6 +51,8 @@ const initialState = {
     selectedChannel: 0, // id-based system, set to 0 when no channels are selected
     endPosition: 0,
     soloChannel: null,
+    time: 0,
+    playing: false
 };
 
 // app serves to put views together and act as a data processor + connector to the reducer
@@ -92,11 +94,14 @@ function App() {
   const toggle = () => {
     if (Tone.Transport.state === "started") {
       Tone.Transport.pause();
+      dispatch({type: 'togglePlay', payload: {playing: false, time: Tone.Transport.seconds}});
       return true;
     }
 
     else if (state.channels.length > 0) {
+      Tone.context.resume();
       Tone.Transport.start();
+      dispatch({type: 'togglePlay', payload: {playing: true, time: Tone.Transport.seconds}});
       return true;
     }
     return false;
@@ -118,11 +123,8 @@ function App() {
     }
     setPlaying(false);
     Tone.Transport.stop();
-    dispatch({type: 'updateTransportPosition',
-      payload: {
-        time: 0
-      }}
-    );
+    dispatch({type: 'togglePlay', payload: {playing: false, time: 0}});
+    dispatch({type: 'updateTransportPosition', payload: {time: 0}});
   };
 
   const mute = () => {
@@ -191,7 +193,7 @@ function App() {
   useEffect(() => {
     dispatch({type: 'initializeChannels', payload: {}});
   }, []);
-
+  
   return (
     <StateContext.Provider value={state}>
       <StateDispatchContext.Provider value={dispatch}>
@@ -199,7 +201,7 @@ function App() {
           <styles.TopView>
             <styles.MixologyMenu>
               <styles.MenuLabels>
-                <styles.Title>MIXOLOGY</styles.Title>
+                <styles.Title>MIXIN</styles.Title>
                 <styles.MenuOption onClick={setExportingState}>Export</styles.MenuOption>
               </styles.MenuLabels>
             </styles.MixologyMenu>

@@ -3,9 +3,9 @@ import p5 from 'p5';
 import { useState, useEffect, useRef, useContext } from 'react';
 import * as styles from './editorStyles';
 import * as Tone from 'tone';
-import useCrop from './useCrop';
-import useSplit from './useSplit';
-import { EDITOR_LENGTH } from '../utils/constants';
+import Crop from './Crop';
+import Split from './Split';
+import { EDITOR_LENGTH, PIX_TO_TIME } from '../utils/constants';
 import { map } from '../utils/audio-utils';
 
 import { StateDispatchContext } from '../utils/StateContext';
@@ -20,8 +20,6 @@ function Editor({recording, solo, exporting}) {
     const [cropLeft, setCropLeft] = useState(0);
     const [cropRight, setCropRight] = useState(0);
     const [splitting, setSplitting] = useState(false);
-    const [splitPoint, setSplitPoint] = useState(0);
-    const zoom = useRef(3);
     const editorRef = useRef();
 
     // resize canvas on window resize!
@@ -99,6 +97,11 @@ function Editor({recording, solo, exporting}) {
         solo(recording.solo);
     };
 
+    const _cancelEdits = () => {
+        setCropping(false);
+        setSplitting(false);
+    }
+
     // crop does not modify audio data
     // start and end points are used to calculate offset and duration for Tone player
     const cropClip = () => {
@@ -111,6 +114,8 @@ function Editor({recording, solo, exporting}) {
                 leftDelta: cropLeft,
                 rightDelta: cropRight,
             }});
+        } else {
+            _cancelEdits();
         }
         setCropping(!cropping);
     };
@@ -119,7 +124,7 @@ function Editor({recording, solo, exporting}) {
     const _mapPointToTime = (point, recording) => {
         let recordingLength = recording.duration - recording.start;
         return map(point, 0, EDITOR_LENGTH, 0, recordingLength);
-    }
+    };
 
     const setCropPoints = (type, delta) => {
         delta = _mapPointToTime(delta, recording)
@@ -132,21 +137,30 @@ function Editor({recording, solo, exporting}) {
         }
     };
 
-    const _setSplitPoint = (point) => {
-        point = _mapPointToTime(point, recording);
-        setSplitPoint(point);
-    }
-
-    const splitClip = () => {
+    const onSplitClick = () => {
         if (!checkEnabled()) {
             return;
         }
-        if (splitting) {
-            // change this to dispatch updateRecording and then addRecording (that's what a split is)
-            dispatch({type: 'addSplitRecording', payload: {recording, splitPoint: splitPoint}});
-            dispatch({type: 'updateSplitRecording', payload: {recording, splitPoint: splitPoint}});
-        }
+        _cancelEdits();
         setSplitting(!splitting);
+    };
+
+    const splitClip = (point) => {
+        _splitClip(point);
+    }
+
+    const _splitClip = (point) => {
+        if (!checkEnabled()) {
+            return;
+        }
+
+        if ((point / PIX_TO_TIME) > recording.start) {
+            setSplitting(!splitting);
+            point = _mapPointToTime(point, recording);
+            // dispatch updateRecording to shorten original and then addRecording 
+            dispatch({type: 'addSplitRecording', payload: {recording, splitPoint: point}});
+            dispatch({type: 'updateSplitRecording', payload: {recording, splitPoint: point}});
+        }
     }
 
     useEffect(() => {
@@ -161,19 +175,20 @@ function Editor({recording, solo, exporting}) {
             _reset();
         }
         return () => waveform.remove();
-    }, [recording.start, buffer]);
+    }, [recording, buffer]);
+
 
     return (
         <styles.Editor>
             <styles.ControlView>
-                <styles.ClipMute id="editorButton" onClick={mute} muted={muted}></styles.ClipMute>
-                <styles.ClipSolo id="editorButton" onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
-                <styles.Crop id="editorButton" started={cropping} onClick={cropClip}></styles.Crop>
-                <styles.Split started={splitting} onClick={splitClip}></styles.Split>
+                <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
+                <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
+                <styles.Crop cropping={cropping} onClick={cropClip}></styles.Crop>
+                <styles.Split splitting={splitting} onClick={onSplitClick}></styles.Split>
             </styles.ControlView>
             <styles.EditorWaveform ref={editorRef}>
-                {useCrop(cropping, setCropPoints)}
-                {useSplit(splitting, _setSplitPoint)}
+                <Crop cropping={cropping} setPoints={setCropPoints}></Crop>
+                <Split splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
             </styles.EditorWaveform>
         </styles.Editor>
     )

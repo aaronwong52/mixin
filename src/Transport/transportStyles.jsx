@@ -32,15 +32,19 @@ export const TransportTimeline = styled.div`
 
 export const TimelinePadding = styled.div`
   position: sticky;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   left: 0;
   height: 50px;
   min-width: 100px;
+  z-index: 99;
   background-color: #282f38;
   border-radius: 0px 0px 0px 8px;
-  z-index: 1;
 `;
 
 export const Timeline = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -49,16 +53,12 @@ export const Timeline = styled.div`
 `;
 
 export const AddChannelButton = styled.button`
-  position: absolute;
-  bottom: 10px;
-  left: calc(100px - 50px - 15px);
-  background: url('/images/plus.png'); no-repeat;
+  background: url('/images/plus.png') no-repeat;
   background-size: 30px;
   width: 30px;
   height: 30px;
   border: none;
   opacity: 0.8;
-  z-index: 2;
   :hover {
     cursor: pointer;
     opacity: 1;

@@ -5,6 +5,7 @@ import * as styles from './transportStyles';
 
 import { Transport as ToneTransport } from 'tone';
 import Channel from './channel';
+import Playline from './playline';
 
 import { modulo } from '../utils/audio-utils';
 import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
@@ -121,9 +122,6 @@ function Transport({exporting}) {
             sketch.textAlign(sketch.CENTER);
             i += 25;
           }
-          let time = ToneTransport.seconds * PIX_TO_TIME;
-          sketch.fill("#bac7db");
-          sketch.rect(time + 1, 0, 1, 50, 4); // playline
         };
 
         sketch.mouseClicked = () => {
@@ -140,7 +138,7 @@ function Transport({exporting}) {
           let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
           if (newPosition < 0.1) {
             newPosition = 0;
-          }
+          }1
           ToneTransport.seconds = newPosition;
           updateTransportPosition(newPosition);
         }
@@ -156,12 +154,13 @@ function Transport({exporting}) {
             {inflateChannels()}
           </SnapContext.Provider>
           <styles.TransportTimeline>
-            <styles.TimelinePadding>
+            <styles.TimelinePadding id="timeline_padding">
+              <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+              </styles.AddChannelButton>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
+              {Playline(150)}
             </styles.Timeline>
-            <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
-            </styles.AddChannelButton>
           </styles.TransportTimeline>
         </styles.TransportView>
         <styles.SnapView>

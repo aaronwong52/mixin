@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export default function useKeyPress() {
 
     const [keyPressed, setKeyPressed] = useState('');
-    const keys = ['Escape', 'Backspace']
+    const keys = ['Escape', 'Backspace', ' ']
 
     function downHandler({ key }) {
       let keyIndex = keys.findIndex((k) => {

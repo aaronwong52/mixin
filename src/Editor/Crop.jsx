@@ -35,7 +35,7 @@ const DragHandleLeft = styled.div`
 const DragHandleRight = styled(DragHandleLeft)`
 `;
 
-export default function useCrop(cropping, setPoints) {
+export default function Crop({cropping, setPoints}) {
 
     const dragStartLeft = useRef(-1);
     const dragStartRight = useRef(-1);

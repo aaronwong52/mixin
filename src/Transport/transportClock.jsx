@@ -6,7 +6,7 @@ import * as Tone from 'tone';
 
 const Clock = styled.div`
    background-color: "#1e2126";
-`
+`;
 
 // time (number) to seconds time (string) (s.ms)
 const toClockTime = (time) => {

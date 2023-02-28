@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const recordingReducer = (state, action) => {
     switch (action.type) {
+      case 'togglePlay':
+        return togglePlay(state, action.payload);
       case 'initializeChannels':
         return initializeChannels(state, action.payload);
       case 'selectChannel':
@@ -42,7 +44,7 @@ export const recordingReducer = (state, action) => {
       case 'unsoloClip':
         return unsoloClip(state, action.payload);
       default: 
-        return;
+        return state;
     }
   };
 
@@ -53,6 +55,14 @@ export const recordingReducer = (state, action) => {
       recordings: [],
       id: uuidv4(),
       index: index
+    }
+  };
+
+  const togglePlay = (state, payload) => {
+    return {
+      ...state,
+      playing: payload.playing,
+      time: payload.time
     }
   }
 
@@ -119,7 +129,7 @@ export const recordingReducer = (state, action) => {
         ? 0
         : state.selectedChannel
     }
-  }
+  };
 
   const selectChannel = (state, channelId) => {
     return {
@@ -302,7 +312,10 @@ export const recordingReducer = (state, action) => {
 
   const updateTransportPosition = (state, payload) => {
     updatePlayerPositions(state, payload.time);
-    return state;
+    return {
+      ...state,
+      time: payload.time
+    }
   };
 
   const cropRecording = (state, payload) => {

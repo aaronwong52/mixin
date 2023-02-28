@@ -19,25 +19,26 @@ export const ControlView = styled.div`
 `;
 
 export const Crop = styled.button`
-    background: ${props => props.started
-        ? "url('/images/checkmark.png') no-repeat;"
-        : "url('/images/crop.png') no-repeat;"
-    };
-    width: 35px;
-    height: 35px;
-    padding: 0;
+    background: url('/images/crop.png') no-repeat;
+    width: 30px;
+    height: 30px;
+    box-sizing: content-box;
+    padding: 2px;
     background-color: transparent;
-    background-size: 35px;
+    background-size: 30px;
+    background-position: center;
     border: none;
+    border-radius: 8px;
+    box-shadow: ${props => props.cropping ? '0 0 3px 1px #d1d5de' : 'none'};
     :hover {cursor: pointer;}
     -webkit-tap-highlight-color: transparent;
 `;
 
 export const Split = styled(Crop)`
-    background: ${props => props.started
-        ? "url('/images/checkmark.png') no-repeat;"
-        : "url('/images/scissors.png') no-repeat;"
-    };
+    background: url('/images/scissors.png') no-repeat;
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: ${props => props.splitting ? '0 0 4px 1px #d1d5de' : 'none'};
 `;
 
 export const ClipMute = styled(Crop)`
@@ -49,13 +50,11 @@ export const ClipMute = styled(Crop)`
 
 export const ClipSolo = styled(ClipMute)`
     background: none;
-    font-size: 35px;
+    font-size: 30px;
     font-weight: bold;
-    text-align: center;
-    color: ${props => props.solo
-        ? "#3c5e91"
-        : "#d1d5de"
-    };
+    border-radius: 8px;
+    line-height: 30px;
+    color: ${props => props.solo ? '#3c5e91' : '#d1d5de'};
 `;
 
 export const EditorWaveform = styled.div`
