@@ -16,6 +16,7 @@ export const TransportView = styled.div`
   box-sizing: border-box;
   border-radius: 8px;
   margin-left: 5vw;
+  margin-bottom: 80px;
   background-color: #282f38;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
@@ -27,7 +28,7 @@ export const TransportView = styled.div`
 export const TransportTimeline = styled.div`
   position: relative;
   display: flex;
-  width: 2075px;
+  width: ${props => props.length}px;
 `;
 
 export const TimelinePadding = styled.div`
@@ -65,10 +66,40 @@ export const AddChannelButton = styled.button`
   }
 `;
 
-export const SnapView = styled.div`
+export const TransportSettings = styled.div`
   position: absolute;
   right: 10px;
   top: -60px;
+  width: 220px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const LengthView = styled.span`
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  color: white;
+`
+
+export const LengthLabel = styled.label`
+    width: 50px;
+    margin-right: 10px;
+`;
+
+export const LengthInput = styled.input`
+  background-color: #282f38;
+  text-indent: 5px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 50px;
+  height: 25px;
+  margin-right: 5px;
+`;
+
+export const SnapView = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;

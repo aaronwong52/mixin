@@ -5,7 +5,7 @@ import * as styles from './editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
 import Split from './Split';
-import { EDITOR_LENGTH, PIX_TO_TIME } from '../utils/constants';
+import { PIX_TO_TIME } from '../utils/constants';
 import { map } from '../utils/audio-utils';
 
 import { StateDispatchContext } from '../utils/StateContext';
@@ -14,6 +14,7 @@ import { StateDispatchContext } from '../utils/StateContext';
 function Editor({recording, solo, exporting}) {
     const dispatch = useContext(StateDispatchContext);
 
+    const editorWidth = useRef(0);
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
     const [cropping, setCropping] = useState(false);
@@ -24,7 +25,7 @@ function Editor({recording, solo, exporting}) {
 
     // resize canvas on window resize!
     const waveformSketch = (sketch) => {
-        let width = EDITOR_LENGTH;
+        let width = editorWidth.current;
         let height = 175;
         sketch.setup = () => {
             sketch.createCanvas(width, height);
@@ -123,7 +124,7 @@ function Editor({recording, solo, exporting}) {
     // get a point position in seconds
     const _mapPointToTime = (point, recording) => {
         let recordingLength = recording.duration - recording.start;
-        return map(point, 0, EDITOR_LENGTH, 0, recordingLength);
+        return map(point, 0, editorWidth.current, 0, recordingLength);
     };
 
     const setCropPoints = (type, delta) => {
@@ -164,6 +165,8 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
+        let editor = document.getElementById("editor");
+        editorWidth.current = editor.offsetWidth;
         let waveform = new p5(waveformSketch, editorRef.current);
         if (Object.keys(recording).length) {
             try {
@@ -177,9 +180,14 @@ function Editor({recording, solo, exporting}) {
         return () => waveform.remove();
     }, [recording, buffer]);
 
+    useEffect(() => {
+        let editor = document.getElementById("editor");
+        editorWidth.current = editor.offsetWidth;
+    }, [])
+
 
     return (
-        <styles.Editor>
+        <styles.Editor id="editor" loaded={editorWidth.current}>
             <styles.ControlView>
                 <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
                 <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>

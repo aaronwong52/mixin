@@ -147,7 +147,8 @@ export default function Channel({channelName, channelData}) {
 
     return [
         <styles.Channel selected={channelData.id == state.selectedChannel}
-            onClick={handleSelect}>
+            onClick={handleSelect}
+            length={state.transportLength + 100}>
             <styles.ChannelHeader>
                 {editingName ? (
                     <styles.ChannelNameInput type="text" id="channelNameInput"
@@ -162,7 +163,7 @@ export default function Channel({channelName, channelData}) {
                 )}
             </styles.ChannelHeader>
             <styles.ChannelView>
-                <styles.RecordingsView id="recordingsview">
+                <styles.RecordingsView id="recordingsview" length={state.transportLength + 100}>
                     {inflateRecordings()}
                 </styles.RecordingsView>
             </styles.ChannelView>

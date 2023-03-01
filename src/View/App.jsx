@@ -52,7 +52,8 @@ const initialState = {
     endPosition: 0,
     soloChannel: null,
     time: 0,
-    playing: false
+    playing: false,
+    transportLength: 3000
 };
 
 // app serves to put views together and act as a data processor + connector to the reducer
@@ -86,7 +87,7 @@ function App() {
         recording.duration = recording.start + buffer.duration;
         dispatch({type: 'updateBuffer', payload: recording});
         Tone.Transport.seconds = recording.duration;
-        dispatch({type: 'updateTransportPosition', payload: {time: recording.duration}});
+        dispatch({type: 'updateTransportPosition', payload: recording.duration});
       };
       dispatch({type: 'scheduleNewRecording', payload: recording});
     } 
@@ -129,7 +130,7 @@ function App() {
     setPlaying(false);
     Tone.Transport.stop();
     dispatch({type: 'togglePlay', payload: {playing: false, time: 0}});
-    dispatch({type: 'updateTransportPosition', payload: {time: 0}});
+    dispatch({type: 'updateTransportPosition', payload: 0});
   };
 
   const mute = () => {

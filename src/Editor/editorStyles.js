@@ -1,10 +1,12 @@
 import styled from 'styled-components';
 
 export const Editor = styled.div`
+    width: 55%;
     height: 175px;
     margin-bottom: 40px;
     display: flex;
-    justify-content: center;
+    visibility: ${props => props.loaded > 0 ? 'visible' : 'hidden'};
+    justify-content: flex-start;
     align-items: center;
 `;
 

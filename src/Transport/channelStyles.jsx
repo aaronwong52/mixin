@@ -41,7 +41,7 @@ export const ChannelNameInput = styled.input`
 export const Channel = styled.div`
   display: flex;
   position: relative;
-  width: 2075px;
+  width: ${props => props.length}px;
   border: ${props => props.selected ? '1px solid green' : '1px solid transparent'};
   min-height: 100px;
   background-size: 25px 25px;
@@ -65,7 +65,7 @@ export const RecordingsView = styled.div`
   box-sizing: border-box;
   background-origin: padding-box;
   background-clip: padding-box;
-  width: 2050px;
+  width: ${props => props.length}px;
   height: 80px;
   background-color: rgba(40, 47, 56, 0.5);  
 `;

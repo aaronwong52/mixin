@@ -8,38 +8,18 @@ import Channel from './channel';
 import Playline from './playline';
 
 import { modulo } from '../utils/audio-utils';
-import {PIX_TO_TIME, TRANSPORT_LENGTH } from '../utils/constants';
+import { PIX_TO_TIME } from '../utils/constants';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { SnapContext } from './SnapContext';
 
 /* 
 
-need to define structure for transport: playhead, placement of audio pieces (start, end)
-how should position be represented? What is the division of time - milliseconds sounds good?
-So every audio piece has a start and end, in milliseconds (milliseconds after 0)
-playhead is current position in milliseconds
-
-use seconds because tonejs uses seconds
-
-todo: get things going with tonejs transport and mixer
-
-MAKE it scrollable! Figure out how to repesent events and audio on the transport
-
-implement waveform view for entire audio clip
-implement moving an audio piece around the transport
-
-begin implementing basic editing / performance: cutting, joining, looping, mute, solo, delete
-creation of new audio node
-
-block swipe to go back
-
-*/
-
-/* 
-
-To sync playline with transport
-Transport.seconds to pixels to css
+User inputs transport length in seconds
+Playline stops at that length - DONE
+The animation leaves it there - DONE
+Width of relevant inner components set to length
+Width of transport view itself stays 92vw and scrolls within
 
 */
 
@@ -84,16 +64,19 @@ function Transport({exporting}) {
     };
 
     const updateTransportPosition = (time) => {
-      dispatch({type: 'updateTransportPosition',
-          payload: {
-            time: time
-          }}
-      );
-    };  
+      dispatch({type: 'updateTransportPosition', payload: time});
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key == 'Enter') {
+        let input = document.getElementById("transport_length_input");
+        dispatch(({type: 'updateTransportLength', payload: input.value * 100}));
+      }
+    }
 
     useEffect(() => {
       const s = (sketch) => {
-        let x = TRANSPORT_LENGTH;
+        let x = state.transportLength + 20;
         let y = 50;
 
         sketch.setup = () => {
@@ -138,14 +121,14 @@ function Transport({exporting}) {
           let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
           if (newPosition < 0.1) {
             newPosition = 0;
-          }1
+          }
           ToneTransport.seconds = newPosition;
           updateTransportPosition(newPosition);
         }
       };
       let transportp5 = new p5(s, transportRef.current);
       return () => transportp5.remove();
-    }, []);
+    }, [state.transportLength]);
 
     return (
       <styles.SpanWrap>
@@ -153,7 +136,7 @@ function Transport({exporting}) {
           <SnapContext.Provider value={snapState}>
             {inflateChannels()}
           </SnapContext.Provider>
-          <styles.TransportTimeline>
+          <styles.TransportTimeline length={state.transportLength}>
             <styles.TimelinePadding id="timeline_padding">
               <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
               </styles.AddChannelButton>
@@ -163,13 +146,20 @@ function Transport({exporting}) {
             </styles.Timeline>
           </styles.TransportTimeline>
         </styles.TransportView>
-        <styles.SnapView>
-          <p>Snap</p>
-          <styles.SnapToggle 
-            snapState={snapState} 
-            onClick={() => setSnapState(!snapState)}>
-          </styles.SnapToggle>
-        </styles.SnapView>
+        <styles.TransportSettings>
+          <styles.LengthView>
+            <styles.LengthLabel>Length:</styles.LengthLabel>
+            <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}>
+            </styles.LengthInput>s
+          </styles.LengthView>
+          <styles.SnapView>
+            <p>Snap</p>
+            <styles.SnapToggle 
+              snapState={snapState} 
+              onClick={() => setSnapState(!snapState)}>
+            </styles.SnapToggle>
+          </styles.SnapView>
+        </styles.TransportSettings>
       </styles.SpanWrap>
     )
 }

@@ -3,7 +3,7 @@ import { Transport as ToneTransport } from 'tone';
 import Draggable from 'react-draggable';
 import styled from "styled-components";
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-import { TRANSPORT_LENGTH, PIX_TO_TIME } from '../utils/constants';
+import { PIX_TO_TIME } from '../utils/constants';
 
 const PlaylineView = styled.div`
   position: absolute;
@@ -45,21 +45,26 @@ export default function Playline(height) {
 
       const updateTransportPosition = (time) => {
         timeRef.current = time;
-        dispatch({type: 'updateTransportPosition',
-            payload: {
-              time: time
-            }}
-        );
+        dispatch({type: 'updateTransportPosition', payload: time});
       };
+
+      const _checkPastTransport = (time) => {
+        return time * PIX_TO_TIME > state.transportLength;
+      }
       
       useEffect(() => {
+        if (_checkPastTransport(state.time)) {
+          return;
+        }
         const playAnimation = [
           { transform: `translateX(${state.time * PIX_TO_TIME}px)` },
-          { transform: `translateX(${TRANSPORT_LENGTH}px)` },
+          { transform: `translateX(${state.transportLength}px)` },
         ];
 
+        let _duration = (state.transportLength - (state.time * PIX_TO_TIME)) * 10;
         const playAnimationTiming = {
-          duration: (TRANSPORT_LENGTH - (state.time * PIX_TO_TIME)) * 10,
+          duration: _duration >= 0 ? _duration : 0,
+          fill: "forwards",
           iterations: 1
         };
 
@@ -95,7 +100,7 @@ export default function Playline(height) {
         Click under transport (even when playing) to adjust position
         
         */
-       if (!animation) {
+       if (!animation || _checkPastTransport(state.time)) {
         return;
        }
         if (state.playing) {
@@ -103,6 +108,7 @@ export default function Playline(height) {
         } else {
           updateTransportPosition(ToneTransport.seconds);
           animation.cancel();
+          animation.commitStyles();
         }
       }, [state.time, state.playing]);
 

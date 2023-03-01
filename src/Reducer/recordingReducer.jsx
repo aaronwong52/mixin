@@ -31,6 +31,8 @@ export const recordingReducer = (state, action) => {
         return updateBuffer(state, action.payload);
       case 'updateRecordingPosition':
         return updateRecordingPosition(state, action.payload);
+      case 'updateTransportLength':
+        return updateTransportLength(state, action.payload);
       case 'updateTransportPosition':
         return updateTransportPosition(state, action.payload);
       case 'cropRecording':
@@ -291,12 +293,13 @@ export const recordingReducer = (state, action) => {
     return updateRecording(state, payload.recording);
   };
 
-  const updateTransportPosition = (state, payload) => {
-    updatePlayerPositions(state, payload.time);
-    return {
-      ...state,
-      time: payload.time
-    }
+  const updateTransportLength = (state, length) => {
+    return {...state, transportLength: length};
+  }
+
+  const updateTransportPosition = (state, time) => {
+    updatePlayerPositions(state, time);
+    return {...state, time: time};
   };
 
   const cropRecording = (state, payload) => {

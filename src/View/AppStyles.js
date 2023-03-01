@@ -45,6 +45,9 @@ export const MenuOption = styled.h3`
 `;
 
 export const MiddleView = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   box-shadow: ${props => props.dropping
     ? "0 0 12px #ebeff5"
     : "none"
@@ -52,6 +55,8 @@ export const MiddleView = styled.div`
 `;
 
 export const ControlView = styled.div`
+  position: fixed;
+  bottom: 10px;
   display: flex;
   justify-content: space-around;
   align-items: center;
