@@ -14,6 +14,7 @@ import TransportClock from '../Transport/transportClock';
 import ExportMix from '../Export/exportMix';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
+import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
 
 /* 
 
@@ -46,6 +47,8 @@ how to fix this:
 */
 
 const initialState = {
+    recordingState: false,
+    mic: null,
     channels: [],
     selectedRecording: {},
     selectedChannel: 0, // id-based system, set to 0 when no channels are selected
@@ -60,7 +63,6 @@ const initialState = {
 // maintains Control state
 function App() {
   
-  const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [state, dispatch] = useReducer(recordingReducer, initialState);
   
@@ -88,6 +90,7 @@ function App() {
         dispatch({type: 'updateBuffer', payload: recording});
         Tone.Transport.seconds = recording.duration;
         dispatch({type: 'updateTransportPosition', payload: recording.duration});
+        dispatch({type: 'selectRecording', payload: recording});
       };
       dispatch({type: 'scheduleNewRecording', payload: recording});
     } 
@@ -101,33 +104,25 @@ function App() {
     if (Tone.Transport.state === "started") {
       Tone.Transport.pause();
       dispatch({type: 'togglePlay', payload: {playing: false, time: Tone.Transport.seconds}});
-      return true;
     }
-
     else if (state.channels.length > 0) {
       Tone.context.resume();
       Tone.Transport.start();
       dispatch({type: 'togglePlay', payload: {playing: true, time: Tone.Transport.seconds}});
-      return true;
     }
-    return false;
   };
 
   const onPlay = () => {
     if (exporting) {
       return;
     }
-    let tryPlay = toggle();
-    if (tryPlay) {
-      setPlaying(!playing);
-    }
+    toggle();
   };
 
   const restart = () => {
     if (exporting) {
       return;
     }
-    setPlaying(false);
     Tone.Transport.stop();
     dispatch({type: 'togglePlay', payload: {playing: false, time: 0}});
     dispatch({type: 'updateTransportPosition', payload: 0});
@@ -156,31 +151,40 @@ function App() {
     setExporting(!exporting);
   };
 
+  const _validateFile = (file) => {
+    return (file.type == "audio/mpeg" || file.type !== "audio/wav") && file.size < MAX_FILE_SIZE;
+  };
+
+  const _validateFileLength = (buffer) => {
+    return buffer.duration * PIX_TO_TIME <= MAX_DURATION;
+  }
 
   const upload = (files, e) => {
     e.preventDefault();
     setDropping(false);
-    if (files) {
-      if (files[0].type !== "audio/mpeg" && files[0].type !== "audio/wav") {
-        return;
-      } else {
-        let mp3Encoder = new window.lamejs.Mp3Encoder(1, 44100, 128);
+    if (files && _validateFile(files[0])) {
         audioReader.readAsArrayBuffer(files[0]);
         audioReader.onload = async () => {
           let buffer = audioReader.result;
-          // encoded to audio buffer into Player into recording
           try {
             let decodedBuffer = await Tone.getContext().rawContext.decodeAudioData(buffer);
-            newRecordingFromBuffer(decodedBuffer);
+            if (!_validateFileLength(decodedBuffer)) {
+              return;
+            } else {
+              let pixelDuration = decodedBuffer.duration * PIX_TO_TIME;
+              if (pixelDuration > state.transportLength) {
+                dispatch({type: 'updateTransportLength', payload: (decodedBuffer.duration * PIX_TO_TIME)})
+              }
+              newRecordingFromBuffer(decodedBuffer);
+            }
           } catch(e) {
             // Bad format?
             console.log(e);
           }
         }
-        audioReader.onerror = () => {
-          console.log(audioReader.error);
-        }
-      } 
+      audioReader.onerror = () => {
+        console.log(audioReader.error);
+      }
     }
   };
 
@@ -199,7 +203,9 @@ function App() {
   };
 
   useEffect(() => {
+    const mic = new Tone.UserMedia();
     dispatch({type: 'initializeChannels', payload: {}});
+    dispatch({type: 'setMic', payload: mic});
   }, []);
 
   return (
@@ -207,37 +213,27 @@ function App() {
       <StateDispatchContext.Provider value={dispatch}>
         <styles.View id="Tone" ref={drawing.current}>
           <styles.TopView>
-            <styles.MixologyMenu>
-              <styles.MenuLabels>
-                <styles.Title>MIXIN</styles.Title>
-                <styles.MenuOption onClick={setExportingState}>Export</styles.MenuOption>
-              </styles.MenuLabels>
-              <ExportMix displayState={exporting} channels={state.channels}></ExportMix>
-            </styles.MixologyMenu>
-            <Recorder 
-              receiveRecording={receiveRecording} 
-              exporting={exporting}>
-            </Recorder>
+            <styles.Title>MIXIN</styles.Title>
+            <styles.SettingsIcon></styles.SettingsIcon>
           </styles.TopView>
-          <FileDrop 
-              onDrop={(files, event) => upload(files, event)}
-              onFrameDragEnter={(event) => setDropping(true)}
-              onFrameDragLeave={(event) => setDropping(false)}>
-            <styles.MiddleView dropping={dropping}>
-              <Editor 
+          <Editor 
                 recording={state.selectedRecording} 
                 solo={solo}
                 exporting={exporting}>
-              </Editor>
-              <Transport 
-                exporting={exporting}>
-              </Transport>
-            </styles.MiddleView>
-          </FileDrop>
+            </Editor>
+          <styles.MiddleView dropping={dropping}>
+            <FileDrop 
+                onDrop={(files, event) => upload(files, event)}
+                onFrameDragEnter={(event) => setDropping(true)}
+                onFrameDragLeave={(event) => setDropping(false)}>
+                <Transport exporting={exporting}></Transport>
+            </FileDrop>
+          </styles.MiddleView>
           <styles.ControlView>
-              <styles.PlayButton id="play_btn" onClick={onPlay} playState={playing}></styles.PlayButton>
-              <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
+              <Recorder receiveRecording={receiveRecording} exporting={exporting}></Recorder>
+              <styles.PlayButton id="play_btn" onClick={onPlay} playState={state.playing}></styles.PlayButton>
               <styles.RestartButton onClick={restart}></styles.RestartButton>
+              <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
               <styles.ClockArea>
                 <TransportClock></TransportClock>
               </styles.ClockArea>

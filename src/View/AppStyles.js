@@ -10,31 +10,33 @@ export const View = styled.div`
 `;
 
 export const TopView = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  justify-content: space-evenly;
-  padding: 25px 25px;
-  border-radius: 10px;
-`;
-
-export const MixologyMenu = styled.div`
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-self: flex-start;
-  justify-content: space-evenly;
-  height: 12vh;
-  color: #ced4de;
-  margin-top: 20px;
-  margin-left: 25px;
+  justify-content: space-between;
+  align-items: center;
+  width: 95vw;
+  margin: 30px 0px;
+  color: #d8e0ed;
 `;
 
-export const MenuLabels = styled.div`
+export const SettingsIcon = styled.button`
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  background: url('/images/settings.png') no-repeat;
+  background-size: 30px;
+  border: none;
+  border-radius: 50px;
+  :hover {cursor: pointer; box-shadow: 0 0 4px 1px grey;}
 `;
 
 export const Title = styled.h2`
-  font-size: 30px;
-  margin-bottom: 0px;
+  font-size: 36px;
+  margin: 10px 30px;
+  letter-spacing: .1rem;
+`;
+
+export const MenuLabels = styled.div`
 `;
 
 export const MenuOption = styled.h3`
@@ -45,28 +47,29 @@ export const MenuOption = styled.h3`
 `;
 
 export const MiddleView = styled.div`
+  height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 80px;
   box-shadow: ${props => props.dropping
-    ? "0 0 12px #ebeff5"
+    ? "0 0 6px #ebeff5"
     : "none"
-  };
+  };  
 `;
 
 export const ControlView = styled.div`
   position: fixed;
-  bottom: 10px;
+  bottom: 20px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   height: 50px;
-  width: 350px;
-  margin-top: 40px;
+  width: 400px;
   border-radius: 10px;
-  background-color: #1e2126;
+  background-color: #282f38;
   box shadow: 0 0 3px #e6f0ff;
-`;  
+`;
 
 export const PlayButton = styled.button`
   width: 30px;
@@ -95,9 +98,7 @@ export const MuteButton = styled(PlayButton)`
 
 export const ClockArea = styled.div`
   display: flex;
-  justify-content: center;
-  width: 100px;
   height: 35px;
-  background-color: #465261;
   border-radius: 10px;
+  border: 1px solid rgba(97, 96, 96, 0.8);
 `;

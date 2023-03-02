@@ -17,19 +17,19 @@ export const RecordView = styled.div`
 `;
 
 export const RecordButton = styled.button`
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   background-color: transparent;
   border: none;
   background: ${props => props.recording
         ? "url('/images/stop.png') no-repeat;"
         : "url('/images/record_muted.png') no-repeat;"
   };
-  background-size: 35px;
+  background-size: 30px;
   margin: 8px 0px;
   :hover {
         cursor: pointer;
-        box-shadow: 0 0 10px red;
+        box-shadow: 0 0 8px red;
         border-radius: 50%;
     }
 `;

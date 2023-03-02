@@ -1,32 +1,35 @@
 import p5 from 'p5';
 
 import { useState, useEffect, useRef, useContext } from 'react';
+import { useEditorWidth } from '../utils/useEditorWidth';
 import * as styles from './editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
 import Split from './Split';
+import LiveWaveform from './LiveWaveform';
+
 import { PIX_TO_TIME } from '../utils/constants';
 import { map } from '../utils/audio-utils';
 
-import { StateDispatchContext } from '../utils/StateContext';
+import { StateContext, StateDispatchContext } from '../utils/StateContext';
 
 // recording is selectedRecording prop
 function Editor({recording, solo, exporting}) {
+    const state = useContext(StateContext)
     const dispatch = useContext(StateDispatchContext);
 
-    const editorWidth = useRef(0);
+    const editorRef = useRef();
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
     const [cropping, setCropping] = useState(false);
     const [cropLeft, setCropLeft] = useState(0);
     const [cropRight, setCropRight] = useState(0);
     const [splitting, setSplitting] = useState(false);
-    const editorRef = useRef();
 
     // resize canvas on window resize!
     const waveformSketch = (sketch) => {
-        let width = editorWidth.current;
-        let height = 175;
+        let width = 650;
+        let height = 200;
         sketch.setup = () => {
             sketch.createCanvas(width, height);
         };
@@ -34,7 +37,7 @@ function Editor({recording, solo, exporting}) {
             if (buffer.length === 0) {
                 return;
             }
-            sketch.background('#454a52');
+            sketch.background('#2c3036');
             sketch.beginShape();
             sketch.stroke('#ced4de')
 
@@ -63,7 +66,7 @@ function Editor({recording, solo, exporting}) {
             sketch.endShape();
             
             sketch.stroke("#868e9c");
-            sketch.rect(timeScaled, 0, 1, 175, 0); // playline
+            sketch.rect(timeScaled, 0, 1, 200, 0); // playline
         }
     };
 
@@ -165,8 +168,6 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
-        let editor = document.getElementById("editor");
-        editorWidth.current = editor.offsetWidth;
         let waveform = new p5(waveformSketch, editorRef.current);
         if (Object.keys(recording).length) {
             try {
@@ -180,24 +181,21 @@ function Editor({recording, solo, exporting}) {
         return () => waveform.remove();
     }, [recording, buffer]);
 
-    useEffect(() => {
-        let editor = document.getElementById("editor");
-        editorWidth.current = editor.offsetWidth;
-    }, [])
-
-
     return (
-        <styles.Editor id="editor" loaded={editorWidth.current}>
+        <styles.Editor id="editor">
             <styles.ControlView>
                 <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
                 <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
                 <styles.Crop cropping={cropping} onClick={cropClip}></styles.Crop>
                 <styles.Split splitting={splitting} onClick={onSplitClick}></styles.Split>
             </styles.ControlView>
-            <styles.EditorWaveform ref={editorRef}>
-                <Crop cropping={cropping} setPoints={setCropPoints}></Crop>
-                <Split splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
-            </styles.EditorWaveform>
+            {state.recordingState
+                ? <LiveWaveform></LiveWaveform>
+                : <styles.EditorWaveform ref={editorRef}>
+                    <Crop cropping={cropping} setPoints={setCropPoints}></Crop>
+                    <Split splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
+                  </styles.EditorWaveform>
+            }
         </styles.Editor>
     )
 }

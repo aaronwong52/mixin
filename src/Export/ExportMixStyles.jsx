@@ -26,10 +26,10 @@ export const ExportMenuView = styled.div`
     top: calc(12vh + 15px);
     height: 350px;
     width: 275px;
-    border-radius: 10px;
+    border-radius: 6px;
     background: linear-gradient(to bottom, #282f38, #262d36);
-    animation: 0.2s ${props => props.displayState ? fadeIn : fadeOut} linear;
-    transition: visibility 0.2s linear;
+    animation: 0.1s ${props => props.displayState ? fadeIn : fadeOut} linear;
+    transition: visibility 0.1s linear;
     border: none;
     box-shadow: 0 0 2px #1e2126;
     margin-left: 10px;

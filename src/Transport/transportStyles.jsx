@@ -15,8 +15,7 @@ export const TransportView = styled.div`
   justify-content: flex-start;
   box-sizing: border-box;
   border-radius: 8px;
-  margin-left: 5vw;
-  margin-bottom: 80px;
+  margin-bottom: 100px;
   background-color: #282f38;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
@@ -70,31 +69,37 @@ export const TransportSettings = styled.div`
   position: absolute;
   right: 10px;
   top: -60px;
-  width: 220px;
+  width: 250px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 `;
 
 export const LengthView = styled.span`
   display: flex;
   align-items: center;
-  margin-right: 20px;
   color: white;
+  margin-right: 25px;
 `
 
 export const LengthLabel = styled.label`
-    width: 50px;
-    margin-right: 10px;
+  width: 50px;
+  margin-right: 10px;
 `;
 
 export const LengthInput = styled.input`
   background-color: #282f38;
   text-indent: 5px;
   color: white;
+  ::placeholder {
+    color: white;
+  }
+  :focus::placeholder {
+    color: transparent;
+  }
   border: none;
   border-radius: 4px;
-  width: 50px;
+  width: 40px;
   height: 25px;
   margin-right: 5px;
 `;

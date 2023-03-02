@@ -117,12 +117,15 @@ function Transport({exporting}) {
           if (exporting) {
             return;
           }
+
+          ToneTransport.pause();
           
           let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
           if (newPosition < 0.1) {
             newPosition = 0;
           }
           ToneTransport.seconds = newPosition;
+          dispatch({type: 'togglePlay', payload: {playing: false, time: newPosition}});
           updateTransportPosition(newPosition);
         }
       };
@@ -142,14 +145,15 @@ function Transport({exporting}) {
               </styles.AddChannelButton>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
-              {Playline(150)}
+              {Playline(50 + (100 * state.channels.length))}
             </styles.Timeline>
           </styles.TransportTimeline>
         </styles.TransportView>
         <styles.TransportSettings>
           <styles.LengthView>
             <styles.LengthLabel>Length:</styles.LengthLabel>
-            <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}>
+            <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
+            placeholder={state.transportLength / PIX_TO_TIME}>
             </styles.LengthInput>s
           </styles.LengthView>
           <styles.SnapView>

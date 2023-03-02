@@ -1,37 +1,37 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 
-import { RecordView, RecordButton } from './recorderStyles';
+import { RecordButton } from './recorderStyles';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import LiveWaveform from './liveWaveform';
+import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import * as Tone from 'tone';
 
 function Recorder({receiveRecording, exporting}) {
+
+    const state = useContext(StateContext);
+    const dispatch = useContext(StateDispatchContext);
 
     const recordingState = useRef(false);
     const [recording, setRecording] = useState(false);
 
     const recorder = new Tone.Recorder();
-    const mic = new Tone.UserMedia();
-    const analyser = new Tone.Analyser('waveform', 8192);
 
-    const openMic = () => {
-        mic.connect(analyser);
+    const openMic = (mic) => {
         mic.connect(recorder);
         mic.open();
     };
 
-    const closeMic = () => {
+    const closeMic = (mic) => {
         mic.disconnect(recorder);
-        mic.disconnect(analyser);
         mic.close();
     };
 
     const toggleRecording = async () => {
         Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
         if (recordingState.current) {
-            closeMic();
+            dispatch({type: 'toggleRecordingState', payload: false});
+            closeMic(state.mic);
             let data = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
             let newRecording = {
@@ -49,8 +49,9 @@ function Recorder({receiveRecording, exporting}) {
             recordingState.current = false;
             setRecording(false);
         }
-        else if (!exporting) { // functionality is locked while export menu is open 
-            openMic();
+        else if (!exporting) { // functionality is locked while export menu is open
+            dispatch({type: 'toggleRecordingState', payload: true});
+            openMic(state.mic);
             recorder.start();
             recordingState.current = true;
             setRecording(true);
@@ -66,13 +67,10 @@ function Recorder({receiveRecording, exporting}) {
         return () => {
             recBtn.removeEventListener("click", toggleRecording);
         }
-    }, [exporting]);
+    }, [exporting, state.mic]);
 
     return (
-        <RecordView>
-            <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
-            <LiveWaveform analyser={analyser}></LiveWaveform>
-        </RecordView>
+        <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
     )
 }
 

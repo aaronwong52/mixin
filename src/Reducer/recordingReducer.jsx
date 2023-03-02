@@ -5,8 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const recordingReducer = (state, action) => {
     switch (action.type) {
+      case 'setMic':
+        return setMic(state, action.payload);
       case 'togglePlay':
         return togglePlay(state, action.payload);
+      case 'toggleRecordingState':
+        return toggleRecordingState(state, action.payload);
       case 'initializeChannels':
         return initializeChannels(state, action.payload);
       case 'selectChannel':
@@ -60,13 +64,21 @@ export const recordingReducer = (state, action) => {
     }
   };
 
+  const setMic = (state, mic) => {
+    return {...state, mic: mic}
+  };
+
   const togglePlay = (state, payload) => {
     return {
       ...state,
       playing: payload.playing,
       time: payload.time
     }
-  }
+  };
+
+  const toggleRecordingState = (state, recordingState) => {
+    return {...state, recordingState: recordingState}
+  };
 
   const initializeChannels = (state, payload) => {
     let firstChannel = getNewChannel(0);
@@ -258,9 +270,6 @@ export const recordingReducer = (state, action) => {
             },
             ...channels.slice(channelIndex + 1, channels.length)
           ],
-          selectedRecording: (recording.id == state.selectedRecording.id)
-            ? recording
-            : state.selectedRecording,
           endPosition: newEndPosition
         };
       }

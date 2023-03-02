@@ -42,7 +42,7 @@ export const Channel = styled.div`
   display: flex;
   position: relative;
   width: ${props => props.length}px;
-  border: ${props => props.selected ? '1px solid green' : '1px solid transparent'};
+  border: ${props => props.selected ? '1px solid rgba(69, 153, 69, 0.7)' : '1px solid transparent'};
   min-height: 100px;
   background-size: 25px 25px;
   background-image:

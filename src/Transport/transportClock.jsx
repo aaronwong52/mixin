@@ -20,7 +20,7 @@ export default function TransportClock() {
 
     useEffect(() => {
         const s = (sketch) => {
-            let x = 90;
+            let x = 120;
             let y = 30;
             let context;
 
@@ -35,7 +35,7 @@ export default function TransportClock() {
                 sketch.select('#transportClock').elt.style.letterSpacing = "1.5px";
                 sketch.fill("white");
                 let time = toClockTime(Tone.Transport.seconds);
-                sketch.text(time, 46.5, 20); // text, x pos, y pos
+                sketch.text(time, x / 2, 20); // text, x pos, y pos
             }
         };
 

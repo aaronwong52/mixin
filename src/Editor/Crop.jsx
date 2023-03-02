@@ -7,7 +7,7 @@ const DragRangeView = styled.div`
     position: absolute;
     display: ${props => props.cropping ? 'flex' : 'none'};
     width: 100%;
-    height: 175px;
+    height: 200px;
 `;
 
 const LeftPadding = styled.div`
