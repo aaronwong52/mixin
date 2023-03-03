@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import * as Tone from 'tone';
-
 import * as styles from './ExportMixStyles';
 
 import { calculatePlayOffset } from '../Reducer/recordingReducer';
@@ -9,7 +7,7 @@ import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
 import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
 
-function ExportMix({displayState, channels}) {
+function Export({displayState, channels}) {
 
     const [fileFormat, setFileFormat] = useState('');
 
@@ -112,9 +110,12 @@ function ExportMix({displayState, channels}) {
         channels.forEach(function(channel) {
           channel.recordings.forEach(function(recording) {
             let source = offlineContext.createBufferSource();
+            let offset = calculatePlayOffset(ranges[0], recording);
+            console.log(offset);
+            let startOffset = recording.start - recording.position + offset;
             source.buffer = bufferFromToneBuffer(recording.data);
             source.connect(offlineContext.destination);
-            source.start(recording.position, calculatePlayOffset(ranges[0], recording.position));
+            source.start(recording.position + startOffset, startOffset);
           })
         }); 
         return await offlineContext.startRendering();
@@ -123,6 +124,7 @@ function ExportMix({displayState, channels}) {
     return (
         <styles.ExportMenuView displayState={displayState}>
             <styles.ExportMenuOptions>
+                <styles.CenteredHeader>Export</styles.CenteredHeader>
                 <styles.ExportMenuOption>
                     <h3>Format:</h3>
                     <styles.FileTypeButton 
@@ -147,4 +149,4 @@ function ExportMix({displayState, channels}) {
     )
 }
 
-export default ExportMix;
+export default Export;

@@ -20,10 +20,14 @@ const fadeOut = keyframes`
     }
 `;
 
+export const CenteredHeader = styled.h2`
+    text-align: center;
+`
+
 export const ExportMenuView = styled.div`
     visibility: ${props => props.displayState ? 'visible' : 'hidden'};
     position: absolute;
-    top: calc(12vh + 15px);
+    right: 0;
     height: 350px;
     width: 275px;
     border-radius: 6px;
@@ -31,7 +35,7 @@ export const ExportMenuView = styled.div`
     animation: 0.1s ${props => props.displayState ? fadeIn : fadeOut} linear;
     transition: visibility 0.1s linear;
     border: none;
-    box-shadow: 0 0 2px #1e2126;
+    box-shadow: 0 0 0 2px #424242;
     margin-left: 10px;
     padding: 10px 25px;
     z-index: 99999;

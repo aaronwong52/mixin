@@ -19,6 +19,10 @@ export const TopView = styled.div`
   color: #d8e0ed;
 `;
 
+export const Settings = styled.div`
+
+`;
+
 export const SettingsIcon = styled.button`
   width: 30px;
   height: 30px;

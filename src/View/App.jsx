@@ -11,7 +11,7 @@ import Transport from '../Transport/Transport';
 import Recorder from '../Recorder/Recorder';
 import Editor from '../Editor/Editor';
 import TransportClock from '../Transport/TransportClock';
-import ExportMix from '../Export/Export';
+import Export from '../Export/Export';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
@@ -214,7 +214,10 @@ function App() {
         <styles.View id="Tone" ref={drawing.current}>
           <styles.TopView>
             <styles.Title>MIXIN</styles.Title>
-            <styles.SettingsIcon></styles.SettingsIcon>
+            <styles.Settings>
+              <styles.SettingsIcon onClick={setExportingState}></styles.SettingsIcon>
+              <Export displayState={exporting} channels={state.channels}></Export>
+            </styles.Settings>
           </styles.TopView>
           <Editor solo={solo} exporting={exporting}></Editor>
           <styles.MiddleView dropping={dropping}>
