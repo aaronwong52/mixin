@@ -5,7 +5,9 @@ import styled from "styled-components";
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { PIX_TO_TIME } from '../utils/constants';
 
-const PlaylineView = styled.div`
+const PlaylineView = styled.span``;
+
+const StyledPlayline = styled.div`
   position: absolute;
   bottom: 0px;
   width: 1px;
@@ -19,7 +21,7 @@ const PlaylineView = styled.div`
 `;
 
 // an absolutely positioned component to match height and with of parent, displaying a playline on top
-export default function Playline(height) {
+export default function Playline({height}) {
 
       const state = useContext(StateContext);
       const dispatch = useContext(StateDispatchContext);
@@ -98,8 +100,8 @@ export default function Playline(height) {
         
         Drag playhead when not playing to update position
         Click under transport (even when playing) to adjust position
-        
         */
+       
        if (!animation || _checkPastTransport(state.time)) {
         return;
        }
@@ -113,11 +115,13 @@ export default function Playline(height) {
       }, [state.time, state.playing]);
 
       return [
-        <Draggable bounds={{left: 0, top: 0, bottom: 0}}
-          onStop={(e, data) => onStop(data)}
-          position={{x: state.time * PIX_TO_TIME, y: 0}}>
-          <PlaylineView height={height} id="playline">
-          </PlaylineView>
-        </Draggable>
+        <PlaylineView key={"playline_elem"}>
+          <Draggable bounds={{left: 0, top: 0, bottom: 0}}
+            onStop={(e, data) => onStop(data)}
+            position={{x: state.time * PIX_TO_TIME, y: 0}}>
+            <StyledPlayline id="playline" height={height}>
+            </StyledPlayline>
+          </Draggable>
+        </PlaylineView>
       ]
 }

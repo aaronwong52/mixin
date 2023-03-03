@@ -1,7 +1,6 @@
 import p5 from 'p5';
 
 import { useState, useEffect, useRef, useContext } from 'react';
-import { useEditorWidth } from '../utils/useEditorWidth';
 import * as styles from './editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
@@ -14,7 +13,7 @@ import { map } from '../utils/audio-utils';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 
 // recording is selectedRecording prop
-function Editor({recording, solo, exporting}) {
+function Editor({solo, exporting}) {
     const state = useContext(StateContext)
     const dispatch = useContext(StateDispatchContext);
 
@@ -26,7 +25,6 @@ function Editor({recording, solo, exporting}) {
     const [cropRight, setCropRight] = useState(0);
     const [splitting, setSplitting] = useState(false);
 
-    // resize canvas on window resize!
     const waveformSketch = (sketch) => {
         let width = 650;
         let height = 200;
@@ -39,7 +37,9 @@ function Editor({recording, solo, exporting}) {
             }
             sketch.background('#2c3036');
             sketch.beginShape();
-            sketch.stroke('#ced4de')
+            sketch.stroke('#ced4de');
+
+            let recording = state.selectedRecording;
 
             let toneTime = Tone.Transport.seconds;
             let trueEnd = recording.position + recording.player._buffer.duration; // uncropped duration is here
@@ -71,7 +71,7 @@ function Editor({recording, solo, exporting}) {
     };
 
     const checkEnabled = () => {
-        return (Object.keys(recording).length && !exporting);
+        return (Object.keys(state.selectedRecording).length && !exporting);
     };
     
     const _reset = () => {
@@ -85,6 +85,7 @@ function Editor({recording, solo, exporting}) {
 
     // mutating recording state directly for Tone operations
     const mute = () => {
+        let recording = state.selectedRecording;
         if (!checkEnabled()) {
             return;
         }
@@ -113,6 +114,7 @@ function Editor({recording, solo, exporting}) {
             return;
         }
         if (cropping) {
+            let recording = state.selectedRecording;
             dispatch({type: 'cropRecording', payload: {
                 recording, 
                 leftDelta: cropLeft,
@@ -131,7 +133,7 @@ function Editor({recording, solo, exporting}) {
     };
 
     const setCropPoints = (type, delta) => {
-        delta = _mapPointToTime(delta, recording)
+        delta = _mapPointToTime(delta, state.selectedRecording)
 
         if (type == 'start') {
             setCropLeft(delta);
@@ -158,6 +160,7 @@ function Editor({recording, solo, exporting}) {
             return;
         }
 
+        let recording = state.selectedRecording;
         if ((point / PIX_TO_TIME) > recording.start) {
             setSplitting(!splitting);
             point = _mapPointToTime(point, recording);
@@ -168,6 +171,7 @@ function Editor({recording, solo, exporting}) {
     }
 
     useEffect(() => {
+        let recording = state.selectedRecording;
         let waveform = new p5(waveformSketch, editorRef.current);
         if (Object.keys(recording).length) {
             try {
@@ -179,21 +183,21 @@ function Editor({recording, solo, exporting}) {
             _reset();
         }
         return () => waveform.remove();
-    }, [recording, buffer]);
+    }, [state.selectedRecording, buffer]);
 
     return (
         <styles.Editor id="editor">
             <styles.ControlView>
                 <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
-                <styles.ClipSolo onClick={soloClip} solo={recording.solo}>S</styles.ClipSolo>
+                <styles.ClipSolo onClick={soloClip} solo={state.selectedRecording.solo}>S</styles.ClipSolo>
                 <styles.Crop cropping={cropping} onClick={cropClip}></styles.Crop>
                 <styles.Split splitting={splitting} onClick={onSplitClick}></styles.Split>
             </styles.ControlView>
             {state.recordingState
                 ? <LiveWaveform></LiveWaveform>
                 : <styles.EditorWaveform ref={editorRef}>
-                    <Crop cropping={cropping} setPoints={setCropPoints}></Crop>
-                    <Split splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
+                    <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
+                    <Split key="splitElem" splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
                   </styles.EditorWaveform>
             }
         </styles.Editor>

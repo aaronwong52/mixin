@@ -29,6 +29,8 @@ export const recordingReducer = (state, action) => {
         return deselectRecordings(state, action.payload);
       case 'scheduleNewRecording':
         return scheduleNewRecording(state, action.payload);
+      case 'switchRecordingChannel':
+        return switchRecordingChannel(state, action.payload);
       case 'deleteSelectedRecording':
         return _deleteRecording(state, action.payload);
       case 'updateBuffer':
@@ -146,33 +148,21 @@ export const recordingReducer = (state, action) => {
   };
 
   const selectChannel = (state, channelId) => {
-    return {
-      ...state,
-      selectedChannel: channelId
-    }
+    return {...state,selectedChannel: channelId};
   };
 
   const deselectAllChannels = (state, payload) => {
-    return {
-      ...state,
-      selectedChannel: 0
-    }
+    return {...state, selectedChannel: 0};
   }
   
   const selectRecording = (state, recording) => {
-    return {
-      ...state,
-      selectedRecording: recording
-    };
+    return {...state, selectedRecording: recording};
   };
 
   // currently only one recording is selected at a time
   // deselection by deselecting all
   const deselectRecordings = (state, payload) => {
-    return {
-      ...state,
-      selectedRecording: {}
-    };
+    return {...state, selectedRecording: {}};
   };
 
   const _scheduleRecording = (state, recording) => {
@@ -189,11 +179,42 @@ export const recordingReducer = (state, action) => {
 
   // moves a recording to a new channel
   // payload.recording, payload.newChannelIndex
-  const adjustRecordingChannel = (state, payload) => {
+  const switchRecordingChannel = (state, payload) => {
     let channels = state.channels;
     let currChannelId = payload.recording.channel;
+    let currChannelIndex = _findChannelIndex(channels, currChannelId);
+    let newChannelIndex = _findChannelIndex(channels, payload.newChannelId);
 
-    // how? pop one recording, push it to another channel?
+    let lowerIndex = (currChannelIndex > newChannelIndex) ? newChannelIndex : currChannelIndex;
+    let higherIndex = (currChannelIndex > newChannelIndex) ? currChannelIndex : newChannelIndex;
+
+    let filteredChannel = {...channels[currChannelIndex],
+      recordings: [
+        ...channels[currChannelIndex].recordings.filter((recording) => {
+          return recording.id != payload.recording.id
+        })
+      ]
+    };
+
+    let growingChannel = {...channels[newChannelIndex],
+      recordings: [...channels[newChannelIndex].recordings, payload.recording]
+    };
+
+    // mark the lower index channel as filtered or growing channel
+    let indices = {
+      first: lowerIndex == newChannelIndex ? growingChannel : filteredChannel,
+      second: higherIndex == currChannelIndex ? filteredChannel : growingChannel
+    };
+
+    return {
+      ...state, channels: [
+        ...channels.slice(0, lowerIndex),
+        indices.first,
+        ...channels.slice(lowerIndex + 1, higherIndex),
+        indices.second,
+        ...channels.slice(higherIndex + 1, channels.length)
+      ]
+    }
   };
 
   const _findRecordingIndex = (recordings, recordingId) => {
@@ -299,6 +320,7 @@ export const recordingReducer = (state, action) => {
     payload.recording.duration += delta;
 
     schedulePlayer(payload.recording);
+
     return updateRecording(state, payload.recording);
   };
 

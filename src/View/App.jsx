@@ -7,11 +7,11 @@ import { FileDrop } from 'react-file-drop';
 import { createPlayer } from '../utils/audio-utils';
 
 import { recordingReducer } from '../Reducer/recordingReducer';
-import Transport from '../Transport/transport';
-import Recorder from '../Recorder/recorder';
-import Editor from '../Editor/editor';
-import TransportClock from '../Transport/transportClock';
-import ExportMix from '../Export/exportMix';
+import Transport from '../Transport/Transport';
+import Recorder from '../Recorder/Recorder';
+import Editor from '../Editor/Editor';
+import TransportClock from '../Transport/TransportClock';
+import ExportMix from '../Export/Export';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
@@ -216,11 +216,7 @@ function App() {
             <styles.Title>MIXIN</styles.Title>
             <styles.SettingsIcon></styles.SettingsIcon>
           </styles.TopView>
-          <Editor 
-                recording={state.selectedRecording} 
-                solo={solo}
-                exporting={exporting}>
-            </Editor>
+          <Editor solo={solo} exporting={exporting}></Editor>
           <styles.MiddleView dropping={dropping}>
             <FileDrop 
                 onDrop={(files, event) => upload(files, event)}

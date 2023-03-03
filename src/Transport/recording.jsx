@@ -38,6 +38,16 @@ export default function Recording({r, onDrag, onStop, selected}) {
         // drag position is handled not internally by draggable but by following r.start in draggable position prop
     }, [r]);
 
+
+    // currently each channel contains its own recordings represented as Draggables 
+
+    // need a system where recordings can be dragged around the transport, snapping vertically to a channel
+    // consider a representation where the recordings belong not directly to a channel but are placed as 
+    // direct children of the transport, and they snap to a channel in a UI invariant that is easily discernible
+
+    // currently on each channel, the x position is calculated by r.start
+    // for this new system, the y position will be calculated by channel index
+    // this way recordings will not be limited to one channel and can be moved around
     return [
         <Draggable key={"drag_rec_clip_" + r.id}
             onDrag={(e) => onDrag(e)}

@@ -4,7 +4,7 @@ import p5 from 'p5';
 import * as styles from './transportStyles';
 
 import { Transport as ToneTransport } from 'tone';
-import Channel from './channel';
+import Channel from './Channel';
 import Playline from './playline';
 
 import { modulo } from '../utils/audio-utils';
@@ -41,13 +41,6 @@ function Transport({exporting}) {
             if (event.target.tagName == 'BUTTON') {
               return;
             }
-            // clicked outside ref
-
-            // Deselecting channels is not actually a useful function
-            // Better to have one selected at all times
-            // Support for selecting multiple channels and recordings would be nice
-
-            // dispatch({type: 'deselectAllChannels', payload: {}});
           }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -55,9 +48,9 @@ function Transport({exporting}) {
       }, [ref])
     }
 
-    const inflateChannels = () => {
+    const Channels = () => {
       return state.channels.map((c, index) => (
-        <Channel channelName = {c.name} 
+        <Channel key={(c.id + index).toString()} channelName = {c.name} 
           channelData = {{...c, index: index}}>
         </Channel>
       ));
@@ -70,7 +63,7 @@ function Transport({exporting}) {
     const handleKeyDown = (event) => {
       if (event.key == 'Enter') {
         let input = document.getElementById("transport_length_input");
-        dispatch(({type: 'updateTransportLength', payload: input.value * 100}));
+        dispatch(({type: 'updateTransportLength', payload: input.value * PIX_TO_TIME}));
       }
     }
 
@@ -137,7 +130,7 @@ function Transport({exporting}) {
       <styles.SpanWrap>
         <styles.TransportView id="transportview" ref={channelsWrapperRef}>
           <SnapContext.Provider value={snapState}>
-            {inflateChannels()}
+            <Channels></Channels>
           </SnapContext.Provider>
           <styles.TransportTimeline length={state.transportLength}>
             <styles.TimelinePadding id="timeline_padding">
@@ -145,7 +138,7 @@ function Transport({exporting}) {
               </styles.AddChannelButton>
             </styles.TimelinePadding>
             <styles.Timeline id="timeline" ref={transportRef}>
-              {Playline(50 + (100 * state.channels.length))}
+              <Playline height={50 + (100 * state.channels.length)}></Playline>
             </styles.Timeline>
           </styles.TransportTimeline>
         </styles.TransportView>

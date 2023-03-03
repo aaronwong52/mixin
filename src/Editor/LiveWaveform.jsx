@@ -1,16 +1,14 @@
-import {  useRef, useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 import * as Tone from 'tone';
 import p5 from 'p5';
 
 import { StateContext } from '../utils/StateContext';
 
 import { StyledWaveform } from './liveWaveformStyles';
-import { useEditorWidth } from '../utils/useEditorWidth';
 
 export default function LiveWaveform() {
     
   const state = useContext(StateContext);
-  const editorWidth = useRef(0);
 
   useEffect(() => {
     if (!state.mic) {
@@ -19,7 +17,6 @@ export default function LiveWaveform() {
 
     const analyser = new Tone.Analyser('waveform', 8192);
     state.mic.connect(analyser);
-    editorWidth.current = useEditorWidth();
 
     const s = (sketch) => {
       let x = 650;
@@ -45,16 +42,13 @@ export default function LiveWaveform() {
         sketch.endShape();
       };
     };
+    
     let recorderP5 = new p5(s, 'waveform');
     return () => {
       recorderP5.remove();
       state.mic.disconnect(analyser);
     }
   }, [state.mic]);
-
-    useEffect(() => {
-      editorWidth.current = useEditorWidth();
-    }, [])
 
     return (
         <StyledWaveform id="waveform">

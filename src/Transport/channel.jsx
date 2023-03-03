@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import Recording from "./recording";
+import Recording from "./Recording";
 
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 import { SnapContext } from './SnapContext';
@@ -47,6 +47,10 @@ export default function Channel({channelName, channelData}) {
               snapState: snapState
             }}
         );
+        // reselect recording to update playline in Editor
+        if (state.selectedRecording.id == recording.id) {
+          dispatch({type: 'selectRecording', payload: recording});
+        }
     };
 
     const onStop = (e, data, recording) => {
@@ -114,7 +118,7 @@ export default function Channel({channelName, channelData}) {
 
     const inflateRecordings = () => {
         return channelData.recordings.map((r) => (
-          <Recording r={r}
+          <Recording key={r.id} r={r}
             onDrag={onDrag}
             onStop={onStop}
             selected={state.selectedRecording}>
@@ -146,7 +150,7 @@ export default function Channel({channelName, channelData}) {
       }, [keyPress])
 
     return [
-        <styles.Channel selected={channelData.id == state.selectedChannel}
+        <styles.Channel key={channelData.id} selected={channelData.id == state.selectedChannel}
             onClick={handleSelect}
             length={state.transportLength + 100}>
             <styles.ChannelHeader>

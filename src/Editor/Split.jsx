@@ -48,7 +48,7 @@ export default function Split({splitting, splitClip}) {
     }, [state.selectedRecording, splitting])
 
     return [
-        <SplitView id="split_view" splitting={splitting}>
+        <SplitView key="split_elem" id="split_view" splitting={splitting}>
             <Draggable bounds={"#split_view"}>
                 <SplitLine id="split_line"></SplitLine>
             </Draggable>

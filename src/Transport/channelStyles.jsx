@@ -78,4 +78,5 @@ export const RecordingView = styled.div`
     border: none;
     border-radius: 4px;
     :hover {cursor: pointer;}
+    z-index: 91920;
 `;

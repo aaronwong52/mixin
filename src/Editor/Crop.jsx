@@ -94,7 +94,7 @@ export default function Crop({cropping, setPoints}) {
     }, [])
 
     return [
-        <DragRangeView cropping={cropping} id="drag_range_view">
+        <DragRangeView key="cropElem" cropping={cropping} id="drag_range_view">
             <Draggable bounds={"#drag_range_view"}
                 onStop={(e) => onStopLeft(e)}
                 onDrag={(e) => onDragLeft(e)}>
