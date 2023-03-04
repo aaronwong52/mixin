@@ -3,12 +3,13 @@ import styled from 'styled-components';
 export const ChannelHeader = styled.div`
     position: sticky;
     left: 0;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #142c4f;
-    border-radius: 8px 0px 0px 0px;
-    min-width: 100px;
+    border: ${props => props.selected ? '1px solid rgba(69, 153, 69, 0.7)' : '1px solid #3d3d3d'};
+    width: 100px;
     height: 100px;
     z-index: 3;
 `
@@ -44,18 +45,16 @@ export const Channel = styled.div`
   width: ${props => props.length}px;
   border: ${props => props.selected ? '1px solid rgba(69, 153, 69, 0.7)' : '1px solid transparent'};
   min-height: 100px;
-  background-size: 25px 25px;
-  background-image:
-  linear-gradient(to right, rgba(206, 212, 222, 0.1) 1px, transparent 1px),
-  linear-gradient(to bottom, rgba(206, 212, 222, 0.1) 1px, transparent 1px);
+  
+  
 `;
 
-export const ChannelView = styled.div`
-  overflow: scroll;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-`;
+// export const ChannelView = styled.div`
+//   overflow: scroll;
+//   display: flex;
+//   justify-content: flex-start;
+//   align-items: center;
+// `;
 
 export const RecordingsView = styled.div`
   position: relative;

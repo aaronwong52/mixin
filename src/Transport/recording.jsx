@@ -2,11 +2,11 @@ import { useRef, useEffect, useContext } from "react";
 
 import { StateDispatchContext } from "../utils/StateContext";
 import { SnapContext } from "./SnapContext";
-import { PIX_TO_TIME } from "../utils/constants";
+import { CHANNEL_HEIGHT, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
 import * as styles from './channelStyles';
 
-export default function Recording({r, onDrag, onStop, selected}) {
+export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 
     const dispatch = useContext(StateDispatchContext);
     const snapState = useContext(SnapContext);
@@ -52,9 +52,9 @@ export default function Recording({r, onDrag, onStop, selected}) {
         <Draggable key={"drag_rec_clip_" + r.id}
             onDrag={(e) => onDrag(e)}
             onStop={(e, data) => onStop(e, data, r)}
-            bounds={'#recordingsview'}
-            position={{x: r.start * PIX_TO_TIME, y: 0}}
-            grid={snapState ? [25, 25] : null}
+            bounds={"parent"}
+            position={{x: r.start * PIX_TO_TIME, y: (channelIndex * 100) + 10}}
+            grid={snapState ? [25, CHANNEL_HEIGHT] : [-1, CHANNEL_HEIGHT]}
             scale={1}>
             <styles.RecordingView
                 ref={recordingsWrapperRef}

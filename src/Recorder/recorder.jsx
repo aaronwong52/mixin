@@ -27,7 +27,8 @@ function Recorder({receiveRecording, exporting}) {
         mic.close();
     };
 
-    const toggleRecording = async () => {
+    const toggleRecording = async (e) => {
+        e.stopPropagation();
         Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
         if (recordingState.current) {
             dispatch({type: 'toggleRecordingState', payload: false});
@@ -63,9 +64,9 @@ function Recorder({receiveRecording, exporting}) {
         let recBtn = document.getElementById("rec_btn");
 
         // recBtn.disabled = !Tone.UserMedia.supported;
-        recBtn.addEventListener("click", toggleRecording)
+        recBtn.addEventListener("click", (e) => toggleRecording(e))
         return () => {
-            recBtn.removeEventListener("click", toggleRecording);
+            recBtn.removeEventListener("click", (e) => toggleRecording(e));
         }
     }, [exporting, state.mic]);
 

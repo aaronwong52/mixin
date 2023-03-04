@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import Recording from "./Recording";
 
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
-import { SnapContext } from './SnapContext';
 
 import * as styles from './channelStyles';
 import useKeyPress from "../utils/useKeyPress";
@@ -10,12 +8,9 @@ import useKeyPress from "../utils/useKeyPress";
 export default function Channel({channelName, channelData}) {
 
     const [editingName, setEditingName] = useState(false);
+    const clickTimer = useRef();
     
     const tempName = useRef('');
-
-    const dragStart = useRef(-1);
-    const draggingRef = useRef(false);
-
     const keyPress = useKeyPress();
 
     const inputWrapperRef = useRef(null);
@@ -23,8 +18,6 @@ export default function Channel({channelName, channelData}) {
 
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
-
-    const snapState = useContext(SnapContext);
 
     function useOutsideInput(ref) {
       useEffect(() => {
@@ -38,46 +31,6 @@ export default function Channel({channelName, channelData}) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
       }, [ref])
     }
-
-    const updatePlayerPosition = (newPosition, recording, snapState) => {
-        dispatch({type: 'updateRecordingPosition', 
-            payload: {
-              recording: recording,
-              newPosition: newPosition,
-              snapState: snapState
-            }}
-        );
-        // reselect recording to update playline in Editor
-        if (state.selectedRecording.id == recording.id) {
-          dispatch({type: 'selectRecording', payload: recording});
-        }
-    };
-
-    const onStop = (e, data, recording) => {
-
-        // onDrag
-        if (draggingRef.current) {
-          draggingRef.current = false;
-   
-          updatePlayerPosition(data.x, recording, snapState);
-          dragStart.current = -1;
-        }
-  
-        // onClick
-        else {
-          dispatch({type: 'selectRecording', payload: recording})
-        }
-    };
-    
-    const onDrag = (e) => {
-      if (dragStart.current < 0) {
-        // initial mouse position
-        dragStart.current = e.clientX; // desktop
-      }
-      if (e.type === 'mousemove' || e.type === 'touchmove') {
-        draggingRef.current = true;
-      }
-    };
 
     const handleEdit = (event) => {
         event.stopPropagation();
@@ -93,6 +46,7 @@ export default function Channel({channelName, channelData}) {
             });
             setEditingName(false);
         } else if (event.key === 'Escape') {
+
             setEditingName(false);
         }
     };
@@ -100,8 +54,22 @@ export default function Channel({channelName, channelData}) {
     const handleDoubleClick = () => {
         setEditingName(true);
         let input = document.getElementById('channelNameInput');
-        input.click();
+        if (input) {
+          input.click();
+        }
     };
+
+    const onClickHandler = (event) => {
+        clearTimeout(clickTimer.current);
+
+        if (event.detail === 1) {
+            clickTimer.current = setTimeout(handleSelect, 200);
+        } else if (event.detail === 2) {
+            if (event.target.id == 'channelName') {
+              handleDoubleClick();
+            }
+        }
+    }
 
     const handleSelect = () => {
       dispatch({type: 'selectChannel', payload: channelData.id});
@@ -116,61 +84,36 @@ export default function Channel({channelName, channelData}) {
       dispatch({type: 'deleteSelectedChannel', payload: state.selectedChannel});
     }
 
-    const inflateRecordings = () => {
-        return channelData.recordings.map((r) => (
-          <Recording key={r.id} r={r}
-            onDrag={onDrag}
-            onStop={onStop}
-            selected={state.selectedRecording}>
-          </Recording>
-        ));
-    };
+    useEffect(() => {
+      switch(keyPress) {
+        case 'Escape':
 
-      useEffect(() => {
-        switch(keyPress) {
-          case 'Escape':
+        case 'Backspace':
+          if (Object.keys(state.selectedRecording).length != 0) {
+            deleteSelectedRecording();
+          } else if (state.selectedChannel && state.channels.length > 1) {
+            deleteSelectedChannel();
+          }
 
-           /* on backspace pressed:
-              if a recording is selected:
-                  delete the recording
-              
-              else if a channel is selected:
-                  delete the channel (and its recordings)
-            */
-          case 'Backspace':
-            if (Object.keys(state.selectedRecording).length != 0) {
-              deleteSelectedRecording();
-            } else if (state.selectedChannel && state.channels.length > 1) {
-              deleteSelectedChannel();
-            }
-
-          default: 
-            return;
-        }
-      }, [keyPress])
+        default: 
+          return;
+      }
+    }, [keyPress]);
 
     return [
-        <styles.Channel key={channelData.id} selected={channelData.id == state.selectedChannel}
-            onClick={handleSelect}
-            length={state.transportLength + 100}>
-            <styles.ChannelHeader>
-                {editingName ? (
-                    <styles.ChannelNameInput type="text" id="channelNameInput"
-                        ref={inputWrapperRef}
-                        onChange={handleEdit}
-                        onKeyDown={handleEnter}
-                        placeholder={channelName}
-                        autoFocus={true}>
-                    </styles.ChannelNameInput>
-                ) : (
-                    <styles.ChannelName onDoubleClick={handleDoubleClick}>{channelName}</styles.ChannelName>
-                )}
-            </styles.ChannelHeader>
-            <styles.ChannelView>
-                <styles.RecordingsView id="recordingsview" length={state.transportLength + 100}>
-                    {inflateRecordings()}
-                </styles.RecordingsView>
-            </styles.ChannelView>
-        </styles.Channel>
+        <styles.ChannelHeader key={channelData.toString()}
+          onClick={onClickHandler} selected={channelData.id == state.selectedChannel}>
+            {editingName 
+              ? <styles.ChannelNameInput type="text" id="channelNameInput"
+                    ref={inputWrapperRef}
+                    onChange={handleEdit}
+                    onKeyDown={handleEnter}
+                    placeholder={channelName}
+                    autoFocus={true}>
+              </styles.ChannelNameInput>
+              : <styles.ChannelName id="channelName">{channelName}</styles.ChannelName>
+            }
+        </styles.ChannelHeader>
+            
     ]
 }

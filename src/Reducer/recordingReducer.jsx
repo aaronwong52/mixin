@@ -181,9 +181,8 @@ export const recordingReducer = (state, action) => {
   // payload.recording, payload.newChannelIndex
   const switchRecordingChannel = (state, payload) => {
     let channels = state.channels;
-    let currChannelId = payload.recording.channel;
-    let currChannelIndex = _findChannelIndex(channels, currChannelId);
-    let newChannelIndex = _findChannelIndex(channels, payload.newChannelId);
+    let currChannelIndex = payload.channelIndex;
+    let newChannelIndex = payload.newChannelIndex;
 
     let lowerIndex = (currChannelIndex > newChannelIndex) ? newChannelIndex : currChannelIndex;
     let higherIndex = (currChannelIndex > newChannelIndex) ? currChannelIndex : newChannelIndex;
@@ -221,7 +220,7 @@ export const recordingReducer = (state, action) => {
     return recordings.findIndex((recording) => recording.id == recordingId);
   };
 
-  const _findChannelIndex = (channels, channelId) => {
+  export const _findChannelIndex = (channels, channelId) => {
     let index = channels.findIndex((c) => c.id == channelId);
     return (index > 0) ? index : 0;
   };

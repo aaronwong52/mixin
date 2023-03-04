@@ -7,14 +7,14 @@ export const SpanWrap = styled.span`
 `;
 
 export const TransportView = styled.div`
+  overflow-y: hidden;
   overflow-x: scroll;
-  overflow-y: visible;
   width: 92vw;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   box-sizing: border-box;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 100px;
   background-color: #282f38;
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
@@ -24,10 +24,36 @@ export const TransportView = styled.div`
   }
 `;
 
-export const TransportTimeline = styled.div`
-  position: relative;
+export const TransportGrid = styled.div`
   display: flex;
   width: ${props => props.length}px;
+  height: ${props => props.height}px;
+  background-image:
+    linear-gradient(to right, rgba(206, 212, 222, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(206, 212, 222, 0.1) 1px, transparent 1px);
+  background-size: 25px 25px;
+`;
+
+export const ChannelHeaders = styled.div`
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const Recordings = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-left: 100px;
+
+`
+
+export const TransportTimeline = styled.div`
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  height: 50px;
 `;
 
 export const TimelinePadding = styled.div`
@@ -48,6 +74,7 @@ export const Timeline = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  height: 50px;
   background-color: #282f38;
   z-index: 0;
 `;
