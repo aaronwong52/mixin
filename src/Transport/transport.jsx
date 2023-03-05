@@ -1,9 +1,10 @@
 import { useRef, useEffect, useContext, useState} from 'react';
 import p5 from 'p5';
 
-import * as styles from './transportStyles';
+import * as styles from './TransportStyles';
 
 import { Transport as ToneTransport } from 'tone';
+import { AppTheme } from '../View/Themes';
 
 import Channel from './Channel';
 import Recording from "./Recording";
@@ -39,6 +40,25 @@ function Transport({exporting}) {
     const channelsWrapperRef = useRef(null);
     useOutsideChannels(channelsWrapperRef);
 
+    const recordingsWrapperRef = useRef(null);
+    useOutsideRecordings(recordingsWrapperRef);
+
+    function useOutsideRecordings(ref) {
+        useEffect(() => {
+            function handleClickOutside(event) {
+            if (ref.current && !ref.current.contains(event.target)) {
+                if (event.target.id != "recordingsview") {
+                    return;
+                }
+                // clicked outside
+                dispatch({type: 'deselectRecordings', payload: {}});
+            }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }, [ref]);
+    }
+
     function useOutsideChannels(ref) {
       useEffect(() => {
         function handleClickOutside(event) {
@@ -46,6 +66,7 @@ function Transport({exporting}) {
             if (event.target.tagName == 'BUTTON') {
               return;
             }
+            dispatch({type: 'deselectRecordings', payload: {}});
           }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -96,6 +117,26 @@ function Transport({exporting}) {
       }
     };
 
+    const TransportSettings = () => {
+      return (
+        <styles.TransportSettings>
+            <styles.LengthView>
+              <styles.LengthLabel>Length:</styles.LengthLabel>
+              <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
+                placeholder={state.transportLength / PIX_TO_TIME}>
+              </styles.LengthInput>s
+            </styles.LengthView>
+            <styles.SnapView>
+              <p>Snap</p>
+              <styles.SnapToggle 
+                snapState={snapState}
+                onClick={() => setSnapState(!snapState)}>
+              </styles.SnapToggle>
+            </styles.SnapView>
+          </styles.TransportSettings>
+      );
+    };
+
     const Channels = () => {
       return state.channels.map((c, index) => (
         <Channel key={(c.id + index).toString()} channelName = {c.name} 
@@ -119,7 +160,8 @@ function Transport({exporting}) {
         })
       });
       return recordings;
-    }
+    };
+
 
     const updateTransportPosition = (time) => {
       dispatch({type: 'updateTransportPosition', payload: time});
@@ -142,7 +184,7 @@ function Transport({exporting}) {
         };
 
         sketch.draw = () => {
-          sketch.background("#282f38");
+          sketch.background(AppTheme.AppSecondaryColor);
           sketch.fill(51)
           sketch.textSize(12);
 
@@ -168,20 +210,16 @@ function Transport({exporting}) {
         sketch.mouseClicked = () => {
 
           // if mouse out of bounds
-          if (sketch.mouseY < 0 || sketch.mouseY > y) {
+          if (sketch.mouseY < 0 || sketch.mouseY > y || exporting) {
             return;
           }
-
-          if (exporting) {
-            return;
-          }
-
           ToneTransport.pause();
           
           let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
           if (newPosition < 0.1) {
             newPosition = 0;
           }
+
           ToneTransport.seconds = newPosition;
           dispatch({type: 'togglePlay', payload: {playing: false, time: newPosition}});
           updateTransportPosition(newPosition);
@@ -194,21 +232,7 @@ function Transport({exporting}) {
     return (
       <styles.SpanWrap>
         <styles.TransportView id="transportview" ref={channelsWrapperRef}>
-          <styles.TransportSettings>
-            <styles.LengthView>
-              <styles.LengthLabel>Length:</styles.LengthLabel>
-              <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
-              placeholder={state.transportLength / PIX_TO_TIME}>
-              </styles.LengthInput>s
-            </styles.LengthView>
-            <styles.SnapView>
-              <p>Snap</p>
-              <styles.SnapToggle 
-                snapState={snapState} 
-                onClick={() => setSnapState(!snapState)}>
-              </styles.SnapToggle>
-            </styles.SnapView>
-          </styles.TransportSettings>
+          <TransportSettings></TransportSettings>
           <styles.TransportGrid id="transportgrid" 
             length={state.transportLength} 
             height={50 + (CHANNEL_HEIGHT * state.channels.length)}>

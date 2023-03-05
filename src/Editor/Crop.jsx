@@ -7,7 +7,7 @@ const DragRangeView = styled.div`
     position: absolute;
     display: ${props => props.cropping ? 'flex' : 'none'};
     width: 100%;
-    height: 200px;
+    height: 100%;
 `;
 
 const LeftPadding = styled.div`
@@ -25,7 +25,7 @@ const CropArea = styled.div`
 
 const DragHandleLeft = styled.div`
     width: 2px;
-    height: 175px;
+    height: 100%;
     background-color: rgba(69, 114, 181, 0.7);
     padding: 0px 1px;
     z-index: 100;

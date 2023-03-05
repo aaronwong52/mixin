@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useContext } from "react";
 
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 
-import * as styles from './channelStyles';
+import * as styles from './ChannelStyles';
 import useKeyPress from "../utils/useKeyPress";
 
 export default function Channel({channelName, channelData}) {
@@ -63,13 +63,13 @@ export default function Channel({channelName, channelData}) {
         clearTimeout(clickTimer.current);
 
         if (event.detail === 1) {
-            clickTimer.current = setTimeout(handleSelect, 200);
+            clickTimer.current = setTimeout(handleSelect, 50);
         } else if (event.detail === 2) {
             if (event.target.id == 'channelName') {
               handleDoubleClick();
             }
         }
-    }
+    };
 
     const handleSelect = () => {
       dispatch({type: 'selectChannel', payload: channelData.id});

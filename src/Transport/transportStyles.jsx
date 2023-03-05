@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { AppTheme } from '../View/Themes';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
 export const SpanWrap = styled.span`
@@ -16,12 +17,13 @@ export const TransportView = styled.div`
   box-sizing: border-box;
   border-radius: 4px;
   margin-bottom: 100px;
-  background-color: #282f38;
+  background-color: ${AppTheme.AppSecondaryColor};
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
+  color: ${AppTheme.AppTextColor};
 `;
 
 export const TransportGrid = styled.div`
@@ -46,8 +48,7 @@ export const Recordings = styled.div`
   flex-direction: column;
   width: 100%;
   margin-left: 100px;
-
-`
+`;
 
 export const TransportTimeline = styled.div`
   position: absolute;
@@ -65,7 +66,7 @@ export const TimelinePadding = styled.div`
   height: 50px;
   min-width: 100px;
   z-index: 99;
-  background-color: #282f38;
+  background-color: ${AppTheme.AppSecondaryColor};
   border-radius: 0px 0px 0px 8px;
 `;
 
@@ -75,7 +76,6 @@ export const Timeline = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   height: 50px;
-  background-color: #282f38;
   z-index: 0;
 `;
 
@@ -105,7 +105,6 @@ export const TransportSettings = styled.div`
 export const LengthView = styled.span`
   display: flex;
   align-items: center;
-  color: white;
   margin-right: 25px;
 `
 
@@ -115,11 +114,11 @@ export const LengthLabel = styled.label`
 `;
 
 export const LengthInput = styled.input`
-  background-color: #282f38;
+  background-color: ${AppTheme.AppSecondaryColor};
   text-indent: 5px;
-  color: white;
+  color: ${AppTheme.AppTextColor};
   ::placeholder {
-    color: white;
+    color: ${AppTheme.AppTextColor};
   }
   :focus::placeholder {
     color: transparent;
@@ -136,7 +135,6 @@ export const SnapView = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 75px;
-  color: white;
   font-size: 18px;
 `;
 

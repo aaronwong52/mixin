@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { AppTheme } from '../View/Themes';
 
 export const ChannelHeader = styled.div`
     position: sticky;
@@ -7,8 +8,11 @@ export const ChannelHeader = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #142c4f;
-    border: ${props => props.selected ? '1px solid rgba(69, 153, 69, 0.7)' : '1px solid #3d3d3d'};
+    background-color: ${AppTheme.ChannelColor};
+    border: ${props => props.selected 
+        ? `1px solid ${AppTheme.ChannelHighlight}` 
+        : `1px solid ${AppTheme.AppSecondaryColor}`
+    };
     width: 100px;
     height: 100px;
     z-index: 3;
@@ -16,45 +20,28 @@ export const ChannelHeader = styled.div`
 
 export const ChannelName = styled.h3`
     text-align: center;
-    width: 75px;
-    color: #ced4de;
-    font-size: 18px;
+    width: 75%;
+    color: ${AppTheme.AppTextColor};
+    font-size: 1rem;
 `;
 
 export const ChannelNameInput = styled.input`
     color: #ced4de;
-    font-size: 18px;
+    font-size: 1rem;
     font-weight: bold;
-    width: 75px;
-    background-color: #474e59;
+    width: 75%;
+    background-color: ${AppTheme.AppSecondaryColor};
     border: none;
     border-radius: 2px;
 
     ::placeholder,
     ::-webkit-input-placeholder {
-        color: #ced4de;
+        color: ${AppTheme.AppTextColor};
     }
     :-ms-input-placeholder {
-        color: #ced4de;
+        color:  ${AppTheme.AppTextColor};
     }
 `;
-
-export const Channel = styled.div`
-  display: flex;
-  position: relative;
-  width: ${props => props.length}px;
-  border: ${props => props.selected ? '1px solid rgba(69, 153, 69, 0.7)' : '1px solid transparent'};
-  min-height: 100px;
-  
-  
-`;
-
-// export const ChannelView = styled.div`
-//   overflow: scroll;
-//   display: flex;
-//   justify-content: flex-start;
-//   align-items: center;
-// `;
 
 export const RecordingsView = styled.div`
   position: relative;
@@ -73,7 +60,10 @@ export const RecordingView = styled.div`
     position: absolute;
     width: 100px;
     height: 80px;
-    background-color: ${props => props.selected ? 'rgba(29, 75, 143, 0.6)' : 'rgba(15, 40, 77, 0.6)'};
+    background-color: ${props => props.selected 
+        ? AppTheme.RecordingColor
+        : AppTheme.SelectedRecordingColor
+    };
     border: none;
     border-radius: 4px;
     :hover {cursor: pointer;}

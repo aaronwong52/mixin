@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { AppTheme } from '../View/Themes';
 
 export const Editor = styled.div`
     position: relative;
@@ -34,10 +35,10 @@ export const Crop = styled.button`
     background-position: center;
     border: none;
     border-radius: 8px;
-    background-color: ${props => props.cropping ? '#525252' : 'transparent'};
+    background-color: ${props => props.cropping ? AppTheme.EditorButtonHighlight : 'transparent'};
     :hover {
         cursor: pointer;
-        background-color: #525252;
+        background-color: ${AppTheme.EditorButtonHighlight};
     }
     -webkit-tap-highlight-color: transparent;
 `;
@@ -46,7 +47,7 @@ export const Split = styled(Crop)`
     background: url('/images/scissors.png') no-repeat;
     background-position: center;
     border-radius: 8px;
-    background-color: ${props => props.splitting ? '#525252' : 'transparent'};
+    background-color: ${props => props.splitting ? AppTheme.EditorButtonHighlight : 'transparent'};
 `;
 
 export const ClipMute = styled(Crop)`
@@ -62,7 +63,7 @@ export const ClipSolo = styled(ClipMute)`
     font-size: 30px;
     border-radius: 8px;
     line-height: 30px;
-    color: ${props => props.solo ? '#3c5e91' : '#d1d5de'};
+    color: ${props => props.solo ? AppTheme.ContrastBlue : AppTheme.AppTextColor};
 `;
 
 export const EditorWaveform = styled.div`

@@ -111,7 +111,6 @@ function Export({displayState, channels}) {
           channel.recordings.forEach(function(recording) {
             let source = offlineContext.createBufferSource();
             let offset = calculatePlayOffset(ranges[0], recording);
-            console.log(offset);
             let startOffset = recording.start - recording.position + offset;
             source.buffer = bufferFromToneBuffer(recording.data);
             source.connect(offlineContext.destination);

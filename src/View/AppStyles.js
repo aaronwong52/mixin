@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { AppTheme } from './Themes';
 
 export const View = styled.div`
   min-height: 100vh;
@@ -6,7 +7,9 @@ export const View = styled.div`
   flex-direction: column; 
   justify-content: flex-start;
   align-items: center;
-  background: linear-gradient(to right, #1e2126, #1c2026 50%, #1e2126);
+  background: linear-gradient(
+    to right, ${AppTheme.AppColor}, ${AppTheme.AppGradient} 50%, ${AppTheme.AppColor}
+  );
 `;
 
 export const TopView = styled.div`
@@ -16,7 +19,6 @@ export const TopView = styled.div`
   align-items: center;
   width: 95vw;
   margin: 30px 0px;
-  color: #d8e0ed;
 `;
 
 export const Settings = styled.div`
@@ -35,7 +37,9 @@ export const SettingsIcon = styled.button`
 `;
 
 export const Title = styled.h2`
-  font-size: 36px;
+  font-size: 30px;
+  font-weight: normal;
+  color: ${AppTheme.AppTextColor};
   margin: 10px 30px;
   letter-spacing: .1rem;
 `;
@@ -71,8 +75,8 @@ export const ControlView = styled.div`
   height: 50px;
   width: 400px;
   border-radius: 10px;
-  background-color: #282f38;
-  box shadow: 0 0 3px #e6f0ff;
+  background-color: ${AppTheme.AppSecondaryColor};
+  box-shadow: 0 0 0 2px ${AppTheme.AppSecondaryGradient};
 `;
 
 export const PlayButton = styled.button`
@@ -96,7 +100,7 @@ export const RestartButton = styled(PlayButton)`
 export const MuteButton = styled(PlayButton)`
   background: ${props => props.mute 
     ? "url('/images/mute_white.png') center;"
-    : "url('/images/unmute_white.png') center/99%;"
+    : "url('/images/unmute_white.png') center"
   }
 `;
 
@@ -104,5 +108,5 @@ export const ClockArea = styled.div`
   display: flex;
   height: 35px;
   border-radius: 10px;
-  border: 1px solid rgba(97, 96, 96, 0.8);
+  border: 1px solid ${AppTheme.AppSecondaryGradient};
 `;

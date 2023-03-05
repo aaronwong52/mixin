@@ -4,7 +4,7 @@ import { StateDispatchContext } from "../utils/StateContext";
 import { SnapContext } from "./SnapContext";
 import { CHANNEL_HEIGHT, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
-import * as styles from './channelStyles';
+import * as styles from './ChannelStyles';
 
 export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 
@@ -18,7 +18,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
         useEffect(() => {
             function handleClickOutside(event) {
             if (ref.current && !ref.current.contains(event.target)) {
-                if (event.target.id != "recordingsview") {
+                if (event.target.id != "recordings_view") {
                     return;
                 }
                 // clicked outside
@@ -53,7 +53,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
             onDrag={(e) => onDrag(e)}
             onStop={(e, data) => onStop(e, data, r)}
             bounds={"parent"}
-            position={{x: r.start * PIX_TO_TIME, y: (channelIndex * 100) + 10}}
+            position={{x: r.start * PIX_TO_TIME, y: (channelIndex * CHANNEL_HEIGHT) + 10}}
             grid={snapState ? [25, CHANNEL_HEIGHT] : [-1, CHANNEL_HEIGHT]}
             scale={1}>
             <styles.RecordingView
