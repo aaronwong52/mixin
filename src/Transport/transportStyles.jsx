@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { AppTheme } from '../View/Themes';
+import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../utils/constants';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
 export const SpanWrap = styled.span`
@@ -16,7 +17,6 @@ export const TransportView = styled.div`
   justify-content: flex-start;
   box-sizing: border-box;
   border-radius: 4px;
-  margin-bottom: 100px;
   background-color: ${AppTheme.AppSecondaryColor};
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;
@@ -28,11 +28,11 @@ export const TransportView = styled.div`
 
 export const TransportGrid = styled.div`
   display: flex;
-  width: ${props => props.length}px;
+  width: ${props => props.length + CHANNEL_SIZE}px;
   height: ${props => props.height}px;
   background-image:
-    linear-gradient(to right, rgba(206, 212, 222, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(206, 212, 222, 0.1) 1px, transparent 1px);
+    linear-gradient(to right, ${AppTheme.TransportGridColor} 1px, transparent 1px),
+    linear-gradient(to bottom, ${AppTheme.TransportGridColor} 1px, transparent 1px);
   background-size: 25px 25px;
 `;
 
@@ -42,19 +42,25 @@ export const ChannelHeaders = styled.div`
   flex-direction: column;
 `;
 
-export const Recordings = styled.div`
+export const GridArea = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-left: 100px;
+  margin-left: ${CHANNEL_SIZE}px;
+`;
+
+export const Recordings = styled.div`
+  position: relative;
+  display: flex;
+  height: ${props => props.height}px;
 `;
 
 export const TransportTimeline = styled.div`
   position: absolute;
   bottom: 0;
   display: flex;
-  height: 50px;
+  height: ${TIMELINE_HEIGHT}px;
 `;
 
 export const TimelinePadding = styled.div`
@@ -63,9 +69,9 @@ export const TimelinePadding = styled.div`
   justify-content: center;
   align-items: center;
   left: 0;
-  height: 50px;
-  min-width: 100px;
-  z-index: 99;
+  height: ${TIMELINE_HEIGHT}px;
+  width: ${CHANNEL_SIZE}px;
+  z-index: 2;
   background-color: ${AppTheme.AppSecondaryColor};
   border-radius: 0px 0px 0px 8px;
 `;
@@ -75,8 +81,7 @@ export const Timeline = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  height: 50px;
-  z-index: 0;
+  height: ${TIMELINE_HEIGHT}px;
 `;
 
 export const AddChannelButton = styled.button`
@@ -94,9 +99,10 @@ export const AddChannelButton = styled.button`
 
 export const TransportSettings = styled.div`
   position: absolute;
-  right: 10px;
-  top: -60px;
-  width: 250px;
+  right: 1%;
+  top: -35%;
+  width: 18%;
+  height: 30%;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -105,17 +111,20 @@ export const TransportSettings = styled.div`
 export const LengthView = styled.span`
   display: flex;
   align-items: center;
-  margin-right: 25px;
+  width: 60%;
+  height: 60%;
+  margin-right: 10%;
+  font-size: 1rem;
 `
 
 export const LengthLabel = styled.label`
-  width: 50px;
-  margin-right: 10px;
+  margin-right: 10%;
 `;
 
 export const LengthInput = styled.input`
   background-color: ${AppTheme.AppSecondaryColor};
-  text-indent: 5px;
+  font-size: 0.9rem;
+  text-indent: 0.3rem;
   color: ${AppTheme.AppTextColor};
   ::placeholder {
     color: ${AppTheme.AppTextColor};
@@ -125,17 +134,17 @@ export const LengthInput = styled.input`
   }
   border: none;
   border-radius: 4px;
-  width: 40px;
-  height: 25px;
+  width: 35%;
+  height: 100%;
   margin-right: 5px;
 `;
 
 export const SnapView = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  width: 75px;
-  font-size: 18px;
+  width: 40%;
+  font-size: 1rem;
 `;
 
 export const SnapToggle = styled.button`
@@ -145,6 +154,7 @@ export const SnapToggle = styled.button`
   background-size: 25px;
   border: none;
   border-radius: 50%;
+  margin-left: 10%;
 
   opacity: ${props => props.snapState ? '0.8' : '0.2'};
   box-shadow: ${props => props.snapState ? '0 -2.5px 12px #185cab' : 'none'};

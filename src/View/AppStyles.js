@@ -17,7 +17,7 @@ export const TopView = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 95vw;
+  width: 95%;
   margin: 30px 0px;
 `;
 
@@ -37,21 +37,11 @@ export const SettingsIcon = styled.button`
 `;
 
 export const Title = styled.h2`
-  font-size: 30px;
+  font-size: 1.9rem;
   font-weight: normal;
   color: ${AppTheme.AppTextColor};
   margin: 10px 30px;
   letter-spacing: .1rem;
-`;
-
-export const MenuLabels = styled.div`
-`;
-
-export const MenuOption = styled.h3`
-  font-size: 18px;
-  width: fit-content;
-  margin: 35px 10px;
-  :hover {cursor: pointer; color: white;}
 `;
 
 export const MiddleView = styled.div`

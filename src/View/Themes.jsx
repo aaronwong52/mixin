@@ -5,6 +5,8 @@ export const AppTheme = {
     AppSecondaryGradient: '#3d4754',
     AppTextColor: '#d8e0ed',
 
+    TransportGridColor: 'rgba(206, 212, 222, 0.1)',
+
     ChannelColor: '#142c4f',
     ChannelHighlight: 'rgba(69, 153, 69, 0.7)',
 

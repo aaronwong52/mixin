@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { AppTheme } from '../View/Themes';
+import { CHANNEL_SIZE } from '../utils/constants';
 
 export const ChannelHeader = styled.div`
     position: sticky;
@@ -13,8 +14,8 @@ export const ChannelHeader = styled.div`
         ? `1px solid ${AppTheme.ChannelHighlight}` 
         : `1px solid ${AppTheme.AppSecondaryColor}`
     };
-    width: 100px;
-    height: 100px;
+    width: ${CHANNEL_SIZE}px;
+    height: ${CHANNEL_SIZE}px;
     z-index: 3;
 `
 
@@ -26,7 +27,7 @@ export const ChannelName = styled.h3`
 `;
 
 export const ChannelNameInput = styled.input`
-    color: #ced4de;
+    color: ${AppTheme.AppTextColor};
     font-size: 1rem;
     font-weight: bold;
     width: 75%;
@@ -41,31 +42,4 @@ export const ChannelNameInput = styled.input`
     :-ms-input-placeholder {
         color:  ${AppTheme.AppTextColor};
     }
-`;
-
-export const RecordingsView = styled.div`
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  box-sizing: border-box;
-  background-origin: padding-box;
-  background-clip: padding-box;
-  width: ${props => props.length}px;
-  height: 80px;
-  background-color: rgba(40, 47, 56, 0.5);  
-`;
-
-export const RecordingView = styled.div`
-    position: absolute;
-    width: 100px;
-    height: 80px;
-    background-color: ${props => props.selected 
-        ? AppTheme.RecordingColor
-        : AppTheme.SelectedRecordingColor
-    };
-    border: none;
-    border-radius: 4px;
-    :hover {cursor: pointer;}
-    z-index: 91920;
 `;

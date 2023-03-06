@@ -13,7 +13,7 @@ import Playline from './playline';
 import { _findChannelIndex } from '../Reducer/recordingReducer';
 
 import { modulo } from '../utils/audio-utils';
-import { CHANNEL_HEIGHT, PIX_TO_TIME } from '../utils/constants';
+import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { SnapContext } from './SnapContext';
@@ -74,6 +74,10 @@ function Transport({exporting}) {
       }, [ref])
     }
 
+    const _getGridHeight = () => {
+      return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
+    };
+
     const onStop = (e, data, recording) => {
 
       // onDrag
@@ -102,7 +106,7 @@ function Transport({exporting}) {
             snapState: snapState
       }});
       let index = _findChannelIndex(state.channels, recording.channel)
-      let newIndex = (deltas.y - 10) / CHANNEL_HEIGHT;
+      let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
      if (newIndex != index) {
         recording.channel = state.channels[newIndex].id;
         dispatch({type: 'switchRecordingChannel', payload: {
@@ -159,9 +163,13 @@ function Transport({exporting}) {
           )
         })
       });
-      return recordings;
+      return (
+        <styles.Recordings id="recordings_view"
+          height={_getGridHeight() - TIMELINE_HEIGHT}>
+            {recordings}
+        </styles.Recordings>
+      );
     };
-
 
     const updateTransportPosition = (time) => {
       dispatch({type: 'updateTransportPosition', payload: time});
@@ -177,7 +185,7 @@ function Transport({exporting}) {
     useEffect(() => {
       const s = (sketch) => {
         let x = state.transportLength + 20;
-        let y = 50;
+        let y = TIMELINE_HEIGHT;
 
         sketch.setup = () => {
           sketch.createCanvas(x, y);
@@ -188,14 +196,14 @@ function Transport({exporting}) {
           sketch.fill(51)
           sketch.textSize(12);
 
-          sketch.line(0, y - 50, x, y - 50); // baseline
+          sketch.line(0, 0, x, 0); // baseline
 
           let i = 0;
           while (i < x) {
-            sketch.fill('white');
+            sketch.fill(AppTheme.AppTextColor);
             if (modulo(i, 50) == 0) {
               if (i != 0) {
-                sketch.text(i / PIX_TO_TIME, i, y - 25); // seconds
+                sketch.text(i / PIX_TO_TIME, i, y - 20); // seconds
               }
               sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
             } else {
@@ -235,7 +243,7 @@ function Transport({exporting}) {
           <TransportSettings></TransportSettings>
           <styles.TransportGrid id="transportgrid" 
             length={state.transportLength} 
-            height={50 + (CHANNEL_HEIGHT * state.channels.length)}>
+            height={_getGridHeight()}>
             <styles.ChannelHeaders>
                 <Channels></Channels>
                 <styles.TimelinePadding id="timeline_padding">
@@ -243,16 +251,16 @@ function Transport({exporting}) {
                 </styles.AddChannelButton>
               </styles.TimelinePadding>
             </styles.ChannelHeaders>
-            <styles.Recordings id="recordings_view">
+            <styles.GridArea id="grid_area">
               <SnapContext.Provider value={snapState}>
                 <Recordings></Recordings>
               </SnapContext.Provider>
               <styles.TransportTimeline>
                 <styles.Timeline id="timeline" ref={transportRef}>
-                  <Playline height={50 + (CHANNEL_HEIGHT * state.channels.length)}></Playline>
+                  <Playline height={_getGridHeight()}></Playline>
                 </styles.Timeline>
               </styles.TransportTimeline>
-            </styles.Recordings>
+            </styles.GridArea>
           </styles.TransportGrid>
         </styles.TransportView>
       </styles.SpanWrap>
