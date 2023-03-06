@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { AppTheme } from './Themes';
+import { AppTheme } from '../Themes';
 
 export const View = styled.div`
   min-height: 100vh;
@@ -22,7 +22,6 @@ export const TopView = styled.div`
 `;
 
 export const Settings = styled.div`
-
 `;
 
 export const SettingsIcon = styled.button`

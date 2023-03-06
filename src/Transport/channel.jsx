@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useContext } from "react";
 
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 
-import * as styles from './ChannelStyles';
+import * as styles from './Styles/ChannelStyles';
 import useKeyPress from "../utils/useKeyPress";
 
 export default function Channel({channelName, channelData}) {

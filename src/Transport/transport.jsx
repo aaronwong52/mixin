@@ -1,7 +1,7 @@
 import { useRef, useEffect, useContext, useState} from 'react';
 import p5 from 'p5';
 
-import * as styles from './TransportStyles';
+import * as styles from './Styles/TransportStyles';
 
 import { Transport as ToneTransport } from 'tone';
 import { AppTheme } from '../View/Themes';
@@ -10,7 +10,7 @@ import Channel from './Channel';
 import Recording from "./Recording";
 import Playline from './playline';
 
-import { _findChannelIndex } from '../Reducer/recordingReducer';
+import { _findChannelIndex } from '../Reducer/AppReducer';
 
 import { modulo } from '../utils/audio-utils';
 import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
@@ -39,25 +39,6 @@ function Transport({exporting}) {
 
     const channelsWrapperRef = useRef(null);
     useOutsideChannels(channelsWrapperRef);
-
-    const recordingsWrapperRef = useRef(null);
-    useOutsideRecordings(recordingsWrapperRef);
-
-    function useOutsideRecordings(ref) {
-        useEffect(() => {
-            function handleClickOutside(event) {
-            if (ref.current && !ref.current.contains(event.target)) {
-                if (event.target.id != "recordingsview") {
-                    return;
-                }
-                // clicked outside
-                dispatch({type: 'deselectRecordings', payload: {}});
-            }
-            }
-            document.addEventListener("mousedown", handleClickOutside);
-            return () => document.removeEventListener("mousedown", handleClickOutside);
-        }, [ref]);
-    }
 
     function useOutsideChannels(ref) {
       useEffect(() => {
@@ -121,7 +102,26 @@ function Transport({exporting}) {
       }
     };
 
-    const TransportSettings = () => {
+    const TransportSettings = (setExporting) => {
+
+      const settingsRef = useRef(null);
+      useOutsideSettings(settingsRef);
+
+      function useOutsideSettings(ref) {
+          useEffect(() => {
+              function handleClickOutside(event) {
+              if (ref.current && !ref.current.contains(event.target)) {
+                  if (event.target.id != "recordingsview") {
+                      return;
+                  }
+                  // clicked outside
+                  setExporting(!exporting);
+              }
+              }
+              document.addEventListener("mousedown", handleClickOutside);
+              return () => document.removeEventListener("mousedown", handleClickOutside);
+          }, [ref]);
+      }
       return (
         <styles.TransportSettings>
             <styles.LengthView>

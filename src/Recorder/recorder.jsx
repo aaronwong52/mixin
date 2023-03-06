@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 
-import { RecordButton } from './recorderStyles';
+import { RecordButton } from './Styles/recorderStyles';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,12 +30,11 @@ function Recorder({receiveRecording, exporting}) {
 
     const toggleRecording = async (e) => {
         e.stopPropagation();
-        if (exportingRef.current || !state.mic) {
+        if (!state.mic) {
             return;
         }
         Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
         if (recordingRef.current) {
-            dispatch({type: 'toggleRecordingState', payload: false});
             closeMic(state.mic);
             let data = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
@@ -53,27 +52,29 @@ function Recorder({receiveRecording, exporting}) {
             receiveRecording(newRecording);
             recordingRef.current = false;
             setRecording(false);
-        }
-        else { // functionality is locked while export menu is open
-            dispatch({type: 'toggleRecordingState', payload: true});
+            dispatch({type: 'toggleRecordingState', payload: false});
+        } else { // functionality is locked while export menu is open
             openMic(state.mic);
             recorder.start();
             recordingRef.current = true;
             setRecording(true);
+            dispatch({type: 'toggleRecordingState', payload: true});
         }
     };
 
     useEffect(() => {
-        exportingRef.current = exporting;
-        // for some reason (Tone?) this only works by binding a click listener, DOMException when using onClick prop
+        exportingRef.current = exporting;        
+    }, [exporting]);
+
+    useEffect(() => {
         let recBtn = document.getElementById("rec_btn");
 
-        // recBtn.disabled = !Tone.UserMedia.supported;
+        recBtn.disabled = !Tone.UserMedia.supported;
         recBtn.addEventListener("click", (e) => toggleRecording(e));
         return () => {
             recBtn.removeEventListener("click", (e) => toggleRecording(e));
         }
-    }, [exporting, state.mic]);
+    }, [state.mic]);
 
     return (
         <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>

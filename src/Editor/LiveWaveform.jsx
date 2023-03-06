@@ -4,7 +4,7 @@ import p5 from 'p5';
 
 import { StateContext } from '../utils/StateContext';
 
-import { StyledWaveform } from './liveWaveformStyles';
+import { StyledWaveform } from './Styles/liveWaveformStyles';
 
 export default function LiveWaveform() {
     

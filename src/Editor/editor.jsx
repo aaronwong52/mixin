@@ -1,7 +1,7 @@
 import p5 from 'p5';
 
 import { useState, useEffect, useRef, useContext } from 'react';
-import * as styles from './EditorStyles';
+import * as styles from './Styles/EditorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
 import Split from './Split';

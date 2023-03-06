@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { AppTheme } from '../View/Themes';
+import { AppTheme } from '../../View/Themes';
 
 export const Editor = styled.div`
     position: relative;
@@ -10,7 +10,7 @@ export const Editor = styled.div`
     align-items: center;
     align-self: center;
     box-shadow: 0 0 3px #818a99;
-    z-index: 99;
+    z-index: 3;
 `;
 
 export const ControlView = styled.div`

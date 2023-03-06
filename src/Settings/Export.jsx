@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import * as styles from './ExportMixStyles';
+import * as styles from './Styles/ExportMixStyles';
 
-import { calculatePlayOffset } from '../Reducer/recordingReducer';
+import { calculatePlayOffset } from '../Reducer/AppReducer';
 import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
 import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
@@ -17,7 +17,7 @@ function Export({displayState, channels}) {
     
     const onBounceClick = () => {
         if (!fileFormat) {
-            // error
+            return;
         }
 
         // ranges: [start, end]
@@ -52,11 +52,12 @@ function Export({displayState, channels}) {
         exportFile(wav, AUDIO_FORMATS.wav);
     };
 
+    // mp3 encoder yields extremely quiet levels
     const boostMp3 = (floatBuffer) => {
         return floatBuffer.map((val) => {
             return val * WAV_TO_MP3;
         })
-    }
+    };
     
     const exportAsMp3 = async (ranges) => {
         let mp3 = [];
@@ -121,11 +122,11 @@ function Export({displayState, channels}) {
     };
 
     return (
-        <styles.ExportMenuView displayState={displayState}>
-            <styles.ExportMenuOptions>
+        <styles.SettingsView id="settingsMenu" displayState={displayState}>
+            <styles.ExportMenu>
                 <styles.CenteredHeader>Export</styles.CenteredHeader>
                 <styles.ExportMenuOption>
-                    <h3>Format:</h3>
+                    <styles.ExportRangeText>Format:</styles.ExportRangeText>
                     <styles.FileTypeButton 
                         fileFormat={fileFormat == 'wav'}
                         onClick={() => onFormatClick("wav")}>WAV
@@ -135,16 +136,16 @@ function Export({displayState, channels}) {
                         onClick={() => onFormatClick("mp3")}>MP3</styles.FileTypeButton>
                 </styles.ExportMenuOption>
                 <styles.ExportMenuOption>
-                    <h3>Start:</h3>
-                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>
+                    <styles.ExportRangeText>Start:</styles.ExportRangeText>
+                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
                 </styles.ExportMenuOption>
                 <styles.ExportMenuOption>
-                    <h3>End:</h3>
-                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>
+                    <styles.ExportRangeText>End:</styles.ExportRangeText>
+                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
                 </styles.ExportMenuOption>
                 <styles.ExportButton onClick={onBounceClick}>Bounce</styles.ExportButton>
-            </styles.ExportMenuOptions>
-        </styles.ExportMenuView>
+            </styles.ExportMenu>
+        </styles.SettingsView>
     )
 }
 

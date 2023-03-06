@@ -3,7 +3,7 @@ import { createPlayer } from '../utils/audio-utils';
 import * as Tone from 'tone';
 import { v4 as uuidv4 } from 'uuid';
 
-export const recordingReducer = (state, action) => {
+export const RecordingReducer = (state, action) => {
     switch (action.type) {
       case 'setMic':
         return setMic(state, action.payload);

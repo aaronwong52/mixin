@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { AppTheme } from '../View/Themes';
-import { CHANNEL_SIZE } from '../utils/constants';
+import { AppTheme } from '../../View/Themes';
+import { CHANNEL_SIZE } from '../../utils/constants';
 
 export const ChannelHeader = styled.div`
     position: sticky;
@@ -42,4 +42,21 @@ export const ChannelNameInput = styled.input`
     :-ms-input-placeholder {
         color:  ${AppTheme.AppTextColor};
     }
+`;
+
+export const RecordingView = styled.div`
+    position: absolute;
+    width: ${CHANNEL_SIZE}px;
+    height: ${CHANNEL_SIZE}px;
+    padding: 5px 0px;
+    box-sizing: border-box;
+    background-color: ${props => props.selected 
+        ? AppTheme.SelectedRecordingColor
+        : AppTheme.RecordingColor
+    };
+    background-clip: content-box;
+    border: none;
+    border-radius: 4px;
+    :hover {cursor: pointer;}
+    z-index: 3;
 `;

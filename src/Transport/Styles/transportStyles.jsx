@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { AppTheme } from '../View/Themes';
-import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../utils/constants';
+import { AppTheme } from '../../View/Themes';
+import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../../utils/constants';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
 export const SpanWrap = styled.span`

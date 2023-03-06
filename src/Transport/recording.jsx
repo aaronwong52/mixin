@@ -5,22 +5,7 @@ import { SnapContext } from "./SnapContext";
 import { CHANNEL_SIZE, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
 
-import { AppTheme } from "../View/Themes";
-import styled from 'styled-components';
-
-const RecordingView = styled.div`
-    position: absolute;
-    width: ${CHANNEL_SIZE}px;
-    height: ${CHANNEL_SIZE}px;
-    background-color: ${props => props.selected 
-        ? AppTheme.RecordingColor
-        : AppTheme.SelectedRecordingColor
-    };
-    border: none;
-    border-radius: 4px;
-    :hover {cursor: pointer;}
-    z-index: 3;
-`;
+import * as styles from './Styles/ChannelStyles';
 
 export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 
@@ -71,11 +56,11 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
             position={{x: r.start * PIX_TO_TIME, y: channelIndex * CHANNEL_SIZE}}
             grid={snapState ? [25, CHANNEL_SIZE] : [-1, CHANNEL_SIZE]}
             scale={1}>
-            <RecordingView
+            <styles.RecordingView
                 ref={recordingsWrapperRef}
                 selected = {r.id == selected.id} 
                 id = {"recording_clip_" + r.id}>
-            </RecordingView>
+            </styles.RecordingView>
         </Draggable>
     ];
 }

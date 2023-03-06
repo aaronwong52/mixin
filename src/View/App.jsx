@@ -1,17 +1,17 @@
 import { useRef, useEffect, useState, useReducer } from 'react'
 
-import * as styles from './AppStyles';
+import * as styles from './Styles/AppStyles';
 
 import * as Tone from 'tone';
 import { FileDrop } from 'react-file-drop';
 import { createPlayer } from '../utils/audio-utils';
 
-import { recordingReducer } from '../Reducer/recordingReducer';
+import { RecordingReducer } from '../Reducer/AppReducer';
 import Transport from '../Transport/Transport';
 import Recorder from '../Recorder/Recorder';
 import Editor from '../Editor/Editor';
 import TransportClock from '../Transport/TransportClock';
-import Export from '../Export/Export';
+import Export from '../Settings/Export';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
@@ -64,7 +64,7 @@ const initialState = {
 function App() {
   
   const [muted, setMuted] = useState(false);
-  const [state, dispatch] = useReducer(recordingReducer, initialState);
+  const [state, dispatch] = useReducer(RecordingReducer, initialState);
   
   const [dropping, setDropping] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -72,6 +72,22 @@ function App() {
   const drawing = useRef();
 
   const audioReader = new FileReader();
+
+  const settingsWrapperRef = useRef(null);
+  useOutsideSettings(settingsWrapperRef);
+
+    function useOutsideSettings(ref) {
+        useEffect(() => {
+            function handleClickOutside(event) {
+              if (ref.current && !ref.current.contains(event.target)) {
+                  // clicked outside
+                  setExporting(false);
+              }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }, [ref]);
+    }
 
   // logic for this with reducer is a little tricky
   // any state operations that need to read state -> place in reducer
@@ -214,7 +230,7 @@ function App() {
         <styles.View id="Tone" ref={drawing.current}>
           <styles.TopView>
             <styles.Title>MIXIN</styles.Title>
-            <styles.Settings>
+            <styles.Settings ref={settingsWrapperRef}>
               <styles.SettingsIcon onClick={setExportingState}></styles.SettingsIcon>
               <Export displayState={exporting} channels={state.channels}></Export>
             </styles.Settings>
