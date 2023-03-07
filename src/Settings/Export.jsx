@@ -7,7 +7,7 @@ import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
 import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
 
-function Export({displayState, channels}) {
+function Export({channels}) {
 
     const [fileFormat, setFileFormat] = useState('');
 
@@ -29,14 +29,14 @@ function Export({displayState, channels}) {
     const getRangesFromInputs = (inputs) => {
         return inputs.map((input) => {
             return parseInt(input.value);
-        })
+        });
     };
 
     const bounce = (fileFormat, ranges) => {
         if (fileFormat == 'mp3') {
-          exportAsMp3(ranges);
+            exportAsMp3(ranges);
         } else {
-          exportAsWav(ranges);
+            exportAsWav(ranges);
         }
     };
 
@@ -91,7 +91,7 @@ function Export({displayState, channels}) {
             formattedFile = [new DataView(file)];
         }
         let blob = new window.Blob(formattedFile, {
-          type: fileFormat
+            type: fileFormat
         });
         downloadBlob(blob, fileFormat);
     };
@@ -109,44 +109,41 @@ function Export({displayState, channels}) {
         // OfflineAudioContext(numChannels, length, sampleRate)
         const offlineContext = new OfflineAudioContext(2, SAMPLE_RATE * ranges[1], SAMPLE_RATE);
         channels.forEach(function(channel) {
-          channel.recordings.forEach(function(recording) {
-            let source = offlineContext.createBufferSource();
-            let offset = calculatePlayOffset(ranges[0], recording);
-            let startOffset = recording.start - recording.position + offset;
-            source.buffer = bufferFromToneBuffer(recording.data);
-            source.connect(offlineContext.destination);
-            source.start(recording.position + startOffset, startOffset);
-          })
+            channel.recordings.forEach(function(recording) {
+                let source = offlineContext.createBufferSource();
+                let offset = calculatePlayOffset(ranges[0], recording);
+                let startOffset = recording.start - recording.position + offset;
+                source.buffer = bufferFromToneBuffer(recording.data);
+                source.connect(offlineContext.destination);
+                source.start(recording.position + startOffset, startOffset);
+            })
         }); 
         return await offlineContext.startRendering();
     };
 
     return (
-        <styles.SettingsView id="settingsMenu" displayState={displayState}>
-            <styles.ExportMenu>
-                <styles.CenteredHeader>Export</styles.CenteredHeader>
-                <styles.ExportMenuOption>
-                    <styles.ExportRangeText>Format:</styles.ExportRangeText>
-                    <styles.FileTypeButton 
-                        fileFormat={fileFormat == 'wav'}
-                        onClick={() => onFormatClick("wav")}>WAV
-                    </styles.FileTypeButton>
-                    <styles.FileTypeButton 
-                        fileFormat={fileFormat == 'mp3'}
-                        onClick={() => onFormatClick("mp3")}>MP3</styles.FileTypeButton>
-                </styles.ExportMenuOption>
-                <styles.ExportMenuOption>
-                    <styles.ExportRangeText>Start:</styles.ExportRangeText>
-                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
-                </styles.ExportMenuOption>
-                <styles.ExportMenuOption>
-                    <styles.ExportRangeText>End:</styles.ExportRangeText>
-                    <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
-                </styles.ExportMenuOption>
-                <styles.ExportButton onClick={onBounceClick}>Bounce</styles.ExportButton>
-            </styles.ExportMenu>
-        </styles.SettingsView>
-    )
+        <styles.ExportMenu>
+            <styles.ExportMenuOption>
+                <styles.ExportRangeText>Format:</styles.ExportRangeText>
+                <styles.FileTypeButton 
+                    fileFormat={fileFormat == 'wav'}
+                    onClick={() => onFormatClick("wav")}>WAV
+                </styles.FileTypeButton>
+                <styles.FileTypeButton 
+                    fileFormat={fileFormat == 'mp3'}
+                    onClick={() => onFormatClick("mp3")}>MP3</styles.FileTypeButton>
+            </styles.ExportMenuOption>
+            <styles.ExportMenuOption>
+                <styles.ExportRangeText>Start:</styles.ExportRangeText>
+                <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
+            </styles.ExportMenuOption>
+            <styles.ExportMenuOption>
+                <styles.ExportRangeText>End:</styles.ExportRangeText>
+                <styles.ExportRangeInput className="export_range_input"></styles.ExportRangeInput>s
+            </styles.ExportMenuOption>
+            <styles.ExportButton onClick={onBounceClick}>Bounce</styles.ExportButton>
+        </styles.ExportMenu>
+    );
 }
 
 export default Export;

@@ -1,54 +1,21 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { AppTheme } from '../../View/Themes';
-
-const fadeIn = keyframes`
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-`;
-
-const fadeOut = keyframes`
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-`;
-
-export const CenteredHeader = styled.h2`
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-`;
-
-export const SettingsView = styled.div`
-    visibility: ${props => props.displayState ? 'visible' : 'hidden'};
-    position: absolute;
-    right: 0;
-    width: 20%;
-    height: 45vh;
-    border-radius: 6px;
-    background: linear-gradient(to bottom, ${AppTheme.AppSecondaryColor}, ${AppTheme.AppSecondaryGradient});
-    animation: 0.05s ${props => props.displayState ? fadeIn : fadeOut} linear;
-    transition: visibility 0.05s linear;
-    border: none;
-    box-shadow: 0 0 0 2px #424242;
-    margin-top: 10px;
-    padding: 10px 25px;
-    z-index: 4;
-`;
 
 export const ExportMenu = styled.section`
     position: relative;
-    height: 95%;
+    height: 80%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     color: ${AppTheme.AppTextColor};
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: normal;
 `;
 
 export const ExportMenuOption = styled.div`
     display: flex;
     align-items: center;
-    margin-left: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     width: 90%;
 `;
 
@@ -65,7 +32,7 @@ export const ExportRangeText = styled.h3`
 `;
 
 export const ExportRangeInput = styled.input`
-    height: 30px;
+    height: 25px;
     width: 20%;
     margin-left: 10%;
     margin-right: 2%;

@@ -41,230 +41,226 @@ function Transport({exporting}) {
     useOutsideChannels(channelsWrapperRef);
 
     function useOutsideChannels(ref) {
-      useEffect(() => {
-        function handleClickOutside(event) {
-          if (ref.current && !ref.current.contains(event.target)) {
-            if (event.target.tagName == 'BUTTON') {
-              return;
+        useEffect(() => {
+            function handleClickOutside(event) {
+                if (ref.current && !ref.current.contains(event.target)) {
+                    if (event.target.tagName == 'BUTTON') {
+                        return;
+                    }
+                    dispatch({type: 'deselectRecordings', payload: {}});
+                }
             }
-            dispatch({type: 'deselectRecordings', payload: {}});
-          }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-      }, [ref])
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }, [ref]);
     }
 
     const _getGridHeight = () => {
-      return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
+        return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
 
     const onStop = (e, data, recording) => {
-
-      // onDrag
-      if (draggingRef.current) {
-        draggingRef.current = false;
- 
-        updatePlayerPosition({x: data.x, y: data.y}, recording, snapState);
-      }
+        // onDrag
+        if (draggingRef.current) {
+            draggingRef.current = false;
+            updatePlayerPosition({x: data.x, y: data.y}, recording, snapState);
+        }
 
       // onClick
-      else {
-        dispatch({type: 'selectRecording', payload: recording})
-      }
+        else {
+            dispatch({type: 'selectRecording', payload: recording})
+        }
     };
 
     const onDrag = (e) => {
-      if (e.type === 'mousemove' || e.type === 'touchmove') {
-        draggingRef.current = true;
-      }
+        if (e.type === 'mousemove' || e.type === 'touchmove') {
+            draggingRef.current = true;
+        }
     };
 
     const updatePlayerPosition = (deltas, recording, snapState) => {
-      dispatch({type: 'updateRecordingPosition', payload: {
+        dispatch({type: 'updateRecordingPosition', payload: {
             recording: recording,
             newPosition: deltas.x,
             snapState: snapState
-      }});
-      let index = _findChannelIndex(state.channels, recording.channel)
-      let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
-     if (newIndex != index) {
-        recording.channel = state.channels[newIndex].id;
-        dispatch({type: 'switchRecordingChannel', payload: {
-          recording: recording,
-          channelIndex: index,
-          newChannelIndex: newIndex
-        }})
-     }
-      // reselect recording to update playline in Editor
-      if (state.selectedRecording.id == recording.id) {
-        dispatch({type: 'selectRecording', payload: recording});
-      }
+        }});
+        let index = _findChannelIndex(state.channels, recording.channel)
+        let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
+        if (newIndex != index) {
+            recording.channel = state.channels[newIndex].id;
+            dispatch({type: 'switchRecordingChannel', payload: {
+                recording: recording,
+                channelIndex: index,
+                newChannelIndex: newIndex
+            }})
+        }
+        // reselect recording to update playline in Editor
+        if (state.selectedRecording.id == recording.id) {
+            dispatch({type: 'selectRecording', payload: recording});
+        }
     };
 
     const TransportSettings = (setExporting) => {
 
-      const settingsRef = useRef(null);
-      useOutsideSettings(settingsRef);
+        const settingsRef = useRef(null);
+        useOutsideSettings(settingsRef);
 
-      function useOutsideSettings(ref) {
-          useEffect(() => {
-              function handleClickOutside(event) {
-              if (ref.current && !ref.current.contains(event.target)) {
-                  if (event.target.id != "recordingsview") {
-                      return;
-                  }
-                  // clicked outside
-                  setExporting(!exporting);
-              }
-              }
-              document.addEventListener("mousedown", handleClickOutside);
-              return () => document.removeEventListener("mousedown", handleClickOutside);
-          }, [ref]);
-      }
-      return (
-        <styles.TransportSettings>
-            <styles.LengthView>
-              <styles.LengthLabel>Length:</styles.LengthLabel>
-              <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
-                placeholder={state.transportLength / PIX_TO_TIME}>
-              </styles.LengthInput>s
-            </styles.LengthView>
-            <styles.SnapView>
-              <p>Snap</p>
-              <styles.SnapToggle 
-                snapState={snapState}
-                onClick={() => setSnapState(!snapState)}>
-              </styles.SnapToggle>
-            </styles.SnapView>
-          </styles.TransportSettings>
-      );
+        function useOutsideSettings(ref) {
+            useEffect(() => {
+                function handleClickOutside(event) {
+                    if (ref.current && !ref.current.contains(event.target)) {
+                        if (event.target.id != "recordingsview") {
+                            return;
+                        }
+                        // clicked outside
+                        setExporting(!exporting);
+                    }
+                }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, [ref]);
+        }
+        return (
+            <styles.TransportSettings>
+                <styles.LengthView>
+                    <styles.LengthLabel>Length:</styles.LengthLabel>
+                    <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
+                    placeholder={state.transportLength / PIX_TO_TIME}>
+                    </styles.LengthInput>s
+                </styles.LengthView>
+                <styles.SnapView>
+                    <p>Snap</p>
+                    <styles.SnapToggle snapState={snapState}
+                    onClick={() => setSnapState(!snapState)}>
+                    </styles.SnapToggle>
+                </styles.SnapView>
+            </styles.TransportSettings>
+        );
     };
 
     const Channels = () => {
-      return state.channels.map((c, index) => (
-        <Channel key={(c.id + index).toString()} channelName = {c.name} 
-          channelData = {{...c, index: index}}>
-        </Channel>
-      ));
+        return state.channels.map((c, index) => (
+            <Channel key={(c.id + index).toString()} channelName = {c.name} 
+            channelData = {{...c, index: index}}>
+            </Channel>
+        ));
     };
 
     const Recordings = () => {
-      let recordings = [];
-      state.channels.map((c) => {
-        c.recordings.map((r) => {
-          recordings.push(
-            <Recording key={r.id} r={r}
-              onDrag={onDrag}
-              onStop={onStop}
-              selected={state.selectedRecording}
-              channelIndex={c.index}>
-            </Recording>
-          )
-        })
-      });
-      return (
-        <styles.Recordings id="recordings_view"
-          height={_getGridHeight() - TIMELINE_HEIGHT}>
-            {recordings}
-        </styles.Recordings>
-      );
+        let recordings = [];
+        state.channels.map((c) => {
+            c.recordings.map((r) => {
+                recordings.push(
+                    <Recording key={r.id} r={r}
+                        onDrag={onDrag}
+                        onStop={onStop}
+                        selected={state.selectedRecording}
+                        channelIndex={c.index}>
+                    </Recording>
+                )
+             })
+        });
+        return (
+            <styles.Recordings id="recordings_view"
+                height={_getGridHeight() - TIMELINE_HEIGHT}>
+                {recordings}
+            </styles.Recordings>
+        );
     };
 
     const updateTransportPosition = (time) => {
-      dispatch({type: 'updateTransportPosition', payload: time});
+        dispatch({type: 'updateTransportPosition', payload: time});
     };
 
     const handleKeyDown = (event) => {
-      if (event.key == 'Enter') {
-        let input = document.getElementById("transport_length_input");
-        dispatch(({type: 'updateTransportLength', payload: input.value * PIX_TO_TIME}));
-      }
-    }
+        if (event.key == 'Enter') {
+            let input = document.getElementById("transport_length_input");
+            dispatch(({type: 'updateTransportLength', payload: input.value * PIX_TO_TIME}));
+        }
+    };
 
     useEffect(() => {
-      const s = (sketch) => {
-        let x = state.transportLength + 20;
-        let y = TIMELINE_HEIGHT;
+        const s = (sketch) => {
+            let x = state.transportLength + 20;
+            let y = TIMELINE_HEIGHT;
 
-        sketch.setup = () => {
-          sketch.createCanvas(x, y);
-        };
+            sketch.setup = () => {
+                sketch.createCanvas(x, y);
+            };
 
-        sketch.draw = () => {
-          sketch.background(AppTheme.AppSecondaryColor);
-          sketch.fill(51)
-          sketch.textSize(12);
+            sketch.draw = () => {
+                sketch.background(AppTheme.AppSecondaryColor);
+                sketch.fill(51)
+                sketch.textSize(12);
 
-          sketch.line(0, 0, x, 0); // baseline
+                sketch.line(0, 0, x, 0); // baseline
 
-          let i = 0;
-          while (i < x) {
-            sketch.fill(AppTheme.AppTextColor);
-            if (modulo(i, 50) == 0) {
-              if (i != 0) {
-                sketch.text(i / PIX_TO_TIME, i, y - 20); // seconds
-              }
-              sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
-            } else {
-              sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
+                let i = 0;
+                while (i < x) {
+                    sketch.fill(AppTheme.AppTextColor);
+                    if (modulo(i, 50) == 0) {
+                    if (i != 0) {
+                        sketch.text(i / PIX_TO_TIME, i, y - 20); // seconds
+                    }
+                    sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
+                    } else {
+                    sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
+                    }
+                    sketch.stroke(206, 212, 222, 20);
+                    sketch.textAlign(sketch.CENTER);
+                    i += 25;
+                }
+            };
+
+            sketch.mouseClicked = () => {
+                // if mouse out of bounds
+                if (sketch.mouseY < 0 || sketch.mouseY > y || exporting) {
+                    return;
+                }
+                ToneTransport.pause();
+                
+                let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
+                if (newPosition < 0.1) {
+                    newPosition = 0;
+                }
+
+                ToneTransport.seconds = newPosition;
+                dispatch({type: 'togglePlay', payload: {playing: false, time: newPosition}});
+                updateTransportPosition(newPosition);
             }
-            sketch.stroke(206, 212, 222, 20);
-            sketch.textAlign(sketch.CENTER);
-            i += 25;
-          }
         };
-
-        sketch.mouseClicked = () => {
-
-          // if mouse out of bounds
-          if (sketch.mouseY < 0 || sketch.mouseY > y || exporting) {
-            return;
-          }
-          ToneTransport.pause();
-          
-          let newPosition = (sketch.mouseX + 1) / PIX_TO_TIME;
-          if (newPosition < 0.1) {
-            newPosition = 0;
-          }
-
-          ToneTransport.seconds = newPosition;
-          dispatch({type: 'togglePlay', payload: {playing: false, time: newPosition}});
-          updateTransportPosition(newPosition);
-        }
-      };
-      let transportp5 = new p5(s, transportRef.current);
-      return () => transportp5.remove();
+        let transportp5 = new p5(s, transportRef.current);
+        return () => transportp5.remove();
     }, [state.transportLength]);
 
     return (
-      <styles.SpanWrap>
-        <styles.TransportView id="transportview" ref={channelsWrapperRef}>
-          <TransportSettings></TransportSettings>
-          <styles.TransportGrid id="transportgrid" 
-            length={state.transportLength} 
-            height={_getGridHeight()}>
-            <styles.ChannelHeaders>
-                <Channels></Channels>
-                <styles.TimelinePadding id="timeline_padding">
-                  <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
-                </styles.AddChannelButton>
-              </styles.TimelinePadding>
-            </styles.ChannelHeaders>
-            <styles.GridArea id="grid_area">
-              <SnapContext.Provider value={snapState}>
-                <Recordings></Recordings>
-              </SnapContext.Provider>
-              <styles.TransportTimeline>
-                <styles.Timeline id="timeline" ref={transportRef}>
-                  <Playline height={_getGridHeight()}></Playline>
-                </styles.Timeline>
-              </styles.TransportTimeline>
-            </styles.GridArea>
-          </styles.TransportGrid>
-        </styles.TransportView>
-      </styles.SpanWrap>
-    )
+        <styles.SpanWrap>
+            <styles.TransportView id="transportview" ref={channelsWrapperRef}>
+                <TransportSettings></TransportSettings>
+                <styles.TransportGrid id="transportgrid" 
+                    length={state.transportLength} 
+                    height={_getGridHeight()}>
+                    <styles.ChannelHeaders>
+                        <Channels></Channels>
+                        <styles.TimelinePadding id="timeline_padding">
+                            <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+                            </styles.AddChannelButton>
+                        </styles.TimelinePadding>
+                    </styles.ChannelHeaders>
+                    <styles.GridArea id="grid_area">
+                        <SnapContext.Provider value={snapState}>
+                            <Recordings></Recordings>
+                        </SnapContext.Provider>
+                        <styles.TransportTimeline>
+                            <styles.Timeline id="timeline" ref={transportRef}>
+                                <Playline height={_getGridHeight()}></Playline>
+                            </styles.Timeline>
+                        </styles.TransportTimeline>
+                    </styles.GridArea>
+                </styles.TransportGrid>
+            </styles.TransportView>
+        </styles.SpanWrap>
+    );
 }
 
 export default Transport;
