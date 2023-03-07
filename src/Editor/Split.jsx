@@ -34,6 +34,7 @@ export default function Split({splitting, splitClip}) {
 		};
 
 		const mouseup = (event) => {
+            event.stopPropagation();
 			let box = splitView.getBoundingClientRect();
 			splitClip(event.clientX - box.left);
 		};

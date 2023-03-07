@@ -1,7 +1,9 @@
 import styled from 'styled-components';
+import { AppTheme } from '../../View/Themes';
+import { EDITOR_WIDTH } from '../../utils/constants';
 
 export const StyledWaveform = styled.div`
-	height: 200px;
-	width: 650px;
-	box-shadow: 0px 0 3px #818a99;
+	height: 25vh;
+	width: ${EDITOR_WIDTH}px;
+	box-shadow: 0px 0 3px ${AppTheme.EditorBoxHighlight};
 `;

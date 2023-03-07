@@ -100,9 +100,9 @@ export const AddChannelButton = styled.button`
 export const TransportSettings = styled.div`
     position: absolute;
     right: 1%;
-    top: -35%;
+    top: -40px;
     width: 18%;
-    height: 30%;
+    height: 3vh;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -135,7 +135,7 @@ export const LengthInput = styled.input`
     border: none;
     border-radius: 4px;
     width: 35%;
-    height: 100%;
+    height: 2rem;
     margin-right: 5px;
 `;
 

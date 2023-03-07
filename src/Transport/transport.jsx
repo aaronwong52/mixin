@@ -37,24 +37,6 @@ function Transport({exporting}) {
     const [snapState, setSnapState] = useState(false);
     const draggingRef = useRef(false);
 
-    const channelsWrapperRef = useRef(null);
-    useOutsideChannels(channelsWrapperRef);
-
-    function useOutsideChannels(ref) {
-        useEffect(() => {
-            function handleClickOutside(event) {
-                if (ref.current && !ref.current.contains(event.target)) {
-                    if (event.target.tagName == 'BUTTON') {
-                        return;
-                    }
-                    dispatch({type: 'deselectRecordings', payload: {}});
-                }
-            }
-            document.addEventListener("mousedown", handleClickOutside);
-            return () => document.removeEventListener("mousedown", handleClickOutside);
-        }, [ref]);
-    }
-
     const _getGridHeight = () => {
         return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
@@ -235,7 +217,7 @@ function Transport({exporting}) {
 
     return (
         <styles.SpanWrap>
-            <styles.TransportView id="transportview" ref={channelsWrapperRef}>
+            <styles.TransportView id="transportview">
                 <TransportSettings></TransportSettings>
                 <styles.TransportGrid id="transportgrid" 
                     length={state.transportLength} 

@@ -3,13 +3,13 @@ import { AppTheme } from '../../View/Themes';
 
 export const Editor = styled.div`
 	position: relative;
-	height: 200px;
+	height: 25vh;
 	margin-bottom: 40px;
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
 	align-self: center;
-	box-shadow: 0 0 3px #818a99;
+	box-shadow: 0 0 3px ${AppTheme.EditorBoxHighlight};
 	z-index: 3;
 `;
 
@@ -18,15 +18,18 @@ export const ControlView = styled.div`
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: center;
-	width: 40px;
-	height: 200px;
+	width: 10%;
+	height: 100%;
 	margin: 0px 5px;
-	box-shadow: 0px 0 3px #818a99;
+	box-shadow: 0px 0 3px ${AppTheme.EditorBoxHighlight};
 	clip-path: inset(0px 0px -3px 0px);
 `;
 
 export const Crop = styled.button`
-	background: url('/images/crop.png') no-repeat;
+	background: ${props => props.cropping 
+        ? "url('/images/checkmark.png') no-repeat"
+        : "url('/images/crop.png') no-repeat"
+    };
 	width: 30px;
 	height: 30px;
 	box-sizing: content-box;

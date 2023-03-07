@@ -15,52 +15,51 @@ export const SettingsView = styled.div`
     visibility: ${props => props.displayState ? 'visible' : 'hidden'};
     position: absolute;
     right: 0;
-    width: 15%;
-    height: 40vh;
     border-radius: 6px;
     background: linear-gradient(to bottom, ${AppTheme.AppSecondaryColor}, ${AppTheme.AppSecondaryGradient});
     animation: 0.05s ${props => props.displayState ? fadeIn : fadeOut} linear;
     transition: visibility 0.05s linear;
     border: none;
     box-shadow: 0 0 0 2px #424242;
-    margin-top: 10px;
-    padding: 10px 25px;
     z-index: 4;
 `;
 
 export const SettingsOptions = styled.span`
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-around;
     align-items: flex-start;
-    margin: 5% 0%;
+    width: 15vw;
+    margin: 5% 10%;
 `;
 
 export const SettingsOption = styled(AppTheme.DefaultButton)`
     background-color: transparent;
-    margin-bottom: 20%;
     color: ${AppTheme.AppTextOffColor};
     font-size: 1rem;
+    height: 8vh;
 `;
 
-export const OptionView = styled.span`
+export const OptionView = styled.div`
+    margin: 5% 5%;
+    width: 18vw;
 `;
 
 export const OptionHeader = styled.span`
     display: flex;
     align-items: center;
     height: 15%;
-    margin-bottom: 4%;
+    margin: 4% 0;
 `;
 
 export const OptionTitle = styled.h3`
     color: ${AppTheme.AppTextOffColor};
-    font-size: 1rem;
+    font-size: 1.2rem;
     margin: 0;
 `;
 
 export const OptionBack = styled(AppTheme.DefaultButton)`
-    width: 20%;
-    height: 2.1rem;
+    width: 16%;
+    height: 2.3rem;
     background: url('/images/arrow_left.png') no-repeat;
 `;

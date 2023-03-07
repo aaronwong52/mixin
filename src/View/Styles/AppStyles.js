@@ -25,11 +25,10 @@ export const Settings = styled.div`
 `;
 
 export const SettingsIcon = styled(AppTheme.DefaultButton)`
-	width: 30px;
-	height: 30px;
-	background-color: transparent;
+	width: 25px;
+	height: 25px;
 	background: url('/images/arrow_down.png') no-repeat;
-	background-size: 30px;
+	background-size: 25px;
 	border-radius: 50px;
 	:hover {box-shadow: 0 0 4px 1px grey;}
 `;

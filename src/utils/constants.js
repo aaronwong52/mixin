@@ -1,4 +1,5 @@
 export const PIX_TO_TIME = 100;
+export const EDITOR_WIDTH = 650;
 export const CHANNEL_SIZE = 100;
 export const TIMELINE_HEIGHT = 50;
 export const SAMPLE_RATE = 44100;

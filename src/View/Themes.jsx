@@ -17,6 +17,7 @@ export const AppTheme = {
     SelectedRecordingColor: 'rgba(29, 75, 143, 0.6)',
 
     EditorButtonHighlight: '#363636',
+    EditorBoxHighlight: '#818a99',
     ContrastBlue: '#4f77b3',
 
     DefaultButton: styled.button`
