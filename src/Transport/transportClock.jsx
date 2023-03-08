@@ -5,7 +5,9 @@ import styled from 'styled-components';
 import * as Tone from 'tone';
 
 const Clock = styled.div`
-   background-color: "#1e2126";
+    background-color: "#1e2126";
+    height: 100%;
+    width: 100%;
 `;
 
 // time (number) to seconds time (string) (s.ms)
@@ -20,8 +22,8 @@ export default function TransportClock() {
 
     useEffect(() => {
         const s = (sketch) => {
-            let x = 120;
-            let y = 30;
+            let x = clockRef.current.offsetWidth;
+            let y = clockRef.current.offsetHeight;
             let context;
 
             sketch.setup = () => {

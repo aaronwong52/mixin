@@ -228,31 +228,31 @@ function App() {
 		<StateContext.Provider value={state}>
 		<StateDispatchContext.Provider value={dispatch}>
 			<styles.View id="Tone" ref={drawing.current}>
-			<styles.TopView>
-				<styles.Title>MIXIN</styles.Title>
-				<styles.Settings ref={settingsWrapperRef}>
-					<styles.SettingsIcon onClick={setExportingState}></styles.SettingsIcon>
-					<Settings displayState={exporting} channels={state.channels}></Settings>
-				</styles.Settings>
-			</styles.TopView>
-			<Editor solo={solo} exporting={exporting}></Editor>
-			<styles.MiddleView dropping={dropping}>
-				<FileDrop 
-					onDrop={(files, event) => upload(files, event)}
-					onFrameDragEnter={(event) => setDropping(true)}
-					onFrameDragLeave={(event) => setDropping(false)}>
-					<Transport exporting={exporting}></Transport>
-				</FileDrop>
-			</styles.MiddleView>
-			<styles.ControlView>
-				<Recorder receiveRecording={receiveRecording} exporting={exporting}></Recorder>
-				<styles.PlayButton id="play_btn" onClick={onPlay} playState={state.playing}></styles.PlayButton>
-				<styles.RestartButton onClick={restart}></styles.RestartButton>
-				<styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
-				<styles.ClockArea>
-					<TransportClock></TransportClock>
-				</styles.ClockArea>
-			</styles.ControlView>
+                <styles.TopView>
+                    <styles.Title>MIXIN</styles.Title>
+                    <styles.Settings ref={settingsWrapperRef}>
+                        <styles.SettingsIcon onClick={setExportingState}></styles.SettingsIcon>
+                        <Settings displayState={exporting} channels={state.channels}></Settings>
+                    </styles.Settings>
+                </styles.TopView>
+                <Editor solo={solo} exporting={exporting}></Editor>
+                <styles.MiddleView dropping={dropping}>
+                    <FileDrop 
+                        onDrop={(files, event) => upload(files, event)}
+                        onFrameDragEnter={(event) => setDropping(true)}
+                        onFrameDragLeave={(event) => setDropping(false)}>
+                        <Transport exporting={exporting}></Transport>
+                    </FileDrop>
+                </styles.MiddleView>
+                <styles.ControlView>
+                    <Recorder receiveRecording={receiveRecording} exporting={exporting}></Recorder>
+                    <styles.PlayButton id="play_btn" onClick={onPlay} playState={state.playing}></styles.PlayButton>
+                    <styles.RestartButton onClick={restart}></styles.RestartButton>
+                    <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
+                    <styles.ClockArea>
+                        <TransportClock></TransportClock>
+                    </styles.ClockArea>
+                </styles.ControlView>
 			</styles.View>
 		</StateDispatchContext.Provider>
 		</StateContext.Provider> 

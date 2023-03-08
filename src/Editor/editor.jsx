@@ -7,7 +7,7 @@ import Crop from './Crop';
 import Split from './Split';
 import LiveWaveform from './LiveWaveform';
 
-import { EDITOR_WIDTH, PIX_TO_TIME } from '../utils/constants';
+import { PIX_TO_TIME } from '../utils/constants';
 import { map } from '../utils/audio-utils';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
@@ -27,8 +27,8 @@ function Editor({solo, exporting}) {
     const [splitting, setSplitting] = useState(false);
 
     const waveformSketch = (sketch) => {
-        let width = EDITOR_WIDTH;
-        let height = 200;
+        let width = editorRef.current.offsetWidth;
+        let height = editorRef.current.offsetHeight;
         sketch.setup = () => {
             sketch.createCanvas(width, height);
         };
@@ -67,7 +67,7 @@ function Editor({solo, exporting}) {
             sketch.endShape();
             
             sketch.stroke("#868e9c");
-            sketch.rect(timeScaled, 0, 1, 200, 0); // playline
+            sketch.rect(timeScaled, 0, 1, height, 0); // playline
         }
     };
 
@@ -130,7 +130,7 @@ function Editor({solo, exporting}) {
     // get a point position in seconds
     const _mapPointToTime = (point, recording) => {
         let recordingLength = recording.duration - recording.start;
-        return map(point, 0, EDITOR_WIDTH, 0, recordingLength);
+        return map(point, 0, editorRef.current.offsetWidth, 0, recordingLength);
     };
 
     const setCropPoints = (type, delta) => {

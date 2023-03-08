@@ -9,13 +9,13 @@ const SplitView = styled.div`
 	position: absolute;
 	display: ${props => props.splitting ? 'flex' : 'none'};
 	width: 100%;
-	height: 200px;
+	height: 100%;
 `;
 
 const SplitLine = styled.span`
-	height: 200px;
+	height: 100%;
 	border-left: 2px dotted rgba(75, 126, 201, 0.8);
-	z-index: 99;
+	z-index: 9;
 	:hover {cursor: col-resize;}
 `;
 

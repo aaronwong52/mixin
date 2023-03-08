@@ -1,10 +1,11 @@
 import styled from 'styled-components';
+import { EDITOR_WIDTH } from '../../utils/constants';
 import { AppTheme } from '../../View/Themes';
 
 export const Editor = styled.div`
 	position: relative;
 	height: 25vh;
-	margin-bottom: 40px;
+    width: 45%;
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
@@ -18,7 +19,8 @@ export const ControlView = styled.div`
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: center;
-	width: 10%;
+    box-sizing: border-box;
+	width: 6%;
 	height: 100%;
 	margin: 0px 5px;
 	box-shadow: 0px 0 3px ${AppTheme.EditorBoxHighlight};
@@ -71,7 +73,7 @@ export const ClipSolo = styled(ClipMute)`
 
 export const EditorWaveform = styled.div`
 	position: relative;
-	width: 650px;
-	height: 200px;
+	height: 100%;
+    flex-grow: 1;
 	box-shadow: 0px 0 2px #818a99;
 `;

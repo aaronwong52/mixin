@@ -4,8 +4,8 @@ import { AppTheme } from '../Themes';
 export const View = styled.div`
 	min-height: 100vh;
 	display: flex;
-	flex-direction: column; 
-	justify-content: flex-start;
+	flex-direction: column;
+	justify-content: space-around;
 	align-items: center;
 	background: linear-gradient(
 		to right, ${AppTheme.AppColor}, ${AppTheme.AppGradient} 50%, ${AppTheme.AppColor}
@@ -18,7 +18,6 @@ export const TopView = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	width: 95%;
-	margin: 30px 0px;
 `;
 
 export const Settings = styled.div`
@@ -42,7 +41,6 @@ export const Title = styled.h2`
 `;
 
 export const MiddleView = styled.div`
-	height: 150px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -54,13 +52,13 @@ export const MiddleView = styled.div`
 `;
 
 export const ControlView = styled.div`
-	position: fixed;
-	bottom: 20px;
 	display: flex;
+    position: relative;
 	justify-content: space-around;
 	align-items: center;
-	height: 50px;
-	width: 400px;
+	height: 5vh;
+	width: 25%;
+    margin: 20px 0px;
 	border-radius: 10px;
 	background-color: ${AppTheme.AppSecondaryColor};
 	box-shadow: 0 0 0 2px ${AppTheme.AppSecondaryGradient};
@@ -89,8 +87,10 @@ export const MuteButton = styled(PlayButton)`
 `;
 
 export const ClockArea = styled.div`
+    position: relative;
 	display: flex;
-	height: 35px;
+    width: 25%;
+	height: 100%;
 	border-radius: 10px;
 	border: 1px solid ${AppTheme.AppSecondaryGradient};
 `;
