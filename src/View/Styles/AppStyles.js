@@ -26,7 +26,7 @@ export const Settings = styled.div`
 export const SettingsIcon = styled(AppTheme.DefaultButton)`
 	width: 25px;
 	height: 25px;
-	background: url('/images/arrow_down.png') no-repeat;
+	background: url('images/arrow_down.png') no-repeat;
 	background-size: 25px;
 	border-radius: 50px;
 	:hover {box-shadow: 0 0 4px 1px grey;}
@@ -68,21 +68,21 @@ export const PlayButton = styled(AppTheme.DefaultButton)`
 	width: 30px;
 	height: 30px;
 	background: ${props => props.playState
-		? "url('/images/pause_white.png') center;" 
-		: "url('/images/play_white.png') center;"
+		? "url('images/pause_white.png') center;" 
+		: "url('images/play_white.png') center;"
 	}
 	background-size: 30px;
 	-webkit-tap-highlight-color: transparent;
 `;
 
 export const RestartButton = styled(PlayButton)`
-	background: url('/images/restart_white.png') center;
+	background: url('images/restart_white.png') center;
 `;
 
 export const MuteButton = styled(PlayButton)`
   	background: ${props => props.mute 
-		? "url('/images/mute_white.png') center;"
-		: "url('/images/unmute_white.png') center"
+		? "url('images/mute_white.png') center;"
+		: "url('images/unmute_white.png') center"
 	}
 `;
 

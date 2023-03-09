@@ -29,8 +29,8 @@ export const ControlView = styled.div`
 
 export const Crop = styled.button`
 	background: ${props => props.cropping 
-        ? "url('/images/checkmark.png') no-repeat"
-        : "url('/images/crop.png') no-repeat"
+        ? "url('images/checkmark.png') no-repeat"
+        : "url('images/crop.png') no-repeat"
     };
 	width: 30px;
 	height: 30px;
@@ -49,7 +49,7 @@ export const Crop = styled.button`
 `;
 
 export const Split = styled(Crop)`
-	background: url('/images/scissors.png') no-repeat;
+	background: url('images/scissors.png') no-repeat;
 	background-position: center;
 	border-radius: 8px;
 	background-color: ${props => props.splitting ? AppTheme.EditorButtonHighlight : 'transparent'};
