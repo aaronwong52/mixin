@@ -18,9 +18,9 @@ function Recorder({receiveRecording, exporting}) {
 
     const recorder = new Tone.Recorder();
 
-    const openMic = (mic) => {
+    const openMic = async (mic) => {
         mic.connect(recorder);
-        mic.open();
+        await mic.open();
     };
 
     const closeMic = (mic) => {
@@ -54,7 +54,7 @@ function Recorder({receiveRecording, exporting}) {
             setRecording(false);
             dispatch({type: 'toggleRecordingState', payload: false});
         } else { // functionality is locked while export menu is open
-            openMic(state.mic);
+            await openMic(state.mic);
             recorder.start();
             recordingRef.current = true;
             setRecording(true);
