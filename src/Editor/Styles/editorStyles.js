@@ -57,8 +57,8 @@ export const Split = styled(Crop)`
 
 export const ClipMute = styled(Crop)`
 	background: ${props => props.muted 
-		? "url('/images/mute_white.png') no-repeat;"
-		: "url('/images/unmute_white.png') no-repeat;"
+		? "url('images/mute_white.png') no-repeat;"
+		: "url('images/unmute_white.png') no-repeat;"
 	};
 	background-position: center;
 `;

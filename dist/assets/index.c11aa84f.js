@@ -70,7 +70,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
 `,Cx=Ht(Jt.DefaultButton)`
 	width: 25px;
 	height: 25px;
-	background: url('/images/arrow_down.png') no-repeat;
+	background: url('images/arrow_down.png') no-repeat;
 	background-size: 25px;
 	border-radius: 50px;
 	:hover {box-shadow: 0 0 4px 1px grey;}
@@ -100,13 +100,13 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
 `,Mp=Ht(Jt.DefaultButton)`
 	width: 30px;
 	height: 30px;
-	background: ${r=>r.playState?"url('/images/pause_white.png') center;":"url('/images/play_white.png') center;"}
+	background: ${r=>r.playState?"url('images/pause_white.png') center;":"url('images/play_white.png') center;"}
 	background-size: 30px;
 	-webkit-tap-highlight-color: transparent;
 `,Ox=Ht(Mp)`
-	background: url('/images/restart_white.png') center;
+	background: url('images/restart_white.png') center;
 `,Px=Ht(Mp)`
-  	background: ${r=>r.mute?"url('/images/mute_white.png') center;":"url('/images/unmute_white.png') center"}
+  	background: ${r=>r.mute?"url('images/mute_white.png') center;":"url('images/unmute_white.png') center"}
 `,Ix=Ht.div`
     position: relative;
 	display: flex;
@@ -1126,7 +1126,7 @@ void main(){
     box-sizing: border-box;
     height: ${oa}px;
 `,OT=Ht.button`
-    background: url('/images/plus.png') no-repeat;
+    background: url('images/plus.png') no-repeat;
     background-size: 30px;
     width: 30px;
     height: 30px;
@@ -1179,7 +1179,7 @@ void main(){
 `,BT=Ht.button`
     width: 25px;
     height: 25px;
-    background: url('/images/power_white.png'); no-repeat;
+    background: url('images/power_white.png'); no-repeat;
     background-size: 25px;
     border: none;
     border-radius: 50%;
@@ -1278,7 +1278,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     height: 30px;
     background-color: transparent;
     border: none;
-    background: ${r=>r.recording?"url('/images/stop.png') no-repeat;":"url('/images/record_muted.png') no-repeat;"};
+    background: ${r=>r.recording?"url('images/stop.png') no-repeat;":"url('images/record_muted.png') no-repeat;"};
     background-size: 30px;
     margin: 8px 0px;
     :hover {
@@ -1308,7 +1308,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 	box-shadow: 0px 0 3px ${Jt.EditorBoxHighlight};
 	clip-path: inset(0px 0px -3px 0px);
 `,a0=Ht.button`
-	background: ${r=>r.cropping?"url('/images/checkmark.png') no-repeat":"url('/images/crop.png') no-repeat"};
+	background: ${r=>r.cropping?"url('images/checkmark.png') no-repeat":"url('images/crop.png') no-repeat"};
 	width: 30px;
 	height: 30px;
 	box-sizing: content-box;
@@ -1324,7 +1324,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 	}
 	-webkit-tap-highlight-color: transparent;
 `,Q6=Ht(a0)`
-	background: url('/images/scissors.png') no-repeat;
+	background: url('images/scissors.png') no-repeat;
 	background-position: center;
 	border-radius: 8px;
 	background-color: ${r=>r.splitting?Jt.EditorButtonHighlight:"transparent"};
@@ -1424,7 +1424,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 `,xE=Ht(Jt.DefaultButton)`
     width: 16%;
     height: 2.3rem;
-    background: url('/images/arrow_left.png') no-repeat;
+    background: url('images/arrow_left.png') no-repeat;
 `,wE=Ht.section`
     position: relative;
     height: 35vh;
