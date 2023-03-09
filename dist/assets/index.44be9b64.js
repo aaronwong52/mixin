@@ -1329,7 +1329,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 	border-radius: 8px;
 	background-color: ${r=>r.splitting?Jt.EditorButtonHighlight:"transparent"};
 `,a_=Ht(a0)`
-	background: ${r=>r.muted?"url('/images/mute_white.png') no-repeat;":"url('/images/unmute_white.png') no-repeat;"};
+	background: ${r=>r.muted?"url('images/mute_white.png') no-repeat;":"url('images/unmute_white.png') no-repeat;"};
 	background-position: center;
 `,K6=Ht(a_)`
 	background: none;
