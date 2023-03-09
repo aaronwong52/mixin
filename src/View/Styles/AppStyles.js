@@ -2,10 +2,10 @@ import styled from 'styled-components';
 import { AppTheme } from '../Themes';
 
 export const View = styled.div`
-	min-height: 100vh;
+    height: 100vh;
+    padding: 1% 0;
 	display: flex;
 	flex-direction: column;
-	justify-content: space-around;
 	align-items: center;
 	background: linear-gradient(
 		to right, ${AppTheme.AppColor}, ${AppTheme.AppGradient} 50%, ${AppTheme.AppColor}
@@ -18,6 +18,7 @@ export const TopView = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	width: 95%;
+    height: 8%;
 `;
 
 export const Settings = styled.div`
@@ -44,7 +45,8 @@ export const MiddleView = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	margin-top: 80px;
+    padding-top: 5%;
+    height: 50%;
 	box-shadow: ${props => props.dropping
 		? "0 0 6px #ebeff5"
 		: "none"

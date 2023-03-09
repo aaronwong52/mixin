@@ -163,7 +163,7 @@ function Transport({exporting}) {
 
     useEffect(() => {
         const s = (sketch) => {
-            let x = state.transportLength + 20;
+            let x = state.transportLength;
             let y = TIMELINE_HEIGHT;
 
             sketch.setup = () => {
@@ -218,7 +218,7 @@ function Transport({exporting}) {
     return (
         <styles.SpanWrap>
             <styles.TransportView id="transportview">
-                <TransportSettings></TransportSettings>
+                {/* <TransportSettings></TransportSettings> */}
                 <styles.TransportGrid id="transportgrid" 
                     length={state.transportLength} 
                     height={_getGridHeight()}>
@@ -233,11 +233,11 @@ function Transport({exporting}) {
                         <SnapContext.Provider value={snapState}>
                             <Recordings></Recordings>
                         </SnapContext.Provider>
-                        <styles.TransportTimeline>
+                        <styles.Transport>
                             <styles.Timeline id="timeline" ref={transportRef}>
                                 <Playline height={_getGridHeight()}></Playline>
                             </styles.Timeline>
-                        </styles.TransportTimeline>
+                        </styles.Transport>
                     </styles.GridArea>
                 </styles.TransportGrid>
             </styles.TransportView>

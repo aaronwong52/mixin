@@ -6,12 +6,13 @@ import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../../utils/constants';
 export const SpanWrap = styled.span`
     position: relative;
     display: block;
+    width: 92vw;
+    height: 45vh;
+    overflow-y: scroll;
 `;
 
 export const TransportView = styled.div`
-    overflow-y: hidden;
-    overflow-x: scroll;
-    width: 92vw;
+    overflow: scroll;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -56,10 +57,10 @@ export const Recordings = styled.div`
     height: ${props => props.height}px;
 `;
 
-export const TransportTimeline = styled.div`
-    position: absolute;
-    bottom: 0;
-    display: flex;
+export const Transport = styled.div`
+    position: sticky;
+    bottom: 2px;
+    width: 100%;
     height: ${TIMELINE_HEIGHT}px;
 `;
 
@@ -77,11 +78,10 @@ export const TimelinePadding = styled.div`
 `;
 
 export const Timeline = styled.div`
-    position: relative;
     display: flex;
-    flex-direction: column;
     box-sizing: border-box;
     height: ${TIMELINE_HEIGHT}px;
+    width: 100%;
 `;
 
 export const AddChannelButton = styled.button`
@@ -106,6 +106,7 @@ export const TransportSettings = styled.div`
     display: flex;
     justify-content: space-around;
     align-items: center;
+    z-index; 20;
 `;
 
 export const LengthView = styled.span`
@@ -147,21 +148,16 @@ export const SnapView = styled.div`
     font-size: 1rem;
 `;
 
-export const SnapToggle = styled.button`
+export const SnapToggle = styled(AppTheme.DefaultButton)`
     width: 25px;
     height: 25px;
     background: url('images/power_white.png'); no-repeat;
     background-size: 25px;
-    border: none;
     border-radius: 50%;
     margin-left: 10%;
 
     opacity: ${props => props.snapState ? '0.8' : '0.2'};
     box-shadow: ${props => props.snapState ? '0 -2.5px 12px #185cab' : 'none'};
-
-    :hover {
-        cursor: pointer;
-    }
 `;
 
 export const PlaylineView = styled.span``;

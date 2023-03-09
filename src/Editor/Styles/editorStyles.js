@@ -4,7 +4,7 @@ import { AppTheme } from '../../View/Themes';
 
 export const Editor = styled.div`
 	position: relative;
-	height: 25vh;
+	height: 25%;
     width: 45%;
 	display: flex;
 	justify-content: flex-start;
