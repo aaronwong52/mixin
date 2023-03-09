@@ -22,8 +22,8 @@ export const RecordButton = styled.button`
     background-color: transparent;
     border: none;
     background: ${props => props.recording
-            ? "url('/images/stop.png') no-repeat;"
-            : "url('/images/record_muted.png') no-repeat;"
+            ? "url('images/stop.png') no-repeat;"
+            : "url('images/record_muted.png') no-repeat;"
     };
     background-size: 30px;
     margin: 8px 0px;

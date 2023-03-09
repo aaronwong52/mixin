@@ -85,7 +85,7 @@ export const Timeline = styled.div`
 `;
 
 export const AddChannelButton = styled.button`
-    background: url('/images/plus.png') no-repeat;
+    background: url('images/plus.png') no-repeat;
     background-size: 30px;
     width: 30px;
     height: 30px;
@@ -150,7 +150,7 @@ export const SnapView = styled.div`
 export const SnapToggle = styled.button`
     width: 25px;
     height: 25px;
-    background: url('/images/power_white.png'); no-repeat;
+    background: url('images/power_white.png'); no-repeat;
     background-size: 25px;
     border: none;
     border-radius: 50%;

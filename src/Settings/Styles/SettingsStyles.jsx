@@ -61,5 +61,5 @@ export const OptionTitle = styled.h3`
 export const OptionBack = styled(AppTheme.DefaultButton)`
     width: 16%;
     height: 2.3rem;
-    background: url('/images/arrow_left.png') no-repeat;
+    background: url('images/arrow_left.png') no-repeat;
 `;
