@@ -3,12 +3,11 @@ import { AppTheme } from '../../View/Themes';
 import { CHANNEL_SIZE } from '../../utils/constants';
 
 export const ChannelHeader = styled.div`
-	position: sticky;
-	left: 0;
 	box-sizing: border-box;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+    align-self: flex-start;
 	background-color: ${AppTheme.ChannelColor};
 	border: ${props => props.selected 
 		? `1px solid ${AppTheme.ChannelHighlight}` 
@@ -45,8 +44,6 @@ export const ChannelNameInput = styled.input`
 `;
 
 export const RecordingView = styled.div`
-	position: absolute;
-	width: ${CHANNEL_SIZE}px;
 	height: ${CHANNEL_SIZE}px;
 	padding: 5px 0px;
 	box-sizing: border-box;
@@ -58,5 +55,4 @@ export const RecordingView = styled.div`
 	border: none;
 	border-radius: 4px;
 	:hover {cursor: pointer;}
-	z-index: 3;
 `;

@@ -3,22 +3,15 @@ import { AppTheme } from '../../View/Themes';
 import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../../utils/constants';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
-export const SpanWrap = styled.span`
-    position: relative;
-    display: block;
-    width: 92vw;
-    height: 45vh;
-    overflow-y: scroll;
+export const Wrap = styled.div`
+    width: ${props => props.length}px;
+    max-height: 45vh;
 `;
 
 export const TransportView = styled.div`
-    overflow: scroll;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
     box-sizing: border-box;
     border-radius: 4px;
-    background-color: ${AppTheme.AppSecondaryColor};
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -27,28 +20,25 @@ export const TransportView = styled.div`
     color: ${AppTheme.AppTextColor};
 `;
 
-export const TransportGrid = styled.div`
+export const ChannelHeaders = styled.div`
+    min-width: ${CHANNEL_SIZE}px;
+    position: sticky;
+    left: 0;
     display: flex;
-    width: ${props => props.length + CHANNEL_SIZE}px;
-    height: ${props => props.height}px;
+    flex-direction: column;
+    z-index: 2;
+`;
+
+export const GridArea = styled.div`
+    min-width: ${props => props.length}px;
     background-image:
         linear-gradient(to right, ${AppTheme.TransportGridColor} 1px, transparent 1px),
         linear-gradient(to bottom, ${AppTheme.TransportGridColor} 1px, transparent 1px);
     background-size: 25px 25px;
-`;
-
-export const ChannelHeaders = styled.div`
-    position: absolute;
+    background-color: ${AppTheme.AppSecondaryColor};
     display: flex;
     flex-direction: column;
-`;
-
-export const GridArea = styled.div`
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-left: ${CHANNEL_SIZE}px;
+    justify-content: space-between;
 `;
 
 export const Recordings = styled.div`
@@ -59,7 +49,7 @@ export const Recordings = styled.div`
 
 export const Transport = styled.div`
     position: sticky;
-    bottom: 2px;
+    bottom: 0;
     width: 100%;
     height: ${TIMELINE_HEIGHT}px;
 `;
@@ -70,14 +60,15 @@ export const TimelinePadding = styled.div`
     justify-content: center;
     align-items: center;
     left: 0;
+    bottom: 0;
     height: ${TIMELINE_HEIGHT}px;
-    width: ${CHANNEL_SIZE}px;
-    z-index: 2;
     background-color: ${AppTheme.AppSecondaryColor};
     border-radius: 0px 0px 0px 8px;
+    z-index: 3;
 `;
 
 export const Timeline = styled.div`
+    position: relative;
     display: flex;
     box-sizing: border-box;
     height: ${TIMELINE_HEIGHT}px;
@@ -106,7 +97,6 @@ export const TransportSettings = styled.div`
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index; 20;
 `;
 
 export const LengthView = styled.span`
@@ -166,9 +156,9 @@ export const StyledPlayline = styled.div`
 	position: absolute;
 	bottom: 0px;
 	width: 1px;
-	padding: 0px 2px;
 	background-clip: content-box;
 
+    max-height: 45vh;
 	height: ${props => (props.height + "px")};
 	background-color: red;
 	opacity: 0.5;

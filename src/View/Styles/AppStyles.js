@@ -42,11 +42,10 @@ export const Title = styled.h2`
 `;
 
 export const MiddleView = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-    padding-top: 5%;
-    height: 50%;
+    margin-top: 5%;
+    max-width: 92vw;
+    overflow: scroll;
+    height: 45vh;
 	box-shadow: ${props => props.dropping
 		? "0 0 6px #ebeff5"
 		: "none"

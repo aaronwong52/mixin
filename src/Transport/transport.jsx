@@ -216,32 +216,37 @@ function Transport({exporting}) {
     }, [state.transportLength]);
 
     return (
-        <styles.SpanWrap>
-            <styles.TransportView id="transportview">
-                {/* <TransportSettings></TransportSettings> */}
-                <styles.TransportGrid id="transportgrid" 
-                    length={state.transportLength} 
-                    height={_getGridHeight()}>
-                    <styles.ChannelHeaders>
-                        <Channels></Channels>
-                        <styles.TimelinePadding id="timeline_padding">
-                            <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
-                            </styles.AddChannelButton>
-                        </styles.TimelinePadding>
-                    </styles.ChannelHeaders>
-                    <styles.GridArea id="grid_area">
-                        <SnapContext.Provider value={snapState}>
-                            <Recordings></Recordings>
-                        </SnapContext.Provider>
-                        <styles.Transport>
-                            <styles.Timeline id="timeline" ref={transportRef}>
-                                <Playline height={_getGridHeight()}></Playline>
-                            </styles.Timeline>
-                        </styles.Transport>
-                    </styles.GridArea>
-                </styles.TransportGrid>
+        <styles.Wrap length={state.transportLength}>
+            <styles.TransportView>
+                <styles.ChannelHeaders>
+                <Channels></Channels>
+                    <styles.TimelinePadding id="timeline_padding">
+                        <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+                        </styles.AddChannelButton>
+                    </styles.TimelinePadding>
+                </styles.ChannelHeaders>
+                <styles.GridArea id="grid_area" length={state.transportLength}>
+                    <SnapContext.Provider value={snapState}>
+                        <Recordings></Recordings>
+                    </SnapContext.Provider>
+                    <styles.Transport>
+                        <styles.Timeline id="timeline" ref={transportRef}>
+                            <Playline height={_getGridHeight()}></Playline>
+                        </styles.Timeline>
+                    </styles.Transport>
+                </styles.GridArea>
             </styles.TransportView>
-        </styles.SpanWrap>
+        </styles.Wrap>
+        // <styles.SpanWrap>
+        //     <styles.TransportView id="transportview" length={state.transportLength}>
+        //         {/* <TransportSettings></TransportSettings> */}
+        //         <styles.TransportGrid id="transportgrid" 
+        //             height={_getGridHeight()}>
+        //             
+        //             
+        //         </styles.TransportGrid>
+        //     </styles.TransportView>
+        // </styles.SpanWrap>
     );
 }
 
