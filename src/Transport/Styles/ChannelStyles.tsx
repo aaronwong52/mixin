@@ -11,7 +11,6 @@ export const ChannelHeader = styled.div`
 	align-items: center;
     align-self: flex-start;
 	background-color: ${AppTheme.ChannelColor};
-    @ts-ignore
 	border: ${(props: any) => props.selected 
 		? `1px solid ${AppTheme.ChannelHighlight}` 
 		: `1px solid ${AppTheme.AppSecondaryColor}`

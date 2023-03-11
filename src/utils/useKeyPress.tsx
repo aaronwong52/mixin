@@ -2,22 +2,24 @@ import { useState, useEffect } from "react";
 
 export default function useKeyPress() {
 
+    interface KeyProp {
+        key: string
+    }
+
     const [keyPressed, setKeyPressed] = useState('');
     const keys = ['Escape', 'Backspace', ' ']
 
-    { /* @ts-ignore */}
-    function downHandler({ key }) {
+    function downHandler({ key }: KeyProp) {
       let keyIndex = keys.findIndex((k) => {
         return k == key
       });
       if (keyIndex == -1) {
         return;
       }
-      setKeyPressed(keys[keyIndex]);
+      setKeyPressed(key);
     }
 
-    { /* @ts-ignore */}
-    function upHandler({ key }) {
+    function upHandler({ key }: KeyProp) {
       setKeyPressed('');
     }
    

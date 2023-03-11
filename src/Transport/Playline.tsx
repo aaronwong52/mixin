@@ -41,7 +41,7 @@ export default function Playline({height}) {
 
     /* @ts-ignore */
 	const _checkPastTransport = (time) => {
-        { /* @ts-ignore */}
+        /* @ts-ignore */
 		return time * PIX_TO_TIME > state.transportLength;
 	}
 	  
