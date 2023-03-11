@@ -1,10 +1,13 @@
+// @ts-ignore
 import toWav from 'audiobuffer-to-wav';
 import * as Tone from 'tone';
 
+// @ts-ignore
 export const bufferToWav = (buffer) => {
     return toWav(buffer);
 }
 
+// @ts-ignore
 export const createPlayer = (data) => {
     return new Tone.Player({
       url: data,
@@ -12,14 +15,17 @@ export const createPlayer = (data) => {
     }).sync();
 };
 
+// @ts-ignore
 export const bufferFromToneBuffer = (toneBuffer) => {
     return toneBuffer._buffer;
 };
 
+// @ts-ignore
 export const modulo = (n, d) => {
     return ((n % d) + d) % d;
 };
 
+// @ts-ignore
 export const map = (val, start1, end1, start2, end2) => {
     let newVal = (val - start1) * (end2 - start2) / (end1 - start1) + start1;
     return Math.min(Math.max(newVal, start2) , end2);

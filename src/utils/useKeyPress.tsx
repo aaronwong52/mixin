@@ -5,6 +5,7 @@ export default function useKeyPress() {
     const [keyPressed, setKeyPressed] = useState('');
     const keys = ['Escape', 'Backspace', ' ']
 
+    { /* @ts-ignore */}
     function downHandler({ key }) {
       let keyIndex = keys.findIndex((k) => {
         return k == key
@@ -15,6 +16,7 @@ export default function useKeyPress() {
       setKeyPressed(keys[keyIndex]);
     }
 
+    { /* @ts-ignore */}
     function upHandler({ key }) {
       setKeyPressed('');
     }

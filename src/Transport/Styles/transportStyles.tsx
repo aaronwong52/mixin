@@ -1,10 +1,11 @@
 import styled from 'styled-components';
 import { AppTheme } from '../../View/Themes';
+// @ts-ignore
 import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../../utils/constants';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
 export const Wrap = styled.div`
-    width: ${props => props.length}px;
+    width: ${(props: any) => props.length}px;
     max-height: 45vh;
 `;
 
@@ -30,7 +31,7 @@ export const ChannelHeaders = styled.div`
 `;
 
 export const GridArea = styled.div`
-    min-width: ${props => props.length}px;
+    min-width: ${(props: any) => props.length}px;
     background-image:
         linear-gradient(to right, ${AppTheme.TransportGridColor} 1px, transparent 1px),
         linear-gradient(to bottom, ${AppTheme.TransportGridColor} 1px, transparent 1px);
@@ -44,7 +45,7 @@ export const GridArea = styled.div`
 export const Recordings = styled.div`
     position: relative;
     display: flex;
-    height: ${props => props.height}px;
+    height: ${(props: any) => props.height}px;
 `;
 
 export const Transport = styled.div`
@@ -146,8 +147,8 @@ export const SnapToggle = styled(AppTheme.DefaultButton)`
     border-radius: 50%;
     margin-left: 10%;
 
-    opacity: ${props => props.snapState ? '0.8' : '0.2'};
-    box-shadow: ${props => props.snapState ? '0 -2.5px 12px #185cab' : 'none'};
+    opacity: ${(props: any) => props.snapState ? '0.8' : '0.2'};
+    box-shadow: ${(props: any) => props.snapState ? '0 -2.5px 12px #185cab' : 'none'};
 `;
 
 export const PlaylineView = styled.span``;
@@ -159,7 +160,7 @@ export const StyledPlayline = styled.div`
 	background-clip: content-box;
 
     max-height: 45vh;
-	height: ${props => (props.height + "px")};
+	height: ${(props: any) => (props.height + "px")};
 	background-color: red;
 	opacity: 0.5;
 	z-index: 9;

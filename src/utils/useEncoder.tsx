@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 function Mp3Encoder() {
     useEffect(() => {
+        { /* @ts-ignore */}
         const mp3Encoder = new Mp3LameEncoder();
     }, [])
     return [];

@@ -1,12 +1,16 @@
 import { useRef, useEffect, useContext } from "react";
 
+// @ts-ignore
 import { StateDispatchContext } from "../utils/StateContext";
+// @ts-ignore
 import { SnapContext } from "./SnapContext";
+// @ts-ignore
 import { CHANNEL_SIZE, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
 
 import * as styles from './Styles/ChannelStyles';
 
+// @ts-ignore
 export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 
 	const dispatch = useContext(StateDispatchContext);
@@ -15,14 +19,17 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 	const recordingsWrapperRef = useRef(null);
 	useOutsideRecordings(recordingsWrapperRef);
 
+    // @ts-ignore
 	function useOutsideRecordings(ref) {
 		useEffect(() => {
+            // @ts-ignore
 			function handleClickOutside(event) {
 			if (ref.current && !ref.current.contains(event.target)) {
 				if (event.target.id != "recordings_view") {
 					return;
 				}
 				// clicked outside
+                // @ts-ignore
 				dispatch({type: 'deselectRecordings', payload: {}});
 			}
 			}
@@ -34,6 +41,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 	useEffect(() => {
 		let recording = document.getElementById("recording_clip_" + r.id);
 		let clipWidth = r.duration - r.start;
+        // @ts-ignore
 		recording.style.width = (clipWidth * PIX_TO_TIME) + "px";
 
 		// drag position is handled not internally by draggable but by following r.start in draggable position prop
@@ -58,6 +66,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 			scale={1}>
 			<styles.RecordingView
 				ref={recordingsWrapperRef}
+                // @ts-ignore
 				selected = {r.id == selected.id} 
 				id = {"recording_clip_" + r.id}>
 			</styles.RecordingView>

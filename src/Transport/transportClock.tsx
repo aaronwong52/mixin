@@ -11,6 +11,7 @@ const Clock = styled.div`
 `;
 
 // time (number) to seconds time (string) (s.ms)
+// @ts-ignore
 const toClockTime = (time) => {
     let timeString = time.toFixed(2).toString();
     return timeString.split(".")[0] + "." + timeString.split(".")[1];
@@ -21,9 +22,13 @@ export default function TransportClock() {
     const clockRef = useRef();
 
     useEffect(() => {
+        // @ts-ignore
         const s = (sketch) => {
+            // @ts-ignore
             let x = clockRef.current.offsetWidth;
+            // @ts-ignore
             let y = clockRef.current.offsetHeight;
+            // @ts-ignore
             let context;
 
             sketch.setup = () => {
@@ -33,6 +38,7 @@ export default function TransportClock() {
 
             sketch.draw = () => {
                 sketch.clear();
+                // @ts-ignore
                 context.font = '25px Avenir';
                 sketch.select('#transportClock').elt.style.letterSpacing = "1.5px";
                 sketch.fill("white");
@@ -46,6 +52,7 @@ export default function TransportClock() {
     }, []);
 
     return [
+        // @ts-ignore
         <Clock key="clock" id="transportClock" ref={clockRef}>
         </Clock>
     ];

@@ -46,7 +46,7 @@ export const MiddleView = styled.div`
     max-width: 92vw;
     overflow: scroll;
     height: 45vh;
-	box-shadow: ${props => props.dropping
+	box-shadow: ${(props: any) => props.dropping
 		? "0 0 6px #ebeff5"
 		: "none"
 	};  
@@ -68,7 +68,7 @@ export const ControlView = styled.div`
 export const PlayButton = styled(AppTheme.DefaultButton)`
 	width: 30px;
 	height: 30px;
-	background: ${props => props.playState
+	background: ${(props: any) => props.playState
 		? "url('images/pause_white.png') center;" 
 		: "url('images/play_white.png') center;"
 	}
@@ -81,7 +81,7 @@ export const RestartButton = styled(PlayButton)`
 `;
 
 export const MuteButton = styled(PlayButton)`
-  	background: ${props => props.mute 
+  	background: ${(props: any) => props.mute 
 		? "url('images/mute_white.png') center;"
 		: "url('images/unmute_white.png') center"
 	}
