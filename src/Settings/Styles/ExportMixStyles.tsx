@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { AppTheme } from '../../View/Themes';
+import { FileFormatProp } from '../Export';
 
 export const ExportMenu = styled.section`
     position: relative;
@@ -24,8 +25,8 @@ export const FileTypeButton = styled(AppTheme.DefaultButton)`
     width: 25%;
     height: 30px;
     margin-left: 10%;
-    background-color: ${props => props.fileFormat ? AppTheme.ContrastBlue : AppTheme.AppTextOffColor};
-    color: ${props => props.fileFormat ? AppTheme.AppTextColor : 'black'};
+    background-color: ${(props: FileFormatProp) => props.isWav ? AppTheme.ContrastBlue : AppTheme.AppTextOffColor};
+    color: ${props => props.isWav ? AppTheme.AppTextColor : 'black'};
 `;
 
 export const ExportRangeText = styled.h3`

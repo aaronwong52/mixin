@@ -1,14 +1,18 @@
 import { useState } from 'react';
 
 import * as styles from './Styles/SettingsStyles';
-import Export from '../Settings/Export';
+import Export from './Export';
 
-export default function Settings({displayState, channels}) {
+export interface SettingsProp {
+    displayState?: boolean;
+    channels?: any;
+}
+export default function Settings({displayState, channels}: SettingsProp) {
 
     const [optionSelected, setOptionSelected] = useState(false);
     const [exporting, setExporting] = useState(false);
 
-    const setOption = (option) => {
+    const setOption = (option: string) => {
         setOptionSelected(true);
         switch(option) {
             case 'export': setExporting(true);
@@ -27,7 +31,7 @@ export default function Settings({displayState, channels}) {
                         <styles.OptionBack onClick={unsetOption}></styles.OptionBack>
                         <styles.OptionTitle>Export</styles.OptionTitle>
                     </styles.OptionHeader>
-                    <Export displayState={exporting} channels={channels}></Export>
+                    <Export channels={channels}></Export>
                 </styles.OptionView>
                 : <styles.SettingsOptions>
                     <styles.SettingsOption>Project</styles.SettingsOption>

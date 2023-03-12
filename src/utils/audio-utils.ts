@@ -3,7 +3,7 @@ import * as Tone from 'tone';
 
 export const bufferToWav = (buffer: AudioBuffer) => {
     return toWav(buffer);
-}
+};
 
 export const createPlayer = (data: AudioBuffer | Tone.ToneAudioBuffer) => {
     return new Tone.Player({
@@ -12,21 +12,18 @@ export const createPlayer = (data: AudioBuffer | Tone.ToneAudioBuffer) => {
     }).sync();
 };
 
-// @ts-ignore
-export const bufferFromToneBuffer = (toneBuffer) => {
-    return toneBuffer._buffer;
+export const bufferFromToneBuffer = (toneBuffer: Tone.ToneAudioBuffer) => {
+    return toneBuffer.get();
 };
 
-// @ts-ignore
-export const modulo = (n, d) => {
+export const modulo = (n: number, d: number) => {
     return ((n % d) + d) % d;
 };
 
-// @ts-ignore
-export const map = (val, start1, end1, start2, end2) => {
+export const map = (val: number, start1: number, end1: number, start2: number, end2: number) => {
     let newVal = (val - start1) * (end2 - start2) / (end1 - start1) + start1;
     return Math.min(Math.max(newVal, start2) , end2);
-}
+};
 
 // export const concat = (one, space, two) => {
 //     let newLength = one.length + two.length;

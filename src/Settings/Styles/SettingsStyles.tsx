@@ -1,5 +1,6 @@
 import styled, { keyframes } from 'styled-components';
 import { AppTheme } from '../../View/Themes';
+import { SettingsProp } from '../Settings';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -12,7 +13,7 @@ const fadeOut = keyframes`
 `;
 
 export const SettingsView = styled.div`
-    visibility: ${props => props.displayState ? 'visible' : 'hidden'};
+    visibility: ${(props: SettingsProp) => props.displayState ? 'visible' : 'hidden'};
     position: absolute;
     right: 0;
     border-radius: 6px;
