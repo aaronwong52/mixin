@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 import { AppTheme } from '../../View/Themes';
-// @ts-ignore
 import { CHANNEL_SIZE } from '../../utils/constants';
 
 export const ChannelHeader = styled.div`

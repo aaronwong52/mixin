@@ -11,8 +11,7 @@ import { AppTheme } from '../View/Themes';
 import Channel from './Channel';
 // @ts-ignore
 import Recording from "./Recording";
-// @ts-ignore
-import Playline from './playline';
+import Playline from './Playline';
 
 // @ts-ignore
 import { _findChannelIndex } from '../Reducer/AppReducer';
@@ -278,23 +277,12 @@ function Transport({exporting}) {
                     <styles.Transport>
                         {/* @ts-ignore */}
                         <styles.Timeline id="timeline" ref={transportRef}>
-                            {/* @ts-ignore */}
                             <Playline height={_getGridHeight()}></Playline>
                         </styles.Timeline>
                     </styles.Transport>
                 </styles.GridArea>
             </styles.TransportView>
         </styles.Wrap>
-        // <styles.SpanWrap>
-        //     <styles.TransportView id="transportview" length={state.transportLength}>
-        //         {/* <TransportSettings></TransportSettings> */}
-        //         <styles.TransportGrid id="transportgrid" 
-        //             height={_getGridHeight()}>
-        //             
-        //             
-        //         </styles.TransportGrid>
-        //     </styles.TransportView>
-        // </styles.SpanWrap>
     );
 }
 

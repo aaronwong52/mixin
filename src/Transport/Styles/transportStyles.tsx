@@ -1,6 +1,6 @@
 import styled from 'styled-components';
+import { HeightProp } from '../Playline';
 import { AppTheme } from '../../View/Themes';
-// @ts-ignore
 import { TIMELINE_HEIGHT, CHANNEL_SIZE } from '../../utils/constants';
 
 // https://stackoverflow.com/questions/22955465/overflow-y-scroll-is-hiding-overflowing-elements-on-the-horizontal-line
@@ -160,7 +160,7 @@ export const StyledPlayline = styled.div`
 	background-clip: content-box;
 
     max-height: 45vh;
-	height: ${(props: any) => (props.height + "px")};
+	height: ${(props: HeightProp) => (props.height + "px")};
 	background-color: red;
 	opacity: 0.5;
 	z-index: 9;

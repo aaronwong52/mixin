@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export default function useKeyPress() {
 
     interface KeyProp {
-        key: string
+        key: string;
     }
 
     const [keyPressed, setKeyPressed] = useState('');

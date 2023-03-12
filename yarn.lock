@@ -313,6 +313,11 @@
     "redux-thunk" "^2.4.2"
     "reselect" "^4.1.7"
 
+"@types/audiobuffer-to-wav@^1.0.2":
+  "integrity" "sha512-bWEtCSS7ywZUyb0qIxR+MR0lqq9tJIcAJfC3rJLw/HTKqfNZ6suKbIqFja7YQObSWAJA0lRTTxTzTqUwgEFPog=="
+  "resolved" "https://registry.npmjs.org/@types/audiobuffer-to-wav/-/audiobuffer-to-wav-1.0.2.tgz"
+  "version" "1.0.2"
+
 "@types/hoist-non-react-statics@*", "@types/hoist-non-react-statics@^3.3.1":
   "integrity" "sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA=="
   "resolved" "https://registry.npmjs.org/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.1.tgz"

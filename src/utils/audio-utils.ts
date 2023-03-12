@@ -1,14 +1,11 @@
-// @ts-ignore
 import toWav from 'audiobuffer-to-wav';
 import * as Tone from 'tone';
 
-// @ts-ignore
-export const bufferToWav = (buffer) => {
+export const bufferToWav = (buffer: AudioBuffer) => {
     return toWav(buffer);
 }
 
-// @ts-ignore
-export const createPlayer = (data) => {
+export const createPlayer = (data: AudioBuffer | Tone.ToneAudioBuffer) => {
     return new Tone.Player({
       url: data,
       loop: false
