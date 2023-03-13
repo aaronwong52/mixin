@@ -28,4 +28,25 @@ export const AppTheme = {
         font-family: Avenir, Arial, sans-serif;
         :hover {cursor: pointer;}
     `,
+
+    EditorButton: styled.button`
+        all: unset;
+        border: none;
+
+        width: 30px;
+	    height: 30px;
+        box-sizing: content-box;
+
+        background-size: 30px;
+        background-position: center;
+        border-radius: 8px;
+        text-align: center;
+
+        -webkit-tap-highlight-color: transparent;
+
+        :hover {
+            cursor: pointer;
+            box-shadow: 0 0 2px 1px grey;
+        }
+    `
 }

@@ -1,7 +1,7 @@
 import p5 from 'p5';
 
-import { useState, useEffect, useRef, useContext } from 'react';
-import * as styles from './Styles/EditorStyles';
+import { useState, useEffect, useRef, useContext, forwardRef } from 'react';
+import * as styles from './Styles/editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
 import Split from './Split';
@@ -13,12 +13,17 @@ import { map } from '../utils/audio-utils';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { AppTheme } from '../View/Themes';
 
+interface EditorProps {
+    solo: (s: boolean) => void;
+    exporting: boolean;
+}
+
 // recording is selectedRecording prop
-function Editor({solo, exporting}) {
+function Editor({solo, exporting}: EditorProps) {
     const state = useContext(StateContext)
     const dispatch = useContext(StateDispatchContext);
 
-    const editorRef = useRef();
+    const waveformRef = useRef<HTMLElement>();
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
     const [cropping, setCropping] = useState(false);
@@ -26,9 +31,12 @@ function Editor({solo, exporting}) {
     const [cropRight, setCropRight] = useState(0);
     const [splitting, setSplitting] = useState(false);
 
-    const waveformSketch = (sketch) => {
-        let width = editorRef.current.offsetWidth;
-        let height = editorRef.current.offsetHeight;
+    const waveformSketch = (sketch: p5) => {
+        let width: number = 0, height: number = 0;
+        if (waveformRef.current) {
+            width = waveformRef.current.offsetWidth;
+            height = waveformRef.current.offsetHeight;
+        }
         sketch.setup = () => {
             sketch.createCanvas(width, height);
         };
@@ -40,6 +48,7 @@ function Editor({solo, exporting}) {
             sketch.beginShape();
             sketch.stroke(AppTheme.AppTextOffColor);
 
+            // @ts-ignore
             let recording = state.selectedRecording;
 
             let toneTime = Tone.Transport.seconds;
@@ -72,6 +81,7 @@ function Editor({solo, exporting}) {
     };
 
     const checkEnabled = () => {
+        // @ts-ignore
         return (Object.keys(state.selectedRecording).length && !exporting);
     };
     
@@ -86,6 +96,7 @@ function Editor({solo, exporting}) {
 
     // mutating recording state directly for Tone operations
     const mute = () => {
+        // @ts-ignore
         let recording = state.selectedRecording;
         if (!checkEnabled()) {
             return;
@@ -100,6 +111,7 @@ function Editor({solo, exporting}) {
         if (!checkEnabled()) {
             return;
         }
+        // @ts-ignore
         solo(state.selectedRecording.solo);
     };
 
@@ -115,7 +127,9 @@ function Editor({solo, exporting}) {
             return;
         }
         if (cropping) {
+            // @ts-ignore
             let recording = state.selectedRecording;
+            // @ts-ignore
             dispatch({type: 'cropRecording', payload: {
                 recording, 
                 leftDelta: cropLeft,
@@ -128,12 +142,15 @@ function Editor({solo, exporting}) {
     };
 
     // get a point position in seconds
-    const _mapPointToTime = (point, recording) => {
+    // @ts-ignore
+    const _mapPointToTime = (point: number, recording) => {
         let recordingLength = recording.duration - recording.start;
-        return map(point, 0, editorRef.current.offsetWidth, 0, recordingLength);
+        let waveformWidth = waveformRef.current ? waveformRef.current.offsetWidth : 0;
+        return map(point, 0, waveformWidth, 0, recordingLength);
     };
 
-    const setCropPoints = (type, delta) => {
+    const setCropPoints = (type: string, delta: number) => {
+        // @ts-ignore
         delta = _mapPointToTime(delta, state.selectedRecording)
 
         if (type == 'start') {
@@ -152,28 +169,42 @@ function Editor({solo, exporting}) {
         setSplitting(!splitting);
     };
 
-    const splitClip = (point) => {
+    const splitClip = (point: number) => {
         _splitClip(point);
-    }
+    };
 
-    const _splitClip = (point) => {
+    const _splitClip = (point: number) => {
         if (!checkEnabled()) {
             return;
         }
 
+        // @ts-ignore
         let recording = state.selectedRecording;
         if ((point / PIX_TO_TIME) > recording.start) {
             setSplitting(!splitting);
             point = _mapPointToTime(point, recording);
-            // dispatch updateRecording to shorten original and then addRecording 
+            // dispatch updateRecording to shorten original and then addRecording
+            // @ts-ignore
             dispatch({type: 'addSplitRecording', payload: {recording, splitPoint: point}});
+            // @ts-ignore
             dispatch({type: 'updateSplitRecording', payload: {recording, splitPoint: point}});
         }
-    }
+    };
+
+    const Waveform = forwardRef((props, ref) => (
+        /* @ts-ignore */
+        <styles.EditorWaveform ref={ref}>
+             { /* @ts-ignore */ }
+            <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
+            { /* @ts-ignore */ }
+            <Split key="splitElem" splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
+        </styles.EditorWaveform>
+    ));
 
     useEffect(() => {
+        // @ts-ignore
         let recording = state.selectedRecording;
-        let waveform = new p5(waveformSketch, editorRef.current);
+        let waveform = new p5(waveformSketch, waveformRef.current);
         if (Object.keys(recording).length) {
             try {
                 setBuffer(recording.player.buffer._buffer.getChannelData(0));
@@ -184,22 +215,22 @@ function Editor({solo, exporting}) {
             _reset();
         }
         return () => waveform.remove();
+        // @ts-ignore
     }, [state.selectedRecording, buffer]);
 
     return (
         <styles.Editor id="editor">
             <styles.ControlView>
                 <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
+                {/* @ts-ignore */}
                 <styles.ClipSolo onClick={soloClip} solo={state.selectedRecording.solo}>S</styles.ClipSolo>
                 <styles.Crop cropping={cropping} onClick={cropClip}></styles.Crop>
                 <styles.Split splitting={splitting} onClick={onSplitClick}></styles.Split>
             </styles.ControlView>
+            {/* @ts-ignore */}
             {state.recordingState
                 ? <LiveWaveform></LiveWaveform>
-                : <styles.EditorWaveform ref={editorRef}>
-                    <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
-                    <Split key="splitElem" splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
-                  </styles.EditorWaveform>
+                : <Waveform ref={waveformRef}></Waveform>
             }
         </styles.Editor>
     )

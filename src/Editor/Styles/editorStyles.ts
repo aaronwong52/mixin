@@ -1,6 +1,10 @@
 import styled from 'styled-components';
-import { EDITOR_WIDTH } from '../../utils/constants';
 import { AppTheme } from '../../View/Themes';
+
+interface MuteProp { muted: boolean; }
+interface SoloProp { solo: boolean; }
+interface CropProp { cropping: boolean; }
+interface SplitProp { splitting: boolean; }
 
 export const Editor = styled.div`
 	position: relative;
@@ -27,48 +31,33 @@ export const ControlView = styled.div`
 	clip-path: inset(0px 0px -3px 0px);
 `;
 
-export const Crop = styled.button`
-	background: ${props => props.cropping 
+export const Crop = styled(AppTheme.EditorButton)`
+	background: ${(props: CropProp) => props.cropping 
         ? "url('images/checkmark.png') no-repeat"
         : "url('images/crop.png') no-repeat"
     };
-	width: 30px;
-	height: 30px;
-	box-sizing: content-box;
-	padding: 2px;
-	background-size: 30px;
-	background-position: center;
-	border: none;
-	border-radius: 8px;
+	
 	background-color: ${props => props.cropping ? AppTheme.EditorButtonHighlight : 'transparent'};
-	:hover {
-		cursor: pointer;
-        box-shadow: 0 0 2px 1px grey;
-	}
-	-webkit-tap-highlight-color: transparent;
 `;
 
-export const Split = styled(Crop)`
+export const Split = styled(AppTheme.EditorButton)`
 	background: url('images/scissors.png') no-repeat;
-	background-position: center;
-	border-radius: 8px;
-	background-color: ${props => props.splitting ? AppTheme.EditorButtonHighlight : 'transparent'};
+	background-color: ${(props: SplitProp) => props.splitting ? AppTheme.EditorButtonHighlight : 'transparent'};
 `;
 
-export const ClipMute = styled(Crop)`
-	background: ${props => props.muted 
+export const ClipMute = styled(AppTheme.EditorButton)`
+	background: ${(props: MuteProp) => props.muted 
 		? "url('images/mute_white.png') no-repeat;"
 		: "url('images/unmute_white.png') no-repeat;"
 	};
 	background-position: center;
 `;
 
-export const ClipSolo = styled(ClipMute)`
+export const ClipSolo = styled(AppTheme.EditorButton)`
 	background: none;
 	font-size: 30px;
-	border-radius: 8px;
 	line-height: 30px;
-	color: ${props => props.solo ? AppTheme.ContrastBlue : AppTheme.AppTextColor};
+	color: ${(props: SoloProp) => props.solo ? AppTheme.ContrastBlue : AppTheme.AppTextColor};
 `;
 
 export const EditorWaveform = styled.div`

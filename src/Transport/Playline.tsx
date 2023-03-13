@@ -118,7 +118,7 @@ export default function Playline({height}: HeightProp) {
 			onStop={(e, data) => onStop(data)}
             /* @ts-ignore */
 			position={{x: state.time * PIX_TO_TIME, y: 0}}>
-				<styles.StyledPlayline height={height}>
+				<styles.StyledPlayline id="playline" height={height}>
 				</styles.StyledPlayline>
 		  </Draggable>
 		</styles.PlaylineView>

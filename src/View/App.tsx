@@ -272,7 +272,6 @@ function App() {
                     <styles.Title>MIXIN</styles.Title>
                     <styles.Settings ref={settingsWrapperRef}>
                         <styles.SettingsIcon onClick={setExportingState}></styles.SettingsIcon>
-                        { /* @ts-ignore */}
                         <Settings displayState={exporting} channels={state.channels}></Settings>
                     </styles.Settings>
                 </styles.TopView>
