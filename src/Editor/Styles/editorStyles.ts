@@ -3,8 +3,8 @@ import { AppTheme } from '../../View/Themes';
 
 interface MuteProp { muted: boolean; }
 interface SoloProp { solo: boolean; }
-interface CropProp { cropping: boolean; }
-interface SplitProp { splitting: boolean; }
+export interface CropProp { cropping: boolean; }
+export interface SplitProp { splitting: boolean; }
 
 export const Editor = styled.div`
 	position: relative;

@@ -1,13 +1,19 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 
 import { StateContext } from "../utils/StateContext";
 
 import Draggable from "react-draggable";
 import styled from "styled-components";
+import { SplitProp } from "./Styles/editorStyles";
+
+interface SplitProps {
+    splitting: boolean;
+    splitClip: (p: number) => void;
+}
 
 const SplitView = styled.div`
 	position: absolute;
-	display: ${props => props.splitting ? 'flex' : 'none'};
+	display: ${(props: SplitProp) => props.splitting ? 'flex' : 'none'};
 	width: 100%;
 	height: 100%;
 `;
@@ -19,26 +25,31 @@ const SplitLine = styled.span`
 	:hover {cursor: col-resize;}
 `;
 
-export default function Split({splitting, splitClip}) {
+export default function Split({splitting, splitClip}: SplitProps) {
 
 	const state = useContext(StateContext);
 
+    const mousemove = (event: globalThis.MouseEvent): void => {
+        let splitView = document.getElementById("split_view") as HTMLDivElement;
+		let splitLine = document.getElementById("split_line") as HTMLSpanElement;
+
+        if (event.currentTarget) {
+            let box = splitView.getBoundingClientRect();
+            let offsetX = event.clientX - box.left;
+            splitLine.style.transform = `translate(${offsetX}px, 0px)`;
+        }
+    };
+
+    const mouseup = (event: globalThis.MouseEvent): void => {
+        let splitView = document.getElementById("split_view") as HTMLDivElement;
+        event.stopPropagation();
+        let box = splitView.getBoundingClientRect();
+        splitClip(event.clientX - box.left);
+    };
+
 	useEffect(() => {
-		let splitView = document.getElementById("split_view");
-		let splitLine = document.getElementById("split_line");
-
-		const mousemove = (event) => {
-			let box = event.currentTarget.getBoundingClientRect();
-			let offsetX = event.clientX - box.left;
-			splitLine.style.transform = `translate(${offsetX}px, 0px)`;
-		};
-
-		const mouseup = (event) => {
-            event.stopPropagation();
-			let box = splitView.getBoundingClientRect();
-			splitClip(event.clientX - box.left);
-		};
-
+        let splitView = document.getElementById("split_view") as HTMLDivElement;
+        
 		splitView.addEventListener("mousemove", mousemove);
 		splitView.addEventListener("mouseup", mouseup);
 
@@ -46,6 +57,7 @@ export default function Split({splitting, splitClip}) {
 			splitView.removeEventListener("mousemove", mousemove);
 			splitView.removeEventListener("mouseup", mouseup);
 		}
+        // @ts-ignore
 	}, [state.selectedRecording, splitting])
 
 	return [

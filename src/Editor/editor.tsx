@@ -23,7 +23,7 @@ function Editor({solo, exporting}: EditorProps) {
     const state = useContext(StateContext)
     const dispatch = useContext(StateDispatchContext);
 
-    const waveformRef = useRef<HTMLElement>();
+    const waveformRef = useRef<HTMLDivElement>(null);
     const [buffer, setBuffer] = useState([]);
     const [muted, setMuted] = useState(false);
     const [cropping, setCropping] = useState(false);
@@ -80,22 +80,22 @@ function Editor({solo, exporting}: EditorProps) {
         }
     };
 
-    const checkEnabled = () => {
+    const checkEnabled = (): boolean => {
         // @ts-ignore
         return (Object.keys(state.selectedRecording).length && !exporting);
     };
     
-    const _reset = () => {
+    const _reset = (): void => {
         _clearBuffer();
         setCropping(false);
     };
 
-    const _clearBuffer = () => {
+    const _clearBuffer = (): void => {
         setBuffer([]);
     };
 
     // mutating recording state directly for Tone operations
-    const mute = () => {
+    const mute = (): void => {
         // @ts-ignore
         let recording = state.selectedRecording;
         if (!checkEnabled()) {
@@ -107,18 +107,13 @@ function Editor({solo, exporting}: EditorProps) {
         setMuted(!muted);
     };
 
-    const soloClip = () => {
+    const soloClip = (): void => {
         if (!checkEnabled()) {
             return;
         }
         // @ts-ignore
         solo(state.selectedRecording.solo);
     };
-
-    const _cancelEdits = () => {
-        setCropping(false);
-        setSplitting(false);
-    }
 
     // crop does not modify audio data
     // start and end points are used to calculate offset and duration for Tone player
@@ -135,21 +130,19 @@ function Editor({solo, exporting}: EditorProps) {
                 leftDelta: cropLeft,
                 rightDelta: cropRight,
             }});
-        } else {
-            _cancelEdits();
         }
         setCropping(!cropping);
     };
 
     // get a point position in seconds
     // @ts-ignore
-    const _mapPointToTime = (point: number, recording) => {
+    const _mapPointToTime = (point: number, recording): number => {
         let recordingLength = recording.duration - recording.start;
         let waveformWidth = waveformRef.current ? waveformRef.current.offsetWidth : 0;
         return map(point, 0, waveformWidth, 0, recordingLength);
     };
 
-    const setCropPoints = (type: string, delta: number) => {
+    const setCropPoints = (type: string, delta: number): void => {
         // @ts-ignore
         delta = _mapPointToTime(delta, state.selectedRecording)
 
@@ -161,19 +154,14 @@ function Editor({solo, exporting}: EditorProps) {
         }
     };
 
-    const onSplitClick = () => {
+    const onSplitClick = (): void => {
         if (!checkEnabled()) {
             return;
         }
-        _cancelEdits();
         setSplitting(!splitting);
     };
 
-    const splitClip = (point: number) => {
-        _splitClip(point);
-    };
-
-    const _splitClip = (point: number) => {
+    const splitClip = (point: number): void => {
         if (!checkEnabled()) {
             return;
         }
@@ -191,30 +179,22 @@ function Editor({solo, exporting}: EditorProps) {
         }
     };
 
-    const Waveform = forwardRef((props, ref) => (
-        /* @ts-ignore */
-        <styles.EditorWaveform ref={ref}>
-             { /* @ts-ignore */ }
-            <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
-            { /* @ts-ignore */ }
-            <Split key="splitElem" splitting={splitting} splitClip={(point) => splitClip(point)}></Split>
-        </styles.EditorWaveform>
-    ));
-
     useEffect(() => {
         // @ts-ignore
         let recording = state.selectedRecording;
-        let waveform = new p5(waveformSketch, waveformRef.current);
-        if (Object.keys(recording).length) {
-            try {
-                setBuffer(recording.player.buffer._buffer.getChannelData(0));
-            } catch (e) {
-                console.log(e);
+        if (waveformRef.current) {
+            let waveform = new p5(waveformSketch, waveformRef.current);
+            if (Object.keys(recording).length) {
+                try {
+                    setBuffer(recording.player.buffer._buffer.getChannelData(0));
+                } catch (e) {
+                    console.log(e);
+                }
+            } else if (buffer.length) { // if there's no recording but a buffer is still selected
+                _reset();
             }
-        } else if (buffer.length) { // if there's no recording but a buffer is still selected
-            _reset();
+            return () => waveform.remove();
         }
-        return () => waveform.remove();
         // @ts-ignore
     }, [state.selectedRecording, buffer]);
 
@@ -230,7 +210,11 @@ function Editor({solo, exporting}: EditorProps) {
             {/* @ts-ignore */}
             {state.recordingState
                 ? <LiveWaveform></LiveWaveform>
-                : <Waveform ref={waveformRef}></Waveform>
+                : <styles.EditorWaveform ref={waveformRef}>
+                    <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
+                    { /* @ts-ignore */ }
+                    <Split key="splitElem" splitting={splitting} splitClip={splitClip}></Split>
+                </styles.EditorWaveform>
             }
         </styles.Editor>
     )

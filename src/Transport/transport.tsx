@@ -45,13 +45,13 @@ function Transport({exporting}) {
     const [snapState, setSnapState] = useState(false);
     const draggingRef = useRef(false);
 
-    const _getGridHeight = () => {
+    const _getGridHeight = (): number => {
         // @ts-ignore
         return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
 
     // @ts-ignore
-    const onStop = (e, data, recording) => {
+    const onStop = (e, data, recording): void => {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
@@ -66,14 +66,14 @@ function Transport({exporting}) {
     };
 
     // @ts-ignore
-    const onDrag = (e) => {
+    const onDrag = (e): void => {
         if (e.type === 'mousemove' || e.type === 'touchmove') {
             draggingRef.current = true;
         }
     };
 
     // @ts-ignore
-    const updatePlayerPosition = (deltas, recording, snapState) => {
+    const updatePlayerPosition = (deltas, recording, snapState): void => {
         // @ts-ignore
         dispatch({type: 'updateRecordingPosition', payload: {
             recording: recording,

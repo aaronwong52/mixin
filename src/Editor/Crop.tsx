@@ -1,20 +1,19 @@
-import Draggable from "react-draggable";
+import Draggable, { DraggableEvent } from "react-draggable";
 import styled from 'styled-components';
 
 import { useEffect, useRef } from "react";
+import { CropProp } from "./Styles/editorStyles";
+
+interface CropProps {
+    cropping: boolean;
+    setPoints: (t: string, d: number) => void;
+}
 
 const DragRangeView = styled.div`
 	position: absolute;
-	display: ${props => props.cropping ? 'flex' : 'none'};
+	display: ${(props: CropProp) => props.cropping ? 'flex' : 'none'};
 	width: 100%;
 	height: 100%;
-`;
-
-const LeftPadding = styled.div`
-`;
-
-const RightPadding = styled(LeftPadding)`
-	
 `;
 
 const CropArea = styled.div`
@@ -35,31 +34,31 @@ const DragHandleLeft = styled.div`
 const DragHandleRight = styled(DragHandleLeft)`
 `;
 
-export default function Crop({cropping, setPoints}) {
+export default function Crop({cropping, setPoints}: CropProps) {
 
 	const dragStartLeft = useRef(-1);
 	const dragStartRight = useRef(-1);
 	const draggingRef = useRef(false);
 
 	// stop handlers report distance from ends
-	const onStopLeft = (e) => {
+	const onStopLeft = (e: MouseEvent): void => {
 		let delta = e.clientX - dragStartLeft.current;
 		setPoints('start', delta); // sent to editor for dispatch
 	};
 
-	const onStopRight = (e) => {
+	const onStopRight = (e: MouseEvent): void => {
 		let delta = dragStartRight.current - e.clientX; 
 		setPoints('end', delta);
 	};
   
 	// sets offset of clip
 	// increases width of left padding 
-	const onDragLeft = (e) => {
+	const onDragLeft = (e: MouseEvent): void => {
 		if (dragStartLeft.current < 0) {
 			// initial mouse position
 			dragStartLeft.current = e.clientX; // desktop
 		} else {
-			let leftPadding = document.getElementById("range_left_padding");
+            let leftPadding = document.getElementById("range_left_padding") as HTMLDivElement;
 			let delta = e.clientX - dragStartLeft.current;
 			leftPadding.style.width = `${delta}px`;
 		}
@@ -71,12 +70,12 @@ export default function Crop({cropping, setPoints}) {
 
 	// sets duration of clip
 	// increases width of right padding
-	const onDragRight = (e) => {
+	const onDragRight = (e: MouseEvent): void => {
 		if (dragStartRight.current < 0) {
 			// initial mouse position
 			dragStartRight.current = e.clientX; // desktop
 		} else {
-			let rightPadding = document.getElementById("range_right_padding");
+            let rightPadding = document.getElementById("range_right_padding") as HTMLDivElement;
 			let delta = dragStartRight.current - e.clientX;
 			rightPadding.style.width = `${delta}px`;
 		}
@@ -87,27 +86,27 @@ export default function Crop({cropping, setPoints}) {
 	};
 
 	useEffect(() => {
-		let leftPadding = document.getElementById("range_left_padding");
-		let rightPadding = document.getElementById("range_right_padding");
+		let leftPadding = document.getElementById("range_left_padding") as HTMLDivElement;
+		let rightPadding = document.getElementById("range_right_padding") as HTMLDivElement;
 		leftPadding.style.width = "0px";
 		rightPadding.style.width = "0px";
 	}, []);
 
-	return [
+	return (
 		<DragRangeView key="cropElem" cropping={cropping} id="drag_range_view">
 			<Draggable bounds={"#drag_range_view"}
-				onStop={(e) => onStopLeft(e)}
-				onDrag={(e) => onDragLeft(e)}>
+				onStop={(e) => onStopLeft(e as MouseEvent)}
+				onDrag={(e) => onDragLeft(e as MouseEvent)}>
 				<DragHandleLeft id="drag_handle_left"></DragHandleLeft>
 			</Draggable>
-			<LeftPadding id="range_left_padding"></LeftPadding>
+			<div id="range_left_padding"></div>
 			<CropArea id="drag_highlight"></CropArea>
 			<Draggable axis="none" bounds={"#drag_range_view"}
-				onStop={(e) => onStopRight(e)}
-				onDrag={(e) => onDragRight(e)}>
+				onStop={(e) => onStopRight(e as MouseEvent)}
+				onDrag={(e) => onDragRight(e as MouseEvent)}>
 				<DragHandleRight id="drag_handle_right"></DragHandleRight>
 			</Draggable>
-			<RightPadding id="range_right_padding"></RightPadding>
+			<div id="range_right_padding"></div>
 		</DragRangeView>
-	]
+    );
 }
