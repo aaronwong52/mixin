@@ -12,14 +12,14 @@ export default function Settings({displayState, channels}: SettingsProp) {
     const [optionSelected, setOptionSelected] = useState(false);
     const [exporting, setExporting] = useState(false);
 
-    const setOption = (option: string) => {
+    const setOption = (option: string): void => {
         setOptionSelected(true);
         switch(option) {
             case 'export': setExporting(true);
         }
     };
 
-    const unsetOption = () => {
+    const unsetOption = (): void => {
         setOptionSelected(false);
     }
 

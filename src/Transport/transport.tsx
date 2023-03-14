@@ -1,29 +1,24 @@
-import { useRef, useEffect, useContext, useState} from 'react';
+import { useRef, useEffect, useContext, useState, MutableRefObject, MouseEvent, KeyboardEvent} from 'react';
 import p5 from 'p5';
 
-// @ts-ignore
-import * as styles from './Styles/TransportStyles';
+import * as styles from './Styles/transportStyles';
 
 import { Transport as ToneTransport } from 'tone';
 import { AppTheme } from '../View/Themes';
 
-// @ts-ignore
-import Channel from './Channel';
-// @ts-ignore
-import Recording from "./Recording";
+import Channel from './channel';
+import Recording from "./recording";
 import Playline from './Playline';
 
 // @ts-ignore
 import { _findChannelIndex } from '../Reducer/AppReducer';
 
 import { modulo } from '../utils/audio-utils';
-// @ts-ignore
 import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
 
-// @ts-ignore
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-// @ts-ignore
 import { SnapContext } from './SnapContext';
+import { DraggableData } from 'react-draggable';
 
 /* 
 
@@ -35,10 +30,13 @@ Width of transport view itself stays 92vw and scrolls within
 
 */
 
-// @ts-ignore
-function Transport({exporting}) {
+interface TransportProps {
+    exporting: boolean;
+}
 
-    const transportRef = useRef();
+function Transport({exporting}: TransportProps) {
+
+    const transportRef = useRef<HTMLElement>(null);
     const state = useContext(StateContext);
     const dispatch = useContext(StateDispatchContext);
 
@@ -51,7 +49,7 @@ function Transport({exporting}) {
     };
 
     // @ts-ignore
-    const onStop = (e, data, recording): void => {
+    const onStop = (e: any, data: DraggableData, recording): void => {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
@@ -65,8 +63,7 @@ function Transport({exporting}) {
         }
     };
 
-    // @ts-ignore
-    const onDrag = (e): void => {
+    const onDrag = (e: MouseEvent): void => {
         if (e.type === 'mousemove' || e.type === 'touchmove') {
             draggingRef.current = true;
         }
@@ -102,25 +99,24 @@ function Transport({exporting}) {
     };
 
     // @ts-ignore
-    const TransportSettings = (setExporting) => {
+    const TransportSettings = (setExporting: (e: boolean) => void) => {
 
-        const settingsRef = useRef(null);
+        const settingsRef = useRef() as MutableRefObject<HTMLDivElement>;
         useOutsideSettings(settingsRef);
 
-        // @ts-ignore
-        function useOutsideSettings(ref) {
+        function useOutsideSettings(ref: MutableRefObject<HTMLDivElement>) {
             useEffect(() => {
                 // @ts-ignore
-                function handleClickOutside(event) {
-                    if (ref.current && !ref.current.contains(event.target)) {
-                        if (event.target.id != "recordingsview") {
+                function handleClickOutside(event: globalThis.MouseEvent) {
+                    if (ref.current && !ref.current.contains(event.target as Node)) {
+                        if ((event.target as HTMLElement).id != "recordingsview") {
                             return;
                         }
                         // clicked outside
                         setExporting(!exporting);
                     }
                 }
-                document.addEventListener("mousedown", handleClickOutside);
+                document.addEventListener("mousedown", (e) => handleClickOutside(e));
                 return () => document.removeEventListener("mousedown", handleClickOutside);
             }, [ref]);
         }
@@ -129,8 +125,8 @@ function Transport({exporting}) {
                 <styles.LengthView>
                     <styles.LengthLabel>Length:</styles.LengthLabel>
                     <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
-                    // @ts-ignore
-                    placeholder={state.transportLength / PIX_TO_TIME}>
+                    /* @ts-ignore */
+                    placeholder={(state.transportLength / PIX_TO_TIME).toString()}>
                     </styles.LengthInput>s
                 </styles.LengthView>
                 <styles.SnapView>
@@ -183,14 +179,12 @@ function Transport({exporting}) {
         );
     };
 
-    // @ts-ignore
-    const updateTransportPosition = (time) => {
+    const updateTransportPosition = (time: number): void => {
         // @ts-ignore
         dispatch({type: 'updateTransportPosition', payload: time});
     };
 
-    // @ts-ignore
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key == 'Enter') {
             let input = document.getElementById("transport_length_input");
             // @ts-ignore
@@ -200,8 +194,7 @@ function Transport({exporting}) {
 
     // @ts-ignore
     useEffect(() => {
-        // @ts-ignore
-        const s = (sketch) => {
+        const s = (sketch: p5) => {
             // @ts-ignore
             let x = state.transportLength;
             let y = TIMELINE_HEIGHT;
@@ -252,8 +245,10 @@ function Transport({exporting}) {
                 updateTransportPosition(newPosition);
             }
         };
-        let transportp5 = new p5(s, transportRef.current);
-        return () => transportp5.remove();
+        if (transportRef.current) {
+            let transportp5 = new p5(s, transportRef.current);
+            return () => transportp5.remove();
+        }
         // @ts-ignore
     }, [state.transportLength]);
 

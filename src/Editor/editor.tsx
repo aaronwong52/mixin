@@ -1,6 +1,6 @@
 import p5 from 'p5';
 
-import { useState, useEffect, useRef, useContext, forwardRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import * as styles from './Styles/editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
@@ -32,7 +32,8 @@ function Editor({solo, exporting}: EditorProps) {
     const [splitting, setSplitting] = useState(false);
 
     const waveformSketch = (sketch: p5) => {
-        let width: number = 0, height: number = 0;
+        let width: number = 0;
+        let height: number = 0;
         if (waveformRef.current) {
             width = waveformRef.current.offsetWidth;
             height = waveformRef.current.offsetHeight;

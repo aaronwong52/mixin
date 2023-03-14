@@ -1,15 +1,12 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { Transport as ToneTransport } from 'tone';
 import Draggable, { DraggableData } from 'react-draggable';
-import * as styles from './Styles/TransportStyles';
+import * as styles from './Styles/transportStyles';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { PIX_TO_TIME } from '../utils/constants';
 
-export interface HeightProp {
-    height: number;
-}
 
-export default function Playline({height}: HeightProp) {
+export default function Playline({height}: styles.HeightProp) {
 	const state = useContext(StateContext);
 	const dispatch = useContext(StateDispatchContext);
     /* @ts-ignore */
@@ -24,7 +21,7 @@ export default function Playline({height}: HeightProp) {
 	  // for the movement of the playline when playing, the web animation handles it, and that's fine as long as animation controls
 		// are handled
 
-	const onStop = (data: DraggableData) => {
+	const onStop = (data: DraggableData): void => {
 		let newPosition = (data.x) / PIX_TO_TIME;
 		if (newPosition < 0.1) {
 			newPosition = 0;
@@ -33,13 +30,13 @@ export default function Playline({height}: HeightProp) {
 		updateTransportPosition(newPosition);
 	};
 
-	const updateTransportPosition = (time: number) => {
+	const updateTransportPosition = (time: number): void => {
 		timeRef.current = time;
         { /* @ts-ignore */}
 		dispatch({type: 'updateTransportPosition', payload: time});
 	};
 
-	const _checkPastTransport = (time: number) => {
+	const _checkPastTransport = (time: number): number => {
         /* @ts-ignore */
 		return time * PIX_TO_TIME > state.transportLength;
 	}
@@ -49,6 +46,7 @@ export default function Playline({height}: HeightProp) {
 		if (_checkPastTransport(state.time)) {
 			return;
 		}
+        
 		const playAnimation: Keyframe[] = [
             /* @ts-ignore */
 			{ transform: `translateX(${state.time * PIX_TO_TIME}px)` },

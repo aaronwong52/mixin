@@ -5,49 +5,65 @@ import p5 from 'p5';
 import { StateContext } from '../utils/StateContext';
 
 import { StyledWaveform } from './Styles/liveWaveformStyles';
+import { Waveform } from 'tone';
 
 export default function LiveWaveform() {
 	const state = useContext(StateContext);
-    const waveformRef = useRef(null);
+    const waveformRef = useRef<HTMLDivElement>(null);
+    const analyser = useRef<Tone.Waveform | null>(null);
+
+    const s = (sketch: p5) => {
+
+        let width: number = 0;
+        let height: number = 0;
+        if (waveformRef.current) {
+            width = waveformRef.current.offsetWidth;
+            height = waveformRef.current.offsetHeight;
+        }
+
+        sketch.setup = () => {
+            sketch.createCanvas(width, height);
+        };
+
+        sketch.draw = () => {
+            sketch.noFill();
+            sketch.background("#1e2126");
+            if (!analyser.current) {
+                return;
+            }
+            let values = analyser.current.getValue();
+            sketch.beginShape();
+            
+            for (let i = 0; i < values.length; i++) {
+                const amplitude = values[i];
+                const xVertex = sketch.map(i, 0, values.length - 1, 0, width);
+                const yVertex = height / 2 + amplitude * height * 3;
+                sketch.vertex(xVertex, yVertex);
+                sketch.stroke("#dbdbdb")
+            } 
+            sketch.endShape();
+        };
+    };
+
+    useEffect(() => {
+        analyser.current = new Tone.Waveform(8192);
+    }, [])
 
 	useEffect(() => {
-		if (!state.mic) {
+        // @ts-ignore
+		if (!state.mic || !waveformRef.current) {
 			return;
 	    };
 
-        const analyser = new Tone.Analyser('waveform', 8192);
-        state.mic.connect(analyser);
-
-        const s = (sketch) => {
-            let x = waveformRef.current.offsetWidth;
-            let y = waveformRef.current.offsetHeight;
-
-            sketch.setup = () => {
-                sketch.createCanvas(x, y);
-            };
-
-            sketch.draw = () => {
-                sketch.noFill();
-                sketch.background("#1e2126");
-                const values = analyser.getValue();
-                sketch.beginShape();
-                
-                for (let i = 0; i < values.length; i++) {
-                    const amplitude = values[i];
-                    const xVertex = sketch.map(i, 0, values.length - 1, 0, x);
-                    const yVertex = y / 2 + amplitude * y * 3;
-                    sketch.vertex(xVertex, yVertex);
-                    sketch.stroke("#dbdbdb")
-                } 
-                sketch.endShape();
-            };
-        };
-        
-        let recorderP5 = new p5(s, 'waveform');
+        // @ts-ignore
+        state.mic.connect(analyser.current);
+        let recorderP5 = new p5(s, waveformRef.current);
         return () => {
             recorderP5.remove();
+            // @ts-ignore
             state.mic.disconnect(analyser);
         }
+        // @ts-ignore
     }, [state.mic]);
 
 	return (
