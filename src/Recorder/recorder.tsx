@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef, useContext } from 'react';
+import * as Tone from 'tone';
 
 import { RecordButton } from './Styles/recorderStyles';
 
-import { v4 as uuidv4 } from 'uuid';
-
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-import * as Tone from 'tone';
-import { ActionType } from '../Reducer/AppReducer';
-import { Recording } from '../Transport/recording';
+import { ActionType, State } from '../Reducer/AppReducer';
+import { IncompleteRecording } from '../Transport/recording';
 
 interface RecorderProps {
-    receiveRecording: (r: Recording) => void;
+    receiveRecording: (r: IncompleteRecording) => void;
     exporting: boolean;
 }
 
 function Recorder({receiveRecording, exporting}: RecorderProps) {
 
-    const state = useContext(StateContext);
+    const state = useContext(StateContext) as unknown as State;
     const dispatch = useContext(StateDispatchContext);
 
     const recordingRef = useRef<boolean>(false);
@@ -39,24 +37,22 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
 
     const toggleRecording = async (e: MouseEvent) => {
         e.stopPropagation();
-        // @ts-ignore
         if (!state.mic) {
             return;
         }
         Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
         if (recordingRef.current) {
-            // @ts-ignore
             closeMic(state.mic);
-            let data = await recorder.stop();
+            let data: Blob = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
             let newRecording = {
-                id: uuidv4(),
-                channel: null, // id of channel
+                id: '',
+                channel: '', // string based index
                 position: Tone.Transport.seconds, // start of recording - same as recording.start, but is not mutated by cropping
                 duration: 0, // exact position in seconds when recording should stop (real duration in player.buffer)
                 start: Tone.Transport.seconds, // exact position in seconds when recording should start
                 data: blobUrl, 
-                player: null,
+                player: undefined,
                 solo: false,
                 loaded: false,
             };
@@ -66,7 +62,6 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
             // @ts-ignore
             dispatch({type: ActionType.toggleRecordingState, payload: false});
         } else { // functionality is locked while export menu is open
-            // @ts-ignore
             await openMic(state.mic);
             recorder.start();
             recordingRef.current = true;

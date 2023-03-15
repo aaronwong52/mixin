@@ -19,16 +19,16 @@ import Settings from '../Settings/Settings';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
 import { State } from '../Reducer/AppReducer';
-import { Recording } from '../Transport/recording';
+import { IncompleteRecording } from '../Transport/recording';
 
 const initialState: State = {
 	recordingState: false,
-	mic: null,
+	mic: undefined,
 	channels: [],
 	selectedRecording: {},
 	selectedChannel: '', // id-based system, set to '' when no channels are selected
 	endPosition: 0,
-	soloChannel: null,
+	soloChannel: undefined,
 	time: 0,
 	playing: false,
 	transportLength: 3000
@@ -64,18 +64,19 @@ function App() {
 		}, [ref]);
 	}
 
-  // logic for this with reducer is a little tricky
-  // any state operations that need to read state -> place in reducer
-  // we have to place the onload callback here so that we don't have to dispatch another action from inside the reducer
+    // logic for this with reducer is a little tricky
+    // any state operations that need to read state -> place in reducer
+    // we have to place the onload callback here so that we don't have to dispatch another action from inside the reducer
 
 
-  // receive from Recorder -> add to store and send to Transport
-  	const receiveRecording = (recording: Recording): void => {
+    // receive from Recorder -> add to store and send to Transport
+    // sets recording.player, ?recording.data, ?recording.duration
+  	const receiveRecording = (recording: IncompleteRecording): void => {
 		recording.player = createPlayer(recording.data);
 	
 		// recording.data is blobUrl
 		if (typeof(recording.data) == "string") {
-	  		recording.player.buffer.onload = (buffer) => {
+	  		recording.player.buffer.onload = (buffer: Tone.ToneAudioBuffer) => {
 			recording.data = buffer;
 			recording.duration = recording.start + buffer.duration;
             // @ts-ignore
@@ -195,12 +196,14 @@ function App() {
 	const newRecordingFromBuffer = (buffer: AudioBuffer): void => {
 		let recordingTime = Tone.Transport.seconds;
 		let newRecording = {
+            id: '',
+            channel: '',
 			position: recordingTime,
 			start: recordingTime,
 			duration: recordingTime + buffer.duration, 
 			data: buffer,
-			player: null,
-			channel: null,
+			player: undefined,
+            solo: false,
 			loaded: true
 		};
 		receiveRecording(newRecording);

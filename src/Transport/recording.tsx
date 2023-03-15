@@ -24,6 +24,18 @@ export interface Recording {
     loaded: boolean;
 }
 
+export interface IncompleteRecording {
+    id: string;
+    channel: string;
+    position: number;
+    duration: number;
+    start: number;
+    data: string | ToneAudioBuffer | AudioBuffer;
+    player?: Player;
+    solo: boolean;
+    loaded: boolean;
+}
+
 export type EmptyRecording = Record<never, never>;
 
 // @ts-ignore

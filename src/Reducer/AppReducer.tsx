@@ -3,16 +3,16 @@ import { createPlayer } from '../utils/audio-utils';
 import * as Tone from 'tone';
 import { v4 as uuidv4 } from 'uuid';
 import { Channel } from '../Transport/channel';
-import { EmptyRecording, Recording } from '../Transport/recording';
+import { EmptyRecording, IncompleteRecording, Recording } from '../Transport/recording';
 
 export interface State {
     recordingState: boolean;
-    mic: Tone.UserMedia | null;
+    mic?: Tone.UserMedia | null;
     channels: Channel[];
     selectedRecording: Recording | EmptyRecording;
     selectedChannel: string;
     endPosition: number;
-    soloChannel: Tone.Channel;
+    soloChannel?: Tone.Channel;
     time: number;
     playing: boolean;
     transportLength: number;
@@ -166,7 +166,7 @@ const editChannelName = (state: State, payload: Channel): State => {
 };
 
 export const existsRecording = (r: Recording | EmptyRecording): r is Recording => {
-    return ("id" in r);
+    return ("id" in r && "player" in r);
 };
 
 const _deleteChannel = (state: State, channelId: string): State => {
@@ -222,7 +222,9 @@ const _scheduleRecording = (state: State, recording: Recording): void => {
     }
 }
 
+// sets recording.channel
 const scheduleNewRecording = (state: State, recording: Recording): State => {
+    recording.id = uuidv4();
     recording.channel = state.selectedChannel;
     _scheduleRecording(state, recording);
     return addRecording(state, recording);
@@ -241,7 +243,7 @@ const switchRecordingChannel = (state: State, payload: any): State => {
 	let filteredChannel = {...channels[currChannelIndex],
 	    recordings: [
 		    ...channels[currChannelIndex].recordings.filter((recording) => {
-		        return recording.id != payload.recording.id
+		        return `recording.id` != payload.recording.id
 		    })
 	    ]
 	};
@@ -482,7 +484,7 @@ export const calculatePlayOffset = (playPosition: number, recording: Recording):
   
   // solo: route player to solo channel and solo it
   const soloClip = (state: State, recording: Recording): State => {
-    if (recording.player) {
+    if (recording.player && state.soloChannel) {
         recording.player.connect(state.soloChannel);
         state.soloChannel.solo = true;
         recording.solo = true;
@@ -493,7 +495,7 @@ export const calculatePlayOffset = (playPosition: number, recording: Recording):
   
   // does player.disconnect() cancel start()?
 const unsoloClip = (state: State, recording: Recording): State => {
-    if (recording.player) {
+    if (recording.player  && state.soloChannel) {
         recording.player.disconnect(); // disconnect() -> disconnect all inputs
         let channelIndex = _findChannelIndex(state.channels, recording.channel)
         recording.player.connect(state.channels[channelIndex].channel); // reconnect to original channel

@@ -60,11 +60,11 @@ export default function Split({splitting, splitClip}: SplitProps) {
         // @ts-ignore
 	}, [state.selectedRecording, splitting])
 
-	return [
+	return (
 		<SplitView key="split_elem" id="split_view" splitting={splitting}>
 			<Draggable bounds={"#split_view"}>
 				<SplitLine id="split_line"></SplitLine>
 			</Draggable>
 		</SplitView>
-	];
+	);
 }

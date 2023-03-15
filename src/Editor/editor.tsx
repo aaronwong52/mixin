@@ -208,7 +208,6 @@ function Editor({solo, exporting}: EditorProps) {
                 ? <LiveWaveform></LiveWaveform>
                 : <styles.EditorWaveform ref={waveformRef}>
                     <Crop key="cropElem" cropping={cropping} setPoints={setCropPoints}></Crop>
-                    { /* @ts-ignore */ }
                     <Split key="splitElem" splitting={splitting} splitClip={splitClip}></Split>
                 </styles.EditorWaveform>
             }
