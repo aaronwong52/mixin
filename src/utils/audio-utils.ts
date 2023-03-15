@@ -5,7 +5,7 @@ export const bufferToWav = (buffer: AudioBuffer) => {
     return toWav(buffer);
 };
 
-export const createPlayer = (data: AudioBuffer | Tone.ToneAudioBuffer) => {
+export const createPlayer = (data: string | AudioBuffer | Tone.ToneAudioBuffer): Tone.Player => {
     return new Tone.Player({
       url: data,
       loop: false

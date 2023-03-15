@@ -1,69 +1,32 @@
-import { useRef, useEffect, useState, useReducer } from 'react'
+import { useRef, useEffect, useState, useReducer, RefObject, DragEvent } from 'react'
 
-// @ts-ignore
 import * as styles from './Styles/AppStyles';
 
 import * as Tone from 'tone';
 import { FileDrop } from 'react-file-drop';
 
-// @ts-ignore
 import { createPlayer } from '../utils/audio-utils';
 
-// @ts-ignore
 import { RecordingReducer } from '../Reducer/AppReducer';
+import { ActionType } from '../Reducer/AppReducer';
 
-// @ts-ignore
 import Transport from '../Transport/transport';
-// @ts-ignore
-import Recorder from '../Recorder/Recorder';
-// @ts-ignore
-import Editor from '../Editor/Editor';
-// @ts-ignore
-import TransportClock from '../Transport/TransportClock';
-// @ts-ignore
+import Recorder from '../Recorder/recorder';
+import Editor from '../Editor/editor';
+import TransportClock from '../Transport/transportClock';
 import Settings from '../Settings/Settings';
 
-// @ts-ignore
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-// @ts-ignore
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
+import { State } from '../Reducer/AppReducer';
+import { Recording } from '../Transport/recording';
 
-/* 
-
-core functionality (use Router):
-
- - open the mic
- - start/stop recording ( + UI )
- - play recording (be able to switch analyser between mic and player)
- - turn analyser on and off
- - detailed waveform view
-
-*/
-
-
-
-/* -----------------------------------------------------------------------
-
-how to fix this: 
-
-2 options: 
-
-  1. on play, look first at playhead position and update all players' start with an offset
-
-  2. everytime playhead is moved, look at playhead position and update all players' start with an offset
-
-  The only advantage of two is if this offset ever needs to be used outside of pressing play
-  It seems we only need to use the exact position of things for playing, and for section exports, as the UI is always synced
-  So 1! We can just calculate it at play time. Shouldn't be expensive, relatively
-
-*/
-
-const initialState = {
+const initialState: State = {
 	recordingState: false,
 	mic: null,
 	channels: [],
 	selectedRecording: {},
-	selectedChannel: 0, // id-based system, set to 0 when no channels are selected
+	selectedChannel: '', // id-based system, set to '' when no channels are selected
 	endPosition: 0,
 	soloChannel: null,
 	time: 0,
@@ -85,21 +48,19 @@ function App() {
 
 	const audioReader = new FileReader();
 
-	const settingsWrapperRef = useRef(null);
+	const settingsWrapperRef = useRef<HTMLDivElement>(null);
 	useOutsideSettings(settingsWrapperRef);
 
-    // @ts-ignore
-	function useOutsideSettings(ref) {
+	function useOutsideSettings(ref: RefObject<HTMLDivElement>) {
 		useEffect(() => {
-            // @ts-ignore
-			function handleClickOutside(event) {
-			  if (ref.current && !ref.current.contains(event.target)) {
+			function handleClickOutside(event: MouseEvent) {
+			  if (ref.current && !ref.current.contains(event.target as Node)) {
 				  // clicked outside
 				  setExporting(false);
 			  }
 			}
-			document.addEventListener("mousedown", handleClickOutside);
-			return () => document.removeEventListener("mousedown", handleClickOutside);
+			document.addEventListener("mousedown", (e) => handleClickOutside(e));
+			return () => document.removeEventListener("mousedown", (e) => handleClickOutside(e));
 		}, [ref]);
 	}
 
@@ -109,68 +70,63 @@ function App() {
 
 
   // receive from Recorder -> add to store and send to Transport
-  // @ts-ignore
-  	const receiveRecording = (recording) => {
+  	const receiveRecording = (recording: Recording): void => {
 		recording.player = createPlayer(recording.data);
 	
 		// recording.data is blobUrl
 		if (typeof(recording.data) == "string") {
-            // @ts-ignore
 	  		recording.player.buffer.onload = (buffer) => {
 			recording.data = buffer;
 			recording.duration = recording.start + buffer.duration;
             // @ts-ignore
-			dispatch({type: 'updateBuffer', payload: recording});
+			dispatch({type: ActionType.updateBuffer, payload: recording});
 			Tone.Transport.seconds = recording.duration;
             // @ts-ignore
-			dispatch({type: 'updateTransportPosition', payload: recording.duration});
+			dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
             // @ts-ignore
-			dispatch({type: 'selectRecording', payload: recording});
+			dispatch({type: ActionType.selectRecording, payload: recording});
 		};
         // @ts-ignore
-		dispatch({type: 'scheduleNewRecording', payload: recording});
-	} 
-	// recording.data is the buffer itself
-		else {
-            // @ts-ignore
-			dispatch({type: 'scheduleNewRecording', payload: recording});
-		}
+		dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+	} else { 	// recording.data is the buffer itself
+        // @ts-ignore
+        dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+    }
   };
 
 	const toggle = () => {
 		if (Tone.Transport.state === "started") {
 			Tone.Transport.pause();
             // @ts-ignore
-			dispatch({type: 'togglePlay', payload: {playing: false, time: Tone.Transport.seconds}});
+			dispatch({type: ActionType.togglePlay, payload: {playing: false, time: Tone.Transport.seconds}});
 		}
-        // @ts-ignore
 		else if (state.channels.length > 0) {
 			Tone.context.resume();
 			Tone.Transport.start();
             // @ts-ignore
-			dispatch({type: 'togglePlay', payload: {playing: true, time: Tone.Transport.seconds}});
+			dispatch({type: ActionType.togglePlay, payload: {playing: true, time: Tone.Transport.seconds}});
 		}
 	};
 
-	const onPlay = () => {
+	const onPlay = (): void => {
 		if (exporting) {
-		return;
+		    return;
 		}
 		toggle();
 	};
 
-	const restart = () => {
+	const restart = (): void => {
 		if (exporting) {
 			return;
 		}
 		Tone.Transport.stop();
         // @ts-ignore
-		dispatch({type: 'togglePlay', payload: {playing: false, time: 0}});
+		dispatch({type: ActionType.togglePlay, payload: {playing: false, time: 0}});
         // @ts-ignore
-		dispatch({type: 'updateTransportPosition', payload: 0});
+		dispatch({type: ActionType.updateTransportPosition, payload: 0});
 	};
 
-	const mute = () => {
+	const mute = (): void => {
 		if (exporting) {
 			return;
 		}
@@ -181,50 +137,47 @@ function App() {
 
 	// takes current solo state (boolean)
 	// soloes or un soloes
-    // @ts-ignore
-	const solo = (soloState) => { 
+	const solo = (soloState: boolean): void => { 
 		if (soloState) {
             // @ts-ignore
-			dispatch({type: 'unsoloClip',  payload: state.selectedRecording});
+			dispatch({type: ActionType.unsoloClip,  payload: state.selectedRecording});
 		} else {
             // @ts-ignore
-			dispatch({type: 'soloClip',  payload: state.selectedRecording});
+			dispatch({type: ActionType.soloClip,  payload: state.selectedRecording});
 		}
 	};
   
-  	const setExportingState = () => {
+  	const setExportingState = (): void => {
 		setExporting(!exporting);
   	};
 
-    // @ts-ignore
-	const _validateFile = (file) => {
+	const _validateFile = (file: File): boolean => {
 		return (file.type == "audio/mpeg" || file.type !== "audio/wav") && file.size < MAX_FILE_SIZE;
 	};
 
-    // @ts-ignore
-	const _validateFileLength = (buffer) => {
+	const _validateFileLength = (buffer: AudioBuffer): boolean => {
 		return buffer.duration * PIX_TO_TIME <= MAX_DURATION;
 	};
 
-    // @ts-ignore
-	const upload = (files, e) => {
+	const upload = (files: FileList | null, e: DragEvent): void => {
 		e.preventDefault();
 		setDropping(false);
 		if (files && _validateFile(files[0])) {
 			audioReader.readAsArrayBuffer(files[0]);
 			audioReader.onload = async () => {
 				let buffer = audioReader.result;
+                if (!buffer || typeof(buffer) == 'string') {
+                    return;
+                }
 				try {
-                    // @ts-ignore
 					let decodedBuffer = await Tone.getContext().rawContext.decodeAudioData(buffer);
 					if (!_validateFileLength(decodedBuffer)) {
 						return;
 					} else {
 						let pixelDuration = decodedBuffer.duration * PIX_TO_TIME;
-                        // @ts-ignore
 						if (pixelDuration > state.transportLength) {
                             // @ts-ignore
-							dispatch({type: 'updateTransportLength', payload: (decodedBuffer.duration * PIX_TO_TIME)})
+							dispatch({type: ActionType.updateTransportLength, payload: (decodedBuffer.duration * PIX_TO_TIME)})
 						}
 						newRecordingFromBuffer(decodedBuffer);
 					}
@@ -239,8 +192,7 @@ function App() {
 		}
 	}
     
-    // @ts-ignore
-	const newRecordingFromBuffer = (buffer) => {
+	const newRecordingFromBuffer = (buffer: AudioBuffer): void => {
 		let recordingTime = Tone.Transport.seconds;
 		let newRecording = {
 			position: recordingTime,
@@ -257,9 +209,9 @@ function App() {
 	useEffect(() => {
 		const mic = new Tone.UserMedia();
         // @ts-ignore
-		dispatch({type: 'initializeChannels', payload: {}});
+		dispatch({type: ActionType.initializeChannels, payload: {}});
         // @ts-ignore
-		dispatch({type: 'setMic', payload: mic});
+		dispatch({type: ActionType.setMic, payload: mic});
 	}, []);
 
 	return (
@@ -276,7 +228,6 @@ function App() {
                     </styles.Settings>
                 </styles.TopView>
                 <Editor solo={solo} exporting={exporting}></Editor>
-                { /* @ts-ignore */}
                 <styles.MiddleView dropping={dropping}>
                     <FileDrop 
                         onDrop={(files, event) => upload(files, event)}
@@ -287,13 +238,10 @@ function App() {
                 </styles.MiddleView>
                 <styles.ControlView>
                     <Recorder receiveRecording={receiveRecording} exporting={exporting}></Recorder>
-                    { /* @ts-ignore */}
                     <styles.PlayButton id="play_btn" onClick={onPlay} playState={state.playing}></styles.PlayButton>
                     <styles.RestartButton onClick={restart}></styles.RestartButton>
-                    { /* @ts-ignore */}
                     <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>
                     <styles.ClockArea>
-                        { /* @ts-ignore */}
                         <TransportClock></TransportClock>
                     </styles.ClockArea>
                 </styles.ControlView>

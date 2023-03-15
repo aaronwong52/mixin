@@ -5,7 +5,6 @@ import p5 from 'p5';
 import { StateContext } from '../utils/StateContext';
 
 import { StyledWaveform } from './Styles/liveWaveformStyles';
-import { Waveform } from 'tone';
 
 export default function LiveWaveform() {
 	const state = useContext(StateContext);

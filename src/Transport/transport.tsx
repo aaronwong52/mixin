@@ -11,7 +11,7 @@ import Recording from "./recording";
 import Playline from './Playline';
 
 // @ts-ignore
-import { _findChannelIndex } from '../Reducer/AppReducer';
+import { ActionType, _findChannelIndex } from '../Reducer/AppReducer';
 
 import { modulo } from '../utils/audio-utils';
 import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
@@ -59,7 +59,7 @@ function Transport({exporting}: TransportProps) {
       // onClick
         else {
             // @ts-ignore
-            dispatch({type: 'selectRecording', payload: recording})
+            dispatch({type: ActionType.selectRecording, payload: recording})
         }
     };
 
@@ -72,7 +72,7 @@ function Transport({exporting}: TransportProps) {
     // @ts-ignore
     const updatePlayerPosition = (deltas, recording, snapState): void => {
         // @ts-ignore
-        dispatch({type: 'updateRecordingPosition', payload: {
+        dispatch({type: ActionType.updateRecordingPosition, payload: {
             recording: recording,
             newPosition: deltas.x,
             snapState: snapState
@@ -84,7 +84,7 @@ function Transport({exporting}: TransportProps) {
             // @ts-ignore
             recording.channel = state.channels[newIndex].id;
             // @ts-ignore
-            dispatch({type: 'switchRecordingChannel', payload: {
+            dispatch({type: ActionType.switchRecordingChannel, payload: {
                 recording: recording,
                 channelIndex: index,
                 newChannelIndex: newIndex
@@ -94,7 +94,7 @@ function Transport({exporting}: TransportProps) {
         // @ts-ignore
         if (state.selectedRecording.id == recording.id) {
             // @ts-ignore
-            dispatch({type: 'selectRecording', payload: recording});
+            dispatch({type: ActionType.selectRecording, payload: recording});
         }
     };
 
@@ -145,7 +145,7 @@ function Transport({exporting}: TransportProps) {
         return state.channels.map((c, index) => (
             /* @ts-ignore */
             <Channel key={(c.id + index).toString()} channelName = {c.name} 
-            channelData = {{...c, index: index}}>
+                channelData = {{...c, index: index}}>
             </Channel>
         ));
     };
@@ -181,14 +181,14 @@ function Transport({exporting}: TransportProps) {
 
     const updateTransportPosition = (time: number): void => {
         // @ts-ignore
-        dispatch({type: 'updateTransportPosition', payload: time});
+        dispatch({type: ActionType.updateTransportPosition, payload: time});
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key == 'Enter') {
             let input = document.getElementById("transport_length_input");
             // @ts-ignore
-            dispatch(({type: 'updateTransportLength', payload: input.value * PIX_TO_TIME}));
+            dispatch(({type: ActionType.updateTransportLength, payload: input.value * PIX_TO_TIME}));
         }
     };
 
@@ -241,7 +241,7 @@ function Transport({exporting}: TransportProps) {
 
                 ToneTransport.seconds = newPosition;
                 // @ts-ignore
-                dispatch({type: 'togglePlay', payload: {playing: false, time: newPosition}});
+                dispatch({type: ActionType.togglePlay, payload: {playing: false, time: newPosition}});
                 updateTransportPosition(newPosition);
             }
         };
@@ -260,7 +260,7 @@ function Transport({exporting}: TransportProps) {
                 <Channels></Channels>
                     <styles.TimelinePadding id="timeline_padding">
                         {/* @ts-ignore */}
-                        <styles.AddChannelButton onClick={() => dispatch({type: 'addChannel', payload: {}})}>
+                        <styles.AddChannelButton onClick={() => dispatch({type: ActionType.addChannel, payload: {}})}>
                         </styles.AddChannelButton>
                     </styles.TimelinePadding>
                 </styles.ChannelHeaders>

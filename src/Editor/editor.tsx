@@ -12,6 +12,10 @@ import { map } from '../utils/audio-utils';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { AppTheme } from '../View/Themes';
+import { ActionType, existsRecording } from '../Reducer/AppReducer';
+
+import { State } from '../Reducer/AppReducer';
+import { Recording } from '../Transport/recording';
 
 interface EditorProps {
     solo: (s: boolean) => void;
@@ -20,11 +24,11 @@ interface EditorProps {
 
 // recording is selectedRecording prop
 function Editor({solo, exporting}: EditorProps) {
-    const state = useContext(StateContext)
+    const state = useContext(StateContext) as unknown as State;
     const dispatch = useContext(StateDispatchContext);
 
     const waveformRef = useRef<HTMLDivElement>(null);
-    const [buffer, setBuffer] = useState([]);
+    const [buffer, setBuffer] = useState<any>([]);
     const [muted, setMuted] = useState(false);
     const [cropping, setCropping] = useState(false);
     const [cropLeft, setCropLeft] = useState(0);
@@ -42,18 +46,16 @@ function Editor({solo, exporting}: EditorProps) {
             sketch.createCanvas(width, height);
         };
         sketch.draw = () => {
-            if (buffer.length === 0) {
+            let recording = state.selectedRecording;
+            if (!existsRecording(recording) || buffer.length === 0) {
                 return;
             }
             sketch.background('#2c3036');
             sketch.beginShape();
             sketch.stroke(AppTheme.AppTextOffColor);
 
-            // @ts-ignore
-            let recording = state.selectedRecording;
-
             let toneTime = Tone.Transport.seconds;
-            let trueEnd = recording.position + recording.player._buffer.duration; // uncropped duration is here
+            let trueEnd = recording.position + recording.player.buffer.duration; // uncropped duration is here
             let timeScaled = sketch.map(toneTime, recording.start, recording.duration, 0, width);
 
             let sampleStart = Math.round(sketch.map(recording.start, recording.position, trueEnd, 0, buffer.length));
@@ -82,8 +84,7 @@ function Editor({solo, exporting}: EditorProps) {
     };
 
     const checkEnabled = (): boolean => {
-        // @ts-ignore
-        return (Object.keys(state.selectedRecording).length && !exporting);
+        return (state.selectedRecording != null && !exporting);
     };
     
     const _reset = (): void => {
@@ -97,23 +98,22 @@ function Editor({solo, exporting}: EditorProps) {
 
     // mutating recording state directly for Tone operations
     const mute = (): void => {
-        // @ts-ignore
         let recording = state.selectedRecording;
-        if (!checkEnabled()) {
-            return;
+        if (existsRecording(recording) && checkEnabled()) {
+            if (muted) {
+                recording.player.mute = false
+            } else {
+                recording.player.mute = true;
+            }
+            setMuted(!muted);
         }
-        muted 
-            ? recording.player.mute = false
-            : recording.player.mute = true;
-        setMuted(!muted);
     };
 
     const soloClip = (): void => {
-        if (!checkEnabled()) {
-            return;
+        let recording = state.selectedRecording;
+        if (existsRecording(recording) && checkEnabled()) {
+            solo(recording.solo);
         }
-        // @ts-ignore
-        solo(state.selectedRecording.solo);
     };
 
     // crop does not modify audio data
@@ -123,10 +123,9 @@ function Editor({solo, exporting}: EditorProps) {
             return;
         }
         if (cropping) {
-            // @ts-ignore
             let recording = state.selectedRecording;
             // @ts-ignore
-            dispatch({type: 'cropRecording', payload: {
+            dispatch({type: ActionType.cropRecording, payload: {
                 recording, 
                 leftDelta: cropLeft,
                 rightDelta: cropRight,
@@ -136,22 +135,22 @@ function Editor({solo, exporting}: EditorProps) {
     };
 
     // get a point position in seconds
-    // @ts-ignore
-    const _mapPointToTime = (point: number, recording): number => {
+    const _mapPointToTime = (point: number, recording: Recording): number => {
         let recordingLength = recording.duration - recording.start;
         let waveformWidth = waveformRef.current ? waveformRef.current.offsetWidth : 0;
         return map(point, 0, waveformWidth, 0, recordingLength);
     };
 
     const setCropPoints = (type: string, delta: number): void => {
-        // @ts-ignore
-        delta = _mapPointToTime(delta, state.selectedRecording)
-
-        if (type == 'start') {
-            setCropLeft(delta);
-
-        } else if (type == 'end') {
-            setCropRight(delta);
+        let recording = state.selectedRecording;
+        if (existsRecording(recording) && checkEnabled()) {
+            delta = _mapPointToTime(delta, recording);
+            if (type == 'start') {
+                setCropLeft(delta);
+    
+            } else if (type == 'end') {
+                setCropRight(delta);
+            }
         }
     };
 
@@ -163,31 +162,27 @@ function Editor({solo, exporting}: EditorProps) {
     };
 
     const splitClip = (point: number): void => {
-        if (!checkEnabled()) {
-            return;
-        }
-
-        // @ts-ignore
         let recording = state.selectedRecording;
-        if ((point / PIX_TO_TIME) > recording.start) {
-            setSplitting(!splitting);
-            point = _mapPointToTime(point, recording);
-            // dispatch updateRecording to shorten original and then addRecording
-            // @ts-ignore
-            dispatch({type: 'addSplitRecording', payload: {recording, splitPoint: point}});
-            // @ts-ignore
-            dispatch({type: 'updateSplitRecording', payload: {recording, splitPoint: point}});
+        if (existsRecording(recording) && checkEnabled()) {
+            if ((point / PIX_TO_TIME) > recording.start) {
+                setSplitting(!splitting);
+                point = _mapPointToTime(point, recording);
+                // dispatch updateRecording to shorten original and then addRecording
+                // @ts-ignore
+                dispatch({type: ActionType.addSplitRecording, payload: {recording, splitPoint: point}});
+                // @ts-ignore
+                dispatch({type: ActionType.updateSplitRecording, payload: {recording, splitPoint: point}});
+            }
         }
     };
 
     useEffect(() => {
-        // @ts-ignore
         let recording = state.selectedRecording;
-        if (waveformRef.current) {
+        if (waveformRef.current && existsRecording(recording)) {
             let waveform = new p5(waveformSketch, waveformRef.current);
-            if (Object.keys(recording).length) {
+            if (recording && recording.player) {
                 try {
-                    setBuffer(recording.player.buffer._buffer.getChannelData(0));
+                    setBuffer(recording.player.buffer.getChannelData(0));
                 } catch (e) {
                     console.log(e);
                 }
@@ -196,19 +191,19 @@ function Editor({solo, exporting}: EditorProps) {
             }
             return () => waveform.remove();
         }
-        // @ts-ignore
     }, [state.selectedRecording, buffer]);
 
     return (
         <styles.Editor id="editor">
             <styles.ControlView>
                 <styles.ClipMute onClick={mute} muted={muted}></styles.ClipMute>
-                {/* @ts-ignore */}
-                <styles.ClipSolo onClick={soloClip} solo={state.selectedRecording.solo}>S</styles.ClipSolo>
+                <styles.ClipSolo 
+                    onClick={soloClip} 
+                    solo={existsRecording(state.selectedRecording) ? state.selectedRecording.solo : false}>
+                S</styles.ClipSolo>
                 <styles.Crop cropping={cropping} onClick={cropClip}></styles.Crop>
                 <styles.Split splitting={splitting} onClick={onSplitClick}></styles.Split>
             </styles.ControlView>
-            {/* @ts-ignore */}
             {state.recordingState
                 ? <LiveWaveform></LiveWaveform>
                 : <styles.EditorWaveform ref={waveformRef}>

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useContext } from "react";
+import { Player, ToneAudioBuffer } from "tone";
 
 // @ts-ignore
 import { StateDispatchContext } from "../utils/StateContext";
@@ -9,6 +10,21 @@ import { CHANNEL_SIZE, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
 
 import * as styles from './Styles/ChannelStyles';
+import { ActionType } from "../Reducer/AppReducer";
+
+export interface Recording {
+    id: string;
+    channel: string;
+    position: number;
+    duration: number;
+    start: number;
+    data: string | ToneAudioBuffer | AudioBuffer;
+    player: Player;
+    solo: boolean;
+    loaded: boolean;
+}
+
+export type EmptyRecording = Record<never, never>;
 
 // @ts-ignore
 export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
@@ -30,7 +46,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 				}
 				// clicked outside
                 // @ts-ignore
-				dispatch({type: 'deselectRecordings', payload: {}});
+				dispatch({type: ActionType.deselectRecordings, payload: {}});
 			}
 			}
 			document.addEventListener("mousedown", handleClickOutside);

@@ -51,9 +51,9 @@ export default function TransportClock() {
         return () => clockp5.remove(); 
     }, []);
 
-    return [
+    return (
         // @ts-ignore
         <Clock key="clock" id="transportClock" ref={clockRef}>
         </Clock>
-    ];
+    );
 }

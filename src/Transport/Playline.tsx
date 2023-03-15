@@ -4,6 +4,7 @@ import Draggable, { DraggableData } from 'react-draggable';
 import * as styles from './Styles/transportStyles';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { PIX_TO_TIME } from '../utils/constants';
+import { ActionType } from '../Reducer/AppReducer';
 
 
 export default function Playline({height}: styles.HeightProp) {
@@ -33,7 +34,7 @@ export default function Playline({height}: styles.HeightProp) {
 	const updateTransportPosition = (time: number): void => {
 		timeRef.current = time;
         { /* @ts-ignore */}
-		dispatch({type: 'updateTransportPosition', payload: time});
+		dispatch({type: ActionType.updateTransportPosition, payload: time});
 	};
 
 	const _checkPastTransport = (time: number): number => {

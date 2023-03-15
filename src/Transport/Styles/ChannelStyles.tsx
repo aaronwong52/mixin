@@ -3,6 +3,10 @@ import styled from 'styled-components';
 import { AppTheme } from '../../View/Themes';
 import { CHANNEL_SIZE } from '../../utils/constants';
 
+export interface ChannelProp {
+    selected: boolean;
+}
+
 export const ChannelHeader = styled.div`
 	box-sizing: border-box;
 	display: flex;
@@ -10,7 +14,7 @@ export const ChannelHeader = styled.div`
 	align-items: center;
     align-self: flex-start;
 	background-color: ${AppTheme.ChannelColor};
-	border: ${(props: any) => props.selected 
+	border: ${(props: ChannelProp) => props.selected 
 		? `1px solid ${AppTheme.ChannelHighlight}` 
 		: `1px solid ${AppTheme.AppSecondaryColor}`
 	};
@@ -48,7 +52,7 @@ export const RecordingView = styled.div`
 	height: ${CHANNEL_SIZE}px;
 	padding: 5px 0px;
 	box-sizing: border-box;
-	background-color: ${(props: any) => props.selected 
+	background-color: ${(props: ChannelProp) => props.selected 
 		? AppTheme.SelectedRecordingColor
 		: AppTheme.RecordingColor
 	};

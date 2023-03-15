@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+interface RecordingProp { recording: boolean; }
+
 export const RecordView = styled.div`
     height: 250px;
     width: 500px;
@@ -21,7 +23,7 @@ export const RecordButton = styled.button`
     height: 30px;
     background-color: transparent;
     border: none;
-    background: ${props => props.recording
+    background: ${(props: RecordingProp) => props.recording
             ? "url('images/stop.png') no-repeat;"
             : "url('images/record_muted.png') no-repeat;"
     };
