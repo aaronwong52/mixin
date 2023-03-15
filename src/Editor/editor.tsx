@@ -1,6 +1,6 @@
 import p5 from 'p5';
 
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, Dispatch } from 'react';
 import * as styles from './Styles/editorStyles';
 import * as Tone from 'tone';
 import Crop from './Crop';
@@ -12,10 +12,10 @@ import { map } from '../utils/audio-utils';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { AppTheme } from '../View/Themes';
-import { ActionType, existsRecording } from '../Reducer/AppReducer';
+import { Action, ActionType, existsRecording } from '../Reducer/AppReducer';
 
 import { State } from '../Reducer/AppReducer';
-import { Recording } from '../Transport/recording';
+import { CompleteRecording } from '../Transport/recording';
 
 interface EditorProps {
     solo: (s: boolean) => void;
@@ -25,7 +25,7 @@ interface EditorProps {
 // recording is selectedRecording prop
 function Editor({solo, exporting}: EditorProps) {
     const state = useContext(StateContext) as unknown as State;
-    const dispatch = useContext(StateDispatchContext);
+    const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
     const waveformRef = useRef<HTMLDivElement>(null);
     const [buffer, setBuffer] = useState<any>([]);
@@ -124,7 +124,6 @@ function Editor({solo, exporting}: EditorProps) {
         }
         if (cropping) {
             let recording = state.selectedRecording;
-            // @ts-ignore
             dispatch({type: ActionType.cropRecording, payload: {
                 recording, 
                 leftDelta: cropLeft,
@@ -135,7 +134,7 @@ function Editor({solo, exporting}: EditorProps) {
     };
 
     // get a point position in seconds
-    const _mapPointToTime = (point: number, recording: Recording): number => {
+    const _mapPointToTime = (point: number, recording: CompleteRecording): number => {
         let recordingLength = recording.duration - recording.start;
         let waveformWidth = waveformRef.current ? waveformRef.current.offsetWidth : 0;
         return map(point, 0, waveformWidth, 0, recordingLength);
@@ -168,9 +167,7 @@ function Editor({solo, exporting}: EditorProps) {
                 setSplitting(!splitting);
                 point = _mapPointToTime(point, recording);
                 // dispatch updateRecording to shorten original and then addRecording
-                // @ts-ignore
                 dispatch({type: ActionType.addSplitRecording, payload: {recording, splitPoint: point}});
-                // @ts-ignore
                 dispatch({type: ActionType.updateSplitRecording, payload: {recording, splitPoint: point}});
             }
         }

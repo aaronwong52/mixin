@@ -44,8 +44,6 @@ function App() {
 	const [dropping, setDropping] = useState(false);
 	const [exporting, setExporting] = useState(false);
 
-	const drawing = useRef();
-
 	const audioReader = new FileReader();
 
 	const settingsWrapperRef = useRef<HTMLDivElement>(null);
@@ -77,34 +75,28 @@ function App() {
 		// recording.data is blobUrl
 		if (typeof(recording.data) == "string") {
 	  		recording.player.buffer.onload = (buffer: Tone.ToneAudioBuffer) => {
-			recording.data = buffer;
-			recording.duration = recording.start + buffer.duration;
-            // @ts-ignore
-			dispatch({type: ActionType.updateBuffer, payload: recording});
-			Tone.Transport.seconds = recording.duration;
-            // @ts-ignore
-			dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
-            // @ts-ignore
-			dispatch({type: ActionType.selectRecording, payload: recording});
-		};
-        // @ts-ignore
-		dispatch({type: ActionType.scheduleNewRecording, payload: recording});
-	} else { 	// recording.data is the buffer itself
-        // @ts-ignore
-        dispatch({type: ActionType.scheduleNewRecording, payload: recording});
-    }
-  };
+                recording.data = buffer;
+                recording.duration = recording.start + buffer.duration;
+                Tone.Transport.seconds = recording.duration;
+
+                dispatch({type: ActionType.updateBuffer, payload: recording});
+                dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
+                dispatch({type: ActionType.selectRecording, payload: recording});
+		    };
+		    dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+	    } else { 	// recording.data is the buffer itself
+            dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+        }
+    };
 
 	const toggle = () => {
 		if (Tone.Transport.state === "started") {
 			Tone.Transport.pause();
-            // @ts-ignore
 			dispatch({type: ActionType.togglePlay, payload: {playing: false, time: Tone.Transport.seconds}});
 		}
 		else if (state.channels.length > 0) {
 			Tone.context.resume();
 			Tone.Transport.start();
-            // @ts-ignore
 			dispatch({type: ActionType.togglePlay, payload: {playing: true, time: Tone.Transport.seconds}});
 		}
 	};
@@ -121,9 +113,7 @@ function App() {
 			return;
 		}
 		Tone.Transport.stop();
-        // @ts-ignore
 		dispatch({type: ActionType.togglePlay, payload: {playing: false, time: 0}});
-        // @ts-ignore
 		dispatch({type: ActionType.updateTransportPosition, payload: 0});
 	};
 
@@ -140,10 +130,8 @@ function App() {
 	// soloes or un soloes
 	const solo = (soloState: boolean): void => { 
 		if (soloState) {
-            // @ts-ignore
 			dispatch({type: ActionType.unsoloClip,  payload: state.selectedRecording});
 		} else {
-            // @ts-ignore
 			dispatch({type: ActionType.soloClip,  payload: state.selectedRecording});
 		}
 	};
@@ -177,7 +165,6 @@ function App() {
 					} else {
 						let pixelDuration = decodedBuffer.duration * PIX_TO_TIME;
 						if (pixelDuration > state.transportLength) {
-                            // @ts-ignore
 							dispatch({type: ActionType.updateTransportLength, payload: (decodedBuffer.duration * PIX_TO_TIME)})
 						}
 						newRecordingFromBuffer(decodedBuffer);
@@ -211,9 +198,7 @@ function App() {
 
 	useEffect(() => {
 		const mic = new Tone.UserMedia();
-        // @ts-ignore
 		dispatch({type: ActionType.initializeChannels, payload: {}});
-        // @ts-ignore
 		dispatch({type: ActionType.setMic, payload: mic});
 	}, []);
 
@@ -222,7 +207,7 @@ function App() {
 		<StateContext.Provider value={state}>
         { /* @ts-ignore */}
 		<StateDispatchContext.Provider value={dispatch}>
-			<styles.View id="Tone" ref={drawing.current}>
+			<styles.View id="Tone">
                 <styles.TopView>
                     <styles.Title>MIXIN</styles.Title>
                     <styles.Settings ref={settingsWrapperRef}>

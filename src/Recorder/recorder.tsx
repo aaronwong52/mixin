@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, Dispatch } from 'react';
 import * as Tone from 'tone';
 
 import { RecordButton } from './Styles/recorderStyles';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-import { ActionType, State } from '../Reducer/AppReducer';
+import { Action, ActionType, State } from '../Reducer/AppReducer';
 import { IncompleteRecording } from '../Transport/recording';
 
 interface RecorderProps {
@@ -15,7 +15,7 @@ interface RecorderProps {
 function Recorder({receiveRecording, exporting}: RecorderProps) {
 
     const state = useContext(StateContext) as unknown as State;
-    const dispatch = useContext(StateDispatchContext);
+    const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
     const recordingRef = useRef<boolean>(false);
     const exportingRef = useRef<boolean>(false);
@@ -23,14 +23,12 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
 
     const recorder = new Tone.Recorder();
 
-    // @ts-ignore
-    const openMic = async (mic) => {
+    const openMic = async (mic: Tone.UserMedia) => {
         mic.connect(recorder);
         await mic.open();
     };
 
-    // @ts-ignore
-    const closeMic = (mic) => {
+    const closeMic = (mic: Tone.UserMedia): void => {
         mic.disconnect(recorder);
         mic.close();
     };
@@ -59,14 +57,12 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
             receiveRecording(newRecording);
             recordingRef.current = false;
             setRecording(false);
-            // @ts-ignore
             dispatch({type: ActionType.toggleRecordingState, payload: false});
-        } else { // functionality is locked while export menu is open
+        } else {
             await openMic(state.mic);
             recorder.start();
             recordingRef.current = true;
             setRecording(true);
-            // @ts-ignore
             dispatch({type: ActionType.toggleRecordingState, payload: true});
         }
     };
@@ -76,21 +72,15 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
     }, [exporting]);
 
     useEffect(() => {
-        let recBtn = document.getElementById("rec_btn");
-
-        // @ts-ignore
+        let recBtn = document.getElementById("rec_btn") as HTMLButtonElement;
         recBtn.disabled = !Tone.UserMedia.supported;
-        // @ts-ignore
         recBtn.addEventListener("click", (e) => toggleRecording(e));
         return () => {
-            // @ts-ignore
             recBtn.removeEventListener("click", (e) => toggleRecording(e));
         }
-        // @ts-ignore
     }, [state.mic]);
 
     return (
-        // @ts-ignore
         <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
     )
 }

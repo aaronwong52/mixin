@@ -1,4 +1,4 @@
-import { useRef, useEffect, useContext, useState, MutableRefObject, MouseEvent, KeyboardEvent} from 'react';
+import { useRef, useEffect, useContext, useState, MutableRefObject, MouseEvent, KeyboardEvent, Dispatch, ReactElement} from 'react';
 import p5 from 'p5';
 
 import * as styles from './Styles/transportStyles';
@@ -7,11 +7,10 @@ import { Transport as ToneTransport } from 'tone';
 import { AppTheme } from '../View/Themes';
 
 import Channel from './channel';
-import Recording from "./recording";
+import Recording, { CompleteRecording } from "./recording";
 import Playline from './Playline';
 
-// @ts-ignore
-import { ActionType, _findChannelIndex } from '../Reducer/AppReducer';
+import { Action, ActionType, existsRecording, State, _findChannelIndex } from '../Reducer/AppReducer';
 
 import { modulo } from '../utils/audio-utils';
 import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
@@ -34,22 +33,25 @@ interface TransportProps {
     exporting: boolean;
 }
 
+type DragData = {
+    x: number;
+    y: number;
+}
+
 function Transport({exporting}: TransportProps) {
 
-    const transportRef = useRef<HTMLElement>(null);
-    const state = useContext(StateContext);
-    const dispatch = useContext(StateDispatchContext);
+    const transportRef = useRef<HTMLDivElement>(null);
+    const state = useContext(StateContext) as unknown as State;
+    const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
     const [snapState, setSnapState] = useState(false);
     const draggingRef = useRef(false);
 
     const _getGridHeight = (): number => {
-        // @ts-ignore
         return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
 
-    // @ts-ignore
-    const onStop = (e: any, data: DraggableData, recording): void => {
+    const onStop = (e: any, data: DraggableData, recording: CompleteRecording): void => {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
@@ -58,7 +60,6 @@ function Transport({exporting}: TransportProps) {
 
       // onClick
         else {
-            // @ts-ignore
             dispatch({type: ActionType.selectRecording, payload: recording})
         }
     };
@@ -69,21 +70,17 @@ function Transport({exporting}: TransportProps) {
         }
     };
 
-    // @ts-ignore
-    const updatePlayerPosition = (deltas, recording, snapState): void => {
-        // @ts-ignore
+    const updatePlayerPosition = (deltas: DragData, recording: CompleteRecording, snapState: boolean): void => {
         dispatch({type: ActionType.updateRecordingPosition, payload: {
             recording: recording,
             newPosition: deltas.x,
             snapState: snapState
         }});
-        // @ts-ignore
         let index = _findChannelIndex(state.channels, recording.channel)
         let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
+        let sr = state.selectedRecording;
         if (newIndex != index) {
-            // @ts-ignore
             recording.channel = state.channels[newIndex].id;
-            // @ts-ignore
             dispatch({type: ActionType.switchRecordingChannel, payload: {
                 recording: recording,
                 channelIndex: index,
@@ -91,14 +88,11 @@ function Transport({exporting}: TransportProps) {
             }})
         }
         // reselect recording to update playline in Editor
-        // @ts-ignore
-        if (state.selectedRecording.id == recording.id) {
-            // @ts-ignore
+        if (existsRecording(sr) && sr.id == recording.id) {
             dispatch({type: ActionType.selectRecording, payload: recording});
         }
     };
 
-    // @ts-ignore
     const TransportSettings = (setExporting: (e: boolean) => void) => {
 
         const settingsRef = useRef() as MutableRefObject<HTMLDivElement>;
@@ -106,10 +100,9 @@ function Transport({exporting}: TransportProps) {
 
         function useOutsideSettings(ref: MutableRefObject<HTMLDivElement>) {
             useEffect(() => {
-                // @ts-ignore
                 function handleClickOutside(event: globalThis.MouseEvent) {
                     if (ref.current && !ref.current.contains(event.target as Node)) {
-                        if ((event.target as HTMLElement).id != "recordingsview") {
+                        if (event.target instanceof Element && event.target.id != "recordingsview") {
                             return;
                         }
                         // clicked outside
@@ -125,13 +118,11 @@ function Transport({exporting}: TransportProps) {
                 <styles.LengthView>
                     <styles.LengthLabel>Length:</styles.LengthLabel>
                     <styles.LengthInput id="transport_length_input" onKeyDown={handleKeyDown}
-                    /* @ts-ignore */
                     placeholder={(state.transportLength / PIX_TO_TIME).toString()}>
                     </styles.LengthInput>s
                 </styles.LengthView>
                 <styles.SnapView>
                     <p>Snap</p>
-                    {/* @ts-ignore */}
                     <styles.SnapToggle snapState={snapState}
                     onClick={() => setSnapState(!snapState)}>
                     </styles.SnapToggle>
@@ -141,61 +132,47 @@ function Transport({exporting}: TransportProps) {
     };
 
     const Channels = () => {
-        // @ts-ignore
         return state.channels.map((c, index) => (
-            /* @ts-ignore */
-            <Channel key={(c.id + index).toString()} channelName = {c.name} 
-                channelData = {{...c, index: index}}>
-            </Channel>
+            <Channel key={(c.id + index).toString()} 
+                channelData = {{...c, index: index}}/>
         ));
     };
 
     const Recordings = () => {
-        // @ts-ignore
-        let recordings = [];
-        // @ts-ignore
+        let recordings: ReactElement[] = [];
         state.channels.map((c) => {
-            // @ts-ignore
             c.recordings.map((r) => {
                 recordings.push(
-                    // @ts-ignore
                     <Recording key={r.id} r={r}
                         onDrag={onDrag}
                         onStop={onStop}
-                        // @ts-ignore
                         selected={state.selectedRecording}
-                        channelIndex={c.index}>
-                    </Recording>
+                        channelIndex={c.index}
+                    />
                 )
              })
         });
         return (
             <styles.Recordings id="recordings_view"
-            // @ts-ignore
                 height={_getGridHeight() - TIMELINE_HEIGHT}>
-                {/* @ts-ignore */}
                 {recordings}
             </styles.Recordings>
         );
     };
 
     const updateTransportPosition = (time: number): void => {
-        // @ts-ignore
         dispatch({type: ActionType.updateTransportPosition, payload: time});
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key == 'Enter') {
-            let input = document.getElementById("transport_length_input");
-            // @ts-ignore
-            dispatch(({type: ActionType.updateTransportLength, payload: input.value * PIX_TO_TIME}));
+            let input = document.getElementById("transport_length_input") as HTMLInputElement;
+            dispatch(({type: ActionType.updateTransportLength, payload: parseInt(input.value) * PIX_TO_TIME}));
         }
     };
 
-    // @ts-ignore
     useEffect(() => {
         const s = (sketch: p5) => {
-            // @ts-ignore
             let x = state.transportLength;
             let y = TIMELINE_HEIGHT;
 
@@ -240,7 +217,6 @@ function Transport({exporting}: TransportProps) {
                 }
 
                 ToneTransport.seconds = newPosition;
-                // @ts-ignore
                 dispatch({type: ActionType.togglePlay, payload: {playing: false, time: newPosition}});
                 updateTransportPosition(newPosition);
             }
@@ -249,28 +225,23 @@ function Transport({exporting}: TransportProps) {
             let transportp5 = new p5(s, transportRef.current);
             return () => transportp5.remove();
         }
-        // @ts-ignore
     }, [state.transportLength]);
 
     return (
-        // @ts-ignore
         <styles.Wrap length={state.transportLength}>
             <styles.TransportView>
                 <styles.ChannelHeaders>
-                <Channels></Channels>
+                {Channels()}
                     <styles.TimelinePadding id="timeline_padding">
-                        {/* @ts-ignore */}
                         <styles.AddChannelButton onClick={() => dispatch({type: ActionType.addChannel, payload: {}})}>
                         </styles.AddChannelButton>
                     </styles.TimelinePadding>
                 </styles.ChannelHeaders>
-                {/* @ts-ignore */}
                 <styles.GridArea id="grid_area" length={state.transportLength}>
                     <SnapContext.Provider value={snapState}>
                         <Recordings></Recordings>
                     </SnapContext.Provider>
                     <styles.Transport>
-                        {/* @ts-ignore */}
                         <styles.Timeline id="timeline" ref={transportRef}>
                             <Playline height={_getGridHeight()}></Playline>
                         </styles.Timeline>

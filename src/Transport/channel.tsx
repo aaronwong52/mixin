@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext, Dispatch } from "react";
 import { RefObject, ChangeEvent, MouseEvent, KeyboardEvent } from "react";
 
-import { State } from "../Reducer/AppReducer";
+import { Action, State } from "../Reducer/AppReducer";
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 import * as Tone from 'tone';
-import { Recording } from "./recording";
+import { CompleteRecording } from "./recording";
 
 import * as styles from './Styles/ChannelStyles';
 import useKeyPress from "../utils/useKeyPress";
@@ -14,11 +14,12 @@ export interface Channel {
     id: string;
     name: string;
     channel: Tone.Channel;
-    recordings: Recording[];
+    recordings: CompleteRecording[];
     index: number;
 }
 
 export interface ChannelProps {
+    key: string;
     channelData: Channel;
 }
 
@@ -34,7 +35,7 @@ export default function Channel({channelData}: ChannelProps) {
 	useOutsideInput(inputWrapperRef);
 
 	const state = useContext(StateContext) as unknown as State;
-	const dispatch = useContext(StateDispatchContext);
+	const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
 
 	function useOutsideInput(ref: RefObject<HTMLInputElement>) {
@@ -58,7 +59,6 @@ export default function Channel({channelData}: ChannelProps) {
 	const handleEnter = (event: KeyboardEvent<HTMLInputElement>): void => {
 		event.stopPropagation();
 		if (event.key === 'Enter' && tempName.current != '') {
-            /* @ts-ignore */
 			dispatch({
 				type: ActionType.editChannelName, 
 				payload: {id: channelData.id, name: tempName.current}
@@ -90,18 +90,15 @@ export default function Channel({channelData}: ChannelProps) {
 	};
 
 	const handleSelect = () => {
-        /* @ts-ignore */
 	  	dispatch({type: ActionType.selectChannel, payload: channelData.id});
 	};
 
 	// deletes selected recording
 	const deleteSelectedRecording = () => {
-        /* @ts-ignore */
 	  	dispatch({type: ActionType.deleteSelectedRecording, payload: state.selectedRecording});
 	};
 
 	const deleteSelectedChannel = () => {
-        /* @ts-ignore */
 	  	dispatch({type: ActionType.deleteSelectedChannel, payload: state.selectedChannel});
 	}
 
@@ -119,7 +116,7 @@ export default function Channel({channelData}: ChannelProps) {
 	  	}
 	}, [keyPress]);
 
-	return [
+	return (
 		<styles.ChannelHeader key={channelData.toString()}
 			onClick={(e) => onClickHandler(e)} selected={channelData.id == state.selectedChannel}>
 				{editingName 
@@ -133,5 +130,5 @@ export default function Channel({channelData}: ChannelProps) {
 			  	: <styles.ChannelName id="channelName">{channelData.name}</styles.ChannelName>
 			}
 		</styles.ChannelHeader>
-	];
+    );
 }

@@ -1,18 +1,16 @@
-import { useRef, useEffect, useContext } from "react";
+import { useRef, useEffect, useContext, Dispatch, RefObject } from "react";
 import { Player, ToneAudioBuffer } from "tone";
 
-// @ts-ignore
 import { StateDispatchContext } from "../utils/StateContext";
-// @ts-ignore
 import { SnapContext } from "./SnapContext";
-// @ts-ignore
 import { CHANNEL_SIZE, PIX_TO_TIME } from "../utils/constants";
 import Draggable from "react-draggable";
 
 import * as styles from './Styles/ChannelStyles';
-import { ActionType } from "../Reducer/AppReducer";
+import { Action, ActionType } from "../Reducer/AppReducer";
 
-export interface Recording {
+// Currently: A complete recording has the player, but if for some reason the buffer doesn't load then its sauced 
+export interface CompleteRecording {
     id: string;
     channel: string;
     position: number;
@@ -41,27 +39,24 @@ export type EmptyRecording = Record<never, never>;
 // @ts-ignore
 export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 
-	const dispatch = useContext(StateDispatchContext);
+	const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 	const snapState = useContext(SnapContext);
 
-	const recordingsWrapperRef = useRef(null);
+	const recordingsWrapperRef = useRef<HTMLDivElement>(null);
 	useOutsideRecordings(recordingsWrapperRef);
 
-    // @ts-ignore
-	function useOutsideRecordings(ref) {
+	function useOutsideRecordings(ref: RefObject<HTMLDivElement>) {
 		useEffect(() => {
-            // @ts-ignore
-			function handleClickOutside(event) {
-			if (ref.current && !ref.current.contains(event.target)) {
-				if (event.target.id != "recordings_view") {
+			function handleClickOutside(event: MouseEvent) {
+			if (ref.current && !ref.current.contains(event.target as Node)) {
+				if ((event.target as HTMLElement).id != "recordings_view") {
 					return;
 				}
 				// clicked outside
-                // @ts-ignore
 				dispatch({type: ActionType.deselectRecordings, payload: {}});
 			}
 			}
-			document.addEventListener("mousedown", handleClickOutside);
+			document.addEventListener("mousedown", (e) => handleClickOutside(e));
 			return () => document.removeEventListener("mousedown", handleClickOutside);
 		}, [ref]);
 	}
@@ -84,7 +79,7 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 	// currently on each channel, the x position is calculated by r.start
 	// for this new system, the y position will be calculated by channel index
 	// this way recordings will not be limited to one channel and can be moved around
-	return [
+	return (
 		<Draggable key={"drag_rec_clip_" + r.id}
 			onDrag={(e) => onDrag(e)}
 			onStop={(e, data) => onStop(e, data, r)}
@@ -99,5 +94,5 @@ export default function Recording({r, onDrag, onStop, selected, channelIndex}) {
 				id = {"recording_clip_" + r.id}>
 			</styles.RecordingView>
 		</Draggable>
-	];
+    );
 }
