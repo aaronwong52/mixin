@@ -3,7 +3,7 @@ import { useState } from 'react';
 import * as styles from './Styles/ExportMixStyles';
 import { SettingsProp } from './Settings';
 
-import { calculatePlayOffset } from '../Reducer/AppReducer';
+import { _calculatePlayOffset } from '../Reducer/AppReducer';
 import { bufferToWav, bufferFromToneBuffer } from '../utils/audio-utils';
 import { SAMPLE_RATE, AUDIO_FORMATS, getDownloadFormat, WAV_TO_MP3 } from '../utils/constants';
 
@@ -134,7 +134,7 @@ function Export({channels}: SettingsProp) {
             // @ts-ignore
             channel.recordings.forEach(function(recording) {
                 let source = offlineContext.createBufferSource();
-                let offset = calculatePlayOffset(ranges[0], recording);
+                let offset = _calculatePlayOffset(ranges[0], recording);
                 let startOffset = recording.start - recording.position + offset;
                 // @ts-ignore
                 source.buffer = bufferFromToneBuffer(recording.data);

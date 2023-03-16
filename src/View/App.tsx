@@ -69,17 +69,32 @@ function App() {
 
     // receive from Recorder -> add to store and send to Transport
     // sets recording.player, ?recording.data, ?recording.duration
+
+    // one function for creating incomplete recording, gives it position, start, data (BlobUrl), Player, solo
+    // recording is then sent to reducer
+    // recording is completed in 2 parts
+    // reducer immediately inflates id and channel values
+    // on buffer load: duration, loaded are inflated - if duration is already known, dont do anything (separate on check for 0)
+
+    // What happens if for whatever reason loaded flag is false on a completed recording?? Where should checks for loaded go
+
+    // this funciton should go to the reducer! then all logic will be contained
+
   	const receiveRecording = (recording: IncompleteRecording): void => {
 		recording.player = createPlayer(recording.data);
 	
 		// recording.data is blobUrl
 		if (typeof(recording.data) == "string") {
 	  		recording.player.buffer.onload = (buffer: Tone.ToneAudioBuffer) => {
-                recording.data = buffer;
+                // recording.data = buffer;
                 recording.duration = recording.start + buffer.duration;
+                recording.loaded = false;
                 Tone.Transport.seconds = recording.duration;
 
+                // sync duration, loaded -> this goes to reducer
                 dispatch({type: ActionType.updateBuffer, payload: recording});
+
+                // set the playline to the end of the recording, select the recording
                 dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
                 dispatch({type: ActionType.selectRecording, payload: recording});
 		    };

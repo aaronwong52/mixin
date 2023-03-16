@@ -19,7 +19,7 @@ export interface CompleteRecording {
     data: string | ToneAudioBuffer | AudioBuffer;
     player: Player;
     solo: boolean;
-    loaded: boolean;
+    loaded: true;
 }
 
 export interface IncompleteRecording {

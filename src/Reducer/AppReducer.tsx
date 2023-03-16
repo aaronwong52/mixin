@@ -224,7 +224,7 @@ const scheduleNewRecording = (state: State, recording: IncompleteRecording): Sta
     recording.id = uuidv4();
     recording.channel = state.selectedChannel;
     _scheduleRecording(state, recording as CompleteRecording);
-    return addRecording(state, recording as CompleteRecording);
+    return _addRecording(state, recording as CompleteRecording);
 };
 
   // moves a recording to a new channel
@@ -347,15 +347,13 @@ const _setRecording = (state: State, recording: CompleteRecording, action: Recor
 	}
 };
   
-const addRecording = (state: State, recording: CompleteRecording): State => {
-    recording.start = recording.position;
-    recording.channel = state.selectedChannel;
+const _addRecording = (state: State, recording: CompleteRecording): State => {
     return _setRecording(state, recording, {type: 'add'});
 };
   
 const updateBuffer = (state: State, recording: CompleteRecording): State => {
     schedulePlayer(recording);
-    return updateRecording(state, recording);
+    return _updateRecording(state, recording);
 };
   
   // error handling in the case where delta exceeds transport limits
@@ -372,15 +370,24 @@ const updateRecordingPosition = (state: State, payload: any) => {
 
 	schedulePlayer(payload.recording);
 
-	return updateRecording(state, payload.recording);
+	return _updateRecording(state, payload.recording);
 };
 
 const updateTransportLength = (state: State, length: number): State => {
     return {...state, transportLength: length};
-}
+};
 
+const _updatePlayerPositions = (state: State, time: number): void => {
+	state.channels.forEach((channel) => {     
+	    channel.recordings.forEach((recording) => {
+		    let offset = _calculatePlayOffset(time, recording);
+		    _schedulePlayer(recording, offset);
+	    })
+	});
+};
+  
 const updateTransportPosition = (state: State, time: number): State => {
-    updatePlayerPositions(state, time);
+    _updatePlayerPositions(state, time);
     return {...state, time: time};
 };
 
@@ -391,7 +398,7 @@ const cropRecording = (state: State, payload: any): State => {
     recording.duration -= payload.rightDelta;
 
     schedulePlayer(recording);
-    return _setRecording(state, recording, {type: 'update'});
+    return _updateRecording(state, recording);
 };
 
   /* 
@@ -421,7 +428,7 @@ const addSplitRecording = (state: State, payload: any): State => {
         data: '', // data is effectively a temp block before loading into player
         player: createPlayer(secondBuffer),
         solo: false,
-        loaded: true,
+        loaded: true as true,
 	};
 	_scheduleRecording(state, newRecording);
 	return _setRecording(state, newRecording, {type: 'add'});
@@ -435,10 +442,10 @@ const updateSplitRecording = (state: State, payload: any): State => {
     originalBuffer.dispose();
     originalRecording.player.buffer = firstBuffer;
     originalRecording.duration = payload.splitPoint;
-    return updateRecording(state, originalRecording);
+    return _updateRecording(state, originalRecording);
 };
   
-const updateRecording = (state: State, recording: CompleteRecording): State => {
+const _updateRecording = (state: State, recording: CompleteRecording): State => {
 	return _setRecording(state, recording, {type: 'update'});
 };
   
@@ -455,22 +462,13 @@ const _schedulePlayer = (recording: CompleteRecording, offset: number): void => 
 };
 
 const schedulePlayer = (recording: CompleteRecording): void => {
-	  let offset = calculatePlayOffset(Tone.Transport.seconds, recording);
+	  let offset = _calculatePlayOffset(Tone.Transport.seconds, recording);
 	  _schedulePlayer(recording, offset);
 };
 
-const updatePlayerPositions = (state: State, time: number): void => {
-	state.channels.forEach((channel) => {     
-	    channel.recordings.forEach((recording) => {
-		    let offset = calculatePlayOffset(time, recording);
-		    _schedulePlayer(recording, offset);
-	    })
-	});
-};
-  
   // return offset of playhead in relation to a recording clip
   // returns 0 if before or after clip
-export const calculatePlayOffset = (playPosition: number, recording: CompleteRecording): number => {
+export const _calculatePlayOffset = (playPosition: number, recording: CompleteRecording): number => {
 	if (playPosition < recording.start || playPosition >= recording.duration) {
 	    return 0;
 	}
@@ -483,7 +481,7 @@ export const calculatePlayOffset = (playPosition: number, recording: CompleteRec
         recording.player.connect(state.soloChannel);
         state.soloChannel.solo = true;
         recording.solo = true;
-        return updateRecording(state, recording);
+        return _updateRecording(state, recording);
     }
     return state;
 };
@@ -496,7 +494,7 @@ const unsoloClip = (state: State, recording: CompleteRecording): State => {
         recording.player.connect(state.channels[channelIndex].channel); // reconnect to original channel
         state.soloChannel.solo = false;
         recording.solo = false;
-        return updateRecording(state, recording);
+        return _updateRecording(state, recording);
     }
     return state;	
 };
