@@ -62,46 +62,11 @@ function App() {
 		}, [ref]);
 	}
 
-    // logic for this with reducer is a little tricky
-    // any state operations that need to read state -> place in reducer
-    // we have to place the onload callback here so that we don't have to dispatch another action from inside the reducer
-
-
-    // receive from Recorder -> add to store and send to Transport
-    // sets recording.player, ?recording.data, ?recording.duration
-
-    // one function for creating incomplete recording, gives it position, start, data (BlobUrl), Player, solo
-    // recording is then sent to reducer
-    // recording is completed in 2 parts
-    // reducer immediately inflates id and channel values
-    // on buffer load: duration, loaded are inflated - if duration is already known, dont do anything (separate on check for 0)
-
-    // What happens if for whatever reason loaded flag is false on a completed recording?? Where should checks for loaded go
-
-    // this funciton should go to the reducer! then all logic will be contained
-
   	const receiveRecording = (recording: IncompleteRecording): void => {
 		recording.player = createPlayer(recording.data);
-	
-		// recording.data is blobUrl
-		if (typeof(recording.data) == "string") {
-	  		recording.player.buffer.onload = (buffer: Tone.ToneAudioBuffer) => {
-                // recording.data = buffer;
-                recording.duration = recording.start + buffer.duration;
-                recording.loaded = false;
-                Tone.Transport.seconds = recording.duration;
-
-                // sync duration, loaded -> this goes to reducer
-                dispatch({type: ActionType.updateBuffer, payload: recording});
-
-                // set the playline to the end of the recording, select the recording
-                dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
-                dispatch({type: ActionType.selectRecording, payload: recording});
-		    };
-		    dispatch({type: ActionType.scheduleNewRecording, payload: recording});
-	    } else { 	// recording.data is the buffer itself
-            dispatch({type: ActionType.scheduleNewRecording, payload: recording});
-        }
+        dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+        dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
+        dispatch({type: ActionType.selectRecording, payload: recording});
     };
 
 	const toggle = () => {
@@ -182,7 +147,8 @@ function App() {
 						if (pixelDuration > state.transportLength) {
 							dispatch({type: ActionType.updateTransportLength, payload: (decodedBuffer.duration * PIX_TO_TIME)})
 						}
-						newRecordingFromBuffer(decodedBuffer);
+						let newRecording = newRecordingFromBuffer(decodedBuffer);
+                        receiveRecording(newRecording);
 					}
 				} catch(e) {
 					// Bad format?
@@ -195,9 +161,9 @@ function App() {
 		}
 	}
     
-	const newRecordingFromBuffer = (buffer: AudioBuffer): void => {
+	const newRecordingFromBuffer = (buffer: AudioBuffer): IncompleteRecording => {
 		let recordingTime = Tone.Transport.seconds;
-		let newRecording = {
+		return {
             id: '',
             channel: '',
 			position: recordingTime,
@@ -206,9 +172,7 @@ function App() {
 			data: buffer,
 			player: undefined,
             solo: false,
-			loaded: true
 		};
-		receiveRecording(newRecording);
 	};
 
 	useEffect(() => {
@@ -240,7 +204,7 @@ function App() {
                     </FileDrop>
                 </styles.MiddleView>
                 <styles.ControlView>
-                    <Recorder receiveRecording={receiveRecording} exporting={exporting}></Recorder>
+                    <Recorder exporting={exporting}></Recorder>
                     <styles.PlayButton id="play_btn" onClick={onPlay} playState={state.playing}></styles.PlayButton>
                     <styles.RestartButton onClick={restart}></styles.RestartButton>
                     <styles.MuteButton onClick={mute} mute={muted}></styles.MuteButton>

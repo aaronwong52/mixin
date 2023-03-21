@@ -6,19 +6,20 @@ import { RecordButton } from './Styles/recorderStyles';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { Action, ActionType, State } from '../Reducer/AppReducer';
 import { IncompleteRecording } from '../Transport/recording';
+import { createPlayer } from '../utils/audio-utils';
 
 interface RecorderProps {
-    receiveRecording: (r: IncompleteRecording) => void;
     exporting: boolean;
 }
 
-function Recorder({receiveRecording, exporting}: RecorderProps) {
+function Recorder({exporting}: RecorderProps) {
 
     const state = useContext(StateContext) as unknown as State;
     const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
-    const recordingRef = useRef<boolean>(false);
-    const exportingRef = useRef<boolean>(false);
+    const timeRef = useRef<Date>();
+    const recordingRef = useRef(false);
+    const exportingRef = useRef(false);
     const [recording, setRecording] = useState(false);
 
     const recorder = new Tone.Recorder();
@@ -33,34 +34,43 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
         mic.close();
     };
 
+    const addRecording = (recording: IncompleteRecording): void => {
+		recording.player = createPlayer(recording.data);
+        dispatch({type: ActionType.scheduleNewRecording, payload: recording});
+	    dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
+        dispatch({type: ActionType.selectRecording, payload: recording});
+    };
+
     const toggleRecording = async (e: MouseEvent) => {
         e.stopPropagation();
         if (!state.mic) {
             return;
         }
         Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
-        if (recordingRef.current) {
+        if (recordingRef.current && timeRef.current) {
             closeMic(state.mic);
             let data: Blob = await recorder.stop();
             let blobUrl = URL.createObjectURL(data);
+            let endTime = new Date();
+            let duration = (endTime.getTime() - timeRef.current.getTime()) / 1000;
             let newRecording = {
                 id: '',
-                channel: '', // string based index
-                position: Tone.Transport.seconds, // start of recording - same as recording.start, but is not mutated by cropping
-                duration: 0, // exact position in seconds when recording should stop (real duration in player.buffer)
-                start: Tone.Transport.seconds, // exact position in seconds when recording should start
+                channel: '',
+                position: Tone.Transport.seconds,
+                duration: Tone.Transport.seconds + duration,
+                start: Tone.Transport.seconds,
                 data: blobUrl, 
                 player: undefined,
-                solo: false,
-                loaded: false,
+                solo: false
             };
-            receiveRecording(newRecording);
+            addRecording(newRecording);
             recordingRef.current = false;
             setRecording(false);
             dispatch({type: ActionType.toggleRecordingState, payload: false});
         } else {
             await openMic(state.mic);
             recorder.start();
+            timeRef.current = new Date();
             recordingRef.current = true;
             setRecording(true);
             dispatch({type: ActionType.toggleRecordingState, payload: true});
@@ -82,7 +92,7 @@ function Recorder({receiveRecording, exporting}: RecorderProps) {
 
     return (
         <RecordButton type="button" id="rec_btn" recording={recording}></RecordButton>
-    )
+    );
 }
 
 export default Recorder;

@@ -38,7 +38,6 @@ export enum ActionType {
     scheduleNewRecording,
     switchRecordingChannel,
     deleteSelectedRecording,
-    updateBuffer,
     updateRecordingPosition,
     updateTransportLength,
     updateTransportPosition,
@@ -68,7 +67,7 @@ export const RecordingReducer = (state: State, action: Action): State => {
         case ActionType.editChannelName:
             return editChannelName(state, action.payload);
         case ActionType.deleteSelectedChannel:
-            return _deleteChannel(state, action.payload);
+            return deleteChannel(state, action.payload);
         case ActionType.selectRecording:
             return selectRecording(state, action.payload);
         case ActionType.deselectRecordings:
@@ -78,9 +77,7 @@ export const RecordingReducer = (state: State, action: Action): State => {
         case ActionType.switchRecordingChannel:
             return switchRecordingChannel(state, action.payload);
         case ActionType.deleteSelectedRecording:
-            return _deleteRecording(state, action.payload);
-        case ActionType.updateBuffer:
-            return updateBuffer(state, action.payload);
+            return deleteRecording(state, action.payload);
         case ActionType.updateRecordingPosition:
             return updateRecordingPosition(state, action.payload);
         case ActionType.updateTransportLength:
@@ -158,9 +155,9 @@ const editChannelName = (state: State, payload: {id: string, name: string}): Sta
     return {
         ...state,
         channels: [
-        ...channels.slice(0, channelIndex),
-        {...channels[channelIndex], name: payload.name},
-        ...channels.slice(channelIndex + 1, channels.length)
+            ...channels.slice(0, channelIndex),
+            {...channels[channelIndex], name: payload.name},
+            ...channels.slice(channelIndex + 1, channels.length)
         ]
     }
 };
@@ -169,7 +166,7 @@ export const existsRecording = (r: CompleteRecording | EmptyRecording): r is Com
     return ("id" in r && "player" in r);
 };
 
-const _deleteChannel = (state: State, channelId: string): State => {
+const deleteChannel = (state: State, channelId: string): State => {
     let sr = state.selectedRecording;
     if (existsRecording(sr) && sr.channel == channelId) {
         sr = {};
@@ -223,13 +220,14 @@ const _scheduleRecording = (state: State, recording: CompleteRecording): void =>
 const scheduleNewRecording = (state: State, recording: IncompleteRecording): State => {
     recording.id = uuidv4();
     recording.channel = state.selectedChannel;
+    
     _scheduleRecording(state, recording as CompleteRecording);
     return _addRecording(state, recording as CompleteRecording);
 };
 
   // moves a recording to a new channel
   // payload.recording, payload.newChannelIndex
-const switchRecordingChannel = (state: State, payload: any): State => {
+const switchRecordingChannel = (state: State, payload: {recording: CompleteRecording, channelIndex: number, newChannelIndex: number}): State => {
     let channels = state.channels;
 	let currChannelIndex: number = payload.channelIndex;
 	let newChannelIndex: number = payload.newChannelIndex;
@@ -240,7 +238,7 @@ const switchRecordingChannel = (state: State, payload: any): State => {
 	let filteredChannel = {...channels[currChannelIndex],
 	    recordings: [
 		    ...channels[currChannelIndex].recordings.filter((recording) => {
-		        return `recording.id` != payload.recording.id
+		        return recording.id != payload.recording.id
 		    })
 	    ]
 	};
@@ -275,7 +273,7 @@ export const _findChannelIndex = (channels: Channel[], channelId: string): numbe
     return (index > 0) ? index : 0;
 };
 
-const _deleteRecording = (state: State, selectedRecording: CompleteRecording): State => {
+const deleteRecording = (state: State, selectedRecording: CompleteRecording): State => {
 	let channels = state.channels;
 	let channelIndex = _findChannelIndex(channels, selectedRecording.channel);
 	if (channelIndex < 0) {
@@ -351,14 +349,9 @@ const _addRecording = (state: State, recording: CompleteRecording): State => {
     return _setRecording(state, recording, {type: 'add'});
 };
   
-const updateBuffer = (state: State, recording: CompleteRecording): State => {
-    schedulePlayer(recording);
-    return _updateRecording(state, recording);
-};
-  
   // error handling in the case where delta exceeds transport limits
   // calculate when delta causes r.start to be 0, and hard limit it at that point
-const updateRecordingPosition = (state: State, payload: any) => {
+const updateRecordingPosition = (state: State, payload: {recording: CompleteRecording, newPosition: number}) => {
 	let newPosition = payload.newPosition / PIX_TO_TIME;
 	let delta = newPosition - payload.recording.start;
 	if (payload.recording.start + newPosition < 0) {
@@ -391,7 +384,7 @@ const updateTransportPosition = (state: State, time: number): State => {
     return {...state, time: time};
 };
 
-const cropRecording = (state: State, payload: any): State => {
+const cropRecording = (state: State, payload: {recording: CompleteRecording, leftDelta: number, rightDelta: number}): State => {
     let recording = payload.recording;
 
     recording.start += payload.leftDelta;
@@ -410,7 +403,7 @@ const cropRecording = (state: State, payload: any): State => {
 	4. split buffer at split point
 	5. update recording players with the buffer halves
   */
-const addSplitRecording = (state: State, payload: any): State => {
+const addSplitRecording = (state: State, payload: {splitPoint: number, recording: CompleteRecording}): State => {
 	let splitPoint = payload.splitPoint;
 	let originalRecording = payload.recording;
 	let originalBuffer = originalRecording.player.buffer;
@@ -428,13 +421,12 @@ const addSplitRecording = (state: State, payload: any): State => {
         data: '', // data is effectively a temp block before loading into player
         player: createPlayer(secondBuffer),
         solo: false,
-        loaded: true as true,
 	};
 	_scheduleRecording(state, newRecording);
 	return _setRecording(state, newRecording, {type: 'add'});
 };
 
-const updateSplitRecording = (state: State, payload: any): State => {
+const updateSplitRecording = (state: State, payload: {splitPoint: number, recording: CompleteRecording}): State => {
     let originalRecording = payload.recording;
     let originalBuffer = originalRecording.player.buffer;
     let firstBuffer = originalBuffer.slice(0, payload.splitPoint);

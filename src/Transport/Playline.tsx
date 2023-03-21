@@ -1,16 +1,15 @@
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, Dispatch } from 'react';
 import { Transport as ToneTransport } from 'tone';
 import Draggable, { DraggableData } from 'react-draggable';
 import * as styles from './Styles/transportStyles';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { PIX_TO_TIME } from '../utils/constants';
-import { ActionType } from '../Reducer/AppReducer';
+import { Action, ActionType, State } from '../Reducer/AppReducer';
 
 
 export default function Playline({height}: styles.HeightProp) {
-	const state = useContext(StateContext);
-	const dispatch = useContext(StateDispatchContext);
-    /* @ts-ignore */
+	const state = useContext(StateContext) as unknown as State;
+	const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 	const timeRef = useRef(state.time);
 
 	const [animation, setAnimation] = useState<Animation>();
@@ -33,29 +32,23 @@ export default function Playline({height}: styles.HeightProp) {
 
 	const updateTransportPosition = (time: number): void => {
 		timeRef.current = time;
-        { /* @ts-ignore */}
 		dispatch({type: ActionType.updateTransportPosition, payload: time});
 	};
 
-	const _checkPastTransport = (time: number): number => {
-        /* @ts-ignore */
+	const _checkPastTransport = (time: number): boolean => {
 		return time * PIX_TO_TIME > state.transportLength;
 	}
 	  
 	useEffect(() => {
-        /* @ts-ignore */
 		if (_checkPastTransport(state.time)) {
 			return;
 		}
         
 		const playAnimation: Keyframe[] = [
-            /* @ts-ignore */
 			{ transform: `translateX(${state.time * PIX_TO_TIME}px)` },
-            /* @ts-ignore */
 			{ transform: `translateX(${state.transportLength}px)` },
 		];
 
-        /* @ts-ignore */
 		let _duration = (state.transportLength - (state.time * PIX_TO_TIME)) * 10;
 		const playAnimationTiming: KeyframeEffectOptions = {
 			duration: _duration >= 0 ? _duration : 0,
@@ -63,7 +56,7 @@ export default function Playline({height}: styles.HeightProp) {
 			iterations: 1
 		};
 
-		let playline = document.getElementById("playline");
+		let playline = document.getElementById("playline") as HTMLElement;
 		let playKeyframes = new KeyframeEffect(
 			playline,
 			playAnimation,
@@ -72,50 +65,28 @@ export default function Playline({height}: styles.HeightProp) {
 		
 		let animationObject: Animation = new Animation(playKeyframes, document.timeline);
 		animationObject.oncancel = (event) => {
-            /* @ts-ignore */
 			playline.style.transform = `translate(${timeRef.current * PIX_TO_TIME}px, 0px)`;
 		}
 		setAnimation(animationObject);
-        /* @ts-ignore */
 	}, [state.time]);
 
 	useEffect(() => {
-		// animate the playline when start is pressed
-		/* 
-		
-		Necessary functionality:
-		Animation state should be synced with Tone Transport state
-		Playline position synced with ToneTransport.seconds (it's only necessary to deliberately sync position
-		outside of playback, as the animation is set up to move in realtime)
-		  Unless restarted, animation location should be remembered to allow for pause / play
-			- animation.play(), animation.pause() for starting / resuming
-			- animation.updatePlaybackRate() when scaling transport
-		  animation should always begin at ToneTransport.seconds
-		
-		Drag playhead when not playing to update position
-		Click under transport (even when playing) to adjust position
-		*/
-	   
-        /* @ts-ignore */
-		if (!animation || _checkPastTransport(state.time)) {
+		if (!animation || _checkPastTransport(ToneTransport.seconds)) {
 			return;
 	   	}
-        /* @ts-ignore */
 		if (state.playing) {
 			animation.play();
 		} else {
-			updateTransportPosition(ToneTransport.seconds);
 			animation.cancel();
 			animation.commitStyles();
+            updateTransportPosition(ToneTransport.seconds);
 		}
-        /* @ts-ignore */
 	}, [state.time, state.playing]);
 
 	return (
 		<styles.PlaylineView key={"playline_elem"}>
 			<Draggable bounds={{left: 0, top: 0, bottom: 0}}
 			onStop={(e, data) => onStop(data)}
-            /* @ts-ignore */
 			position={{x: state.time * PIX_TO_TIME, y: 0}}>
 				<styles.StyledPlayline id="playline" height={height}>
 				</styles.StyledPlayline>

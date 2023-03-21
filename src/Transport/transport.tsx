@@ -55,7 +55,7 @@ function Transport({exporting}: TransportProps) {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
-            updatePlayerPosition({x: data.x, y: data.y}, recording, snapState);
+            updatePlayerPosition({x: data.x, y: data.y}, recording);
         }
 
       // onClick
@@ -70,11 +70,10 @@ function Transport({exporting}: TransportProps) {
         }
     };
 
-    const updatePlayerPosition = (deltas: DragData, recording: CompleteRecording, snapState: boolean): void => {
+    const updatePlayerPosition = (deltas: DragData, recording: CompleteRecording): void => {
         dispatch({type: ActionType.updateRecordingPosition, payload: {
             recording: recording,
-            newPosition: deltas.x,
-            snapState: snapState
+            newPosition: deltas.x
         }});
         let index = _findChannelIndex(state.channels, recording.channel)
         let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);

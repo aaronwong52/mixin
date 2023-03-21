@@ -166,7 +166,7 @@ function Editor({solo, exporting}: EditorProps) {
             if ((point / PIX_TO_TIME) > recording.start) {
                 setSplitting(!splitting);
                 point = _mapPointToTime(point, recording);
-                // dispatch updateRecording to shorten original and then addRecording
+                
                 dispatch({type: ActionType.addSplitRecording, payload: {recording, splitPoint: point}});
                 dispatch({type: ActionType.updateSplitRecording, payload: {recording, splitPoint: point}});
             }
