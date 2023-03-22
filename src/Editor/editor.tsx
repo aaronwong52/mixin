@@ -12,18 +12,18 @@ import { map } from '../utils/audio-utils';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { AppTheme } from '../View/Themes';
-import { Action, ActionType, existsRecording } from '../Reducer/AppReducer';
+import { existsRecording } from '../Reducer/AppReducer';
+import { Action, ActionType } from '../Reducer/ActionTypes';
 
-import { State } from '../Reducer/AppReducer';
+import { State } from '../Reducer/ReducerTypes';
 import { CompleteRecording } from '../Transport/recording';
 
 interface EditorProps {
     solo: (s: boolean) => void;
-    exporting: boolean;
 }
 
 // recording is selectedRecording prop
-function Editor({solo, exporting}: EditorProps) {
+function Editor({solo}: EditorProps) {
     const state = useContext(StateContext) as unknown as State;
     const dispatch = useContext(StateDispatchContext) as unknown as Dispatch<Action>;
 
@@ -47,7 +47,7 @@ function Editor({solo, exporting}: EditorProps) {
         };
         sketch.draw = () => {
             let recording = state.selectedRecording;
-            if (!existsRecording(recording) || buffer.length === 0) {
+            if (!existsRecording(recording)) {
                 return;
             }
             sketch.background('#2c3036');
@@ -83,9 +83,9 @@ function Editor({solo, exporting}: EditorProps) {
         }
     };
 
-    const checkEnabled = (): boolean => {
-        return (state.selectedRecording != null && !exporting);
-    };
+    // const checkEnabled = (): boolean => {
+        
+    // };
     
     const _reset = (): void => {
         _clearBuffer();
@@ -99,7 +99,7 @@ function Editor({solo, exporting}: EditorProps) {
     // mutating recording state directly for Tone operations
     const mute = (): void => {
         let recording = state.selectedRecording;
-        if (existsRecording(recording) && checkEnabled()) {
+        if (existsRecording(recording)) {
             if (muted) {
                 recording.player.mute = false
             } else {
@@ -111,7 +111,7 @@ function Editor({solo, exporting}: EditorProps) {
 
     const soloClip = (): void => {
         let recording = state.selectedRecording;
-        if (existsRecording(recording) && checkEnabled()) {
+        if (existsRecording(recording)) {
             solo(recording.solo);
         }
     };
@@ -119,11 +119,8 @@ function Editor({solo, exporting}: EditorProps) {
     // crop does not modify audio data
     // start and end points are used to calculate offset and duration for Tone player
     const cropClip = () => {
-        if (!checkEnabled()) {
-            return;
-        }
-        if (cropping) {
-            let recording = state.selectedRecording;
+        let recording = state.selectedRecording;
+        if (cropping && existsRecording(recording)) {
             dispatch({type: ActionType.cropRecording, payload: {
                 recording, 
                 leftDelta: cropLeft,
@@ -142,7 +139,7 @@ function Editor({solo, exporting}: EditorProps) {
 
     const setCropPoints = (type: string, delta: number): void => {
         let recording = state.selectedRecording;
-        if (existsRecording(recording) && checkEnabled()) {
+        if (existsRecording(recording)) {
             delta = _mapPointToTime(delta, recording);
             if (type == 'start') {
                 setCropLeft(delta);
@@ -154,15 +151,13 @@ function Editor({solo, exporting}: EditorProps) {
     };
 
     const onSplitClick = (): void => {
-        if (!checkEnabled()) {
-            return;
-        }
+        
         setSplitting(!splitting);
     };
 
     const splitClip = (point: number): void => {
         let recording = state.selectedRecording;
-        if (existsRecording(recording) && checkEnabled()) {
+        if (existsRecording(recording)) {
             if ((point / PIX_TO_TIME) > recording.start) {
                 setSplitting(!splitting);
                 point = _mapPointToTime(point, recording);

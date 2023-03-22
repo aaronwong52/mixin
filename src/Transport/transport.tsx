@@ -10,14 +10,16 @@ import Channel from './channel';
 import Recording, { CompleteRecording } from "./recording";
 import Playline from './Playline';
 
-import { Action, ActionType, existsRecording, State, _findChannelIndex } from '../Reducer/AppReducer';
+import { existsRecording, _findChannelIndex } from '../Reducer/AppReducer';
+import { State } from '../Reducer/ReducerTypes';
+import { Action, ActionType } from '../Reducer/ActionTypes';
 
 import { modulo } from '../utils/audio-utils';
 import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { SnapContext } from './SnapContext';
-import { DraggableData } from 'react-draggable';
+import { DraggableData, DraggableEvent } from 'react-draggable';
 
 /* 
 
@@ -51,7 +53,7 @@ function Transport({exporting}: TransportProps) {
         return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
 
-    const onStop = (e: any, data: DraggableData, recording: CompleteRecording): void => {
+    const onStop = (data: DraggableData, recording: CompleteRecording): void => {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
@@ -64,7 +66,7 @@ function Transport({exporting}: TransportProps) {
         }
     };
 
-    const onDrag = (e: MouseEvent): void => {
+    const onDrag = (e: DraggableEvent): void => {
         if (e.type === 'mousemove' || e.type === 'touchmove') {
             draggingRef.current = true;
         }
@@ -143,8 +145,8 @@ function Transport({exporting}: TransportProps) {
             c.recordings.map((r) => {
                 recordings.push(
                     <Recording key={r.id} r={r}
-                        onDrag={onDrag}
-                        onStop={onStop}
+                        onDrag={(e: DraggableEvent) => onDrag(e)}
+                        onStop={(data: DraggableData, r: CompleteRecording) => onStop(data, r)}
                         selected={state.selectedRecording}
                         channelIndex={c.index}
                     />
@@ -232,7 +234,7 @@ function Transport({exporting}: TransportProps) {
                 <styles.ChannelHeaders>
                 {Channels()}
                     <styles.TimelinePadding id="timeline_padding">
-                        <styles.AddChannelButton onClick={() => dispatch({type: ActionType.addChannel, payload: {}})}>
+                        <styles.AddChannelButton onClick={() => dispatch({type: ActionType.addChannel})}>
                         </styles.AddChannelButton>
                     </styles.TimelinePadding>
                 </styles.ChannelHeaders>

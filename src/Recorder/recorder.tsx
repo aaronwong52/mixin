@@ -4,7 +4,8 @@ import * as Tone from 'tone';
 import { RecordButton } from './Styles/recorderStyles';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
-import { Action, ActionType, State } from '../Reducer/AppReducer';
+import { State } from '../Reducer/ReducerTypes';
+import { Action, ActionType } from '../Reducer/ActionTypes';
 import { IncompleteRecording } from '../Transport/recording';
 import { createPlayer } from '../utils/audio-utils';
 

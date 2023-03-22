@@ -49,6 +49,7 @@ export const ChannelNameInput = styled.input`
 `;
 
 export const RecordingView = styled.div`
+    position: absolute;
 	height: ${CHANNEL_SIZE}px;
 	padding: 5px 0px;
 	box-sizing: border-box;

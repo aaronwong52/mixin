@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef, useContext, Dispatch } from "react";
 import { RefObject, ChangeEvent, MouseEvent, KeyboardEvent } from "react";
 
-import { Action, State } from "../Reducer/AppReducer";
+import { State } from "../Reducer/ReducerTypes";
 import { StateContext, StateDispatchContext } from "../utils/StateContext";
 import * as Tone from 'tone';
 import { CompleteRecording } from "./recording";
 
 import * as styles from './Styles/ChannelStyles';
 import useKeyPress from "../utils/useKeyPress";
-import { ActionType } from "../Reducer/AppReducer";
+import { Action, ActionType } from "../Reducer/ActionTypes";
+import { existsRecording } from "../Reducer/AppReducer";
 
 export interface Channel {
     id: string;
@@ -93,9 +94,10 @@ export default function Channel({channelData}: ChannelProps) {
 	  	dispatch({type: ActionType.selectChannel, payload: channelData.id});
 	};
 
-	// deletes selected recording
 	const deleteSelectedRecording = () => {
-	  	dispatch({type: ActionType.deleteSelectedRecording, payload: state.selectedRecording});
+        if (existsRecording(state.selectedRecording)) {
+            dispatch({type: ActionType.deleteSelectedRecording, payload: state.selectedRecording});
+        }
 	};
 
 	const deleteSelectedChannel = () => {

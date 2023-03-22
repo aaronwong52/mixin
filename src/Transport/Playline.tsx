@@ -4,7 +4,8 @@ import Draggable, { DraggableData } from 'react-draggable';
 import * as styles from './Styles/transportStyles';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { PIX_TO_TIME } from '../utils/constants';
-import { Action, ActionType, State } from '../Reducer/AppReducer';
+import { State } from '../Reducer/ReducerTypes';
+import { Action, ActionType } from '../Reducer/ActionTypes'
 
 
 export default function Playline({height}: styles.HeightProp) {

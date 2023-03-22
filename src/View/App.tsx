@@ -7,8 +7,9 @@ import { FileDrop } from 'react-file-drop';
 
 import { createPlayer } from '../utils/audio-utils';
 
-import { RecordingReducer } from '../Reducer/AppReducer';
-import { ActionType } from '../Reducer/AppReducer';
+import { existsRecording, getEmptyRecording, RecordingReducer } from '../Reducer/AppReducer';
+import { State } from '../Reducer/ReducerTypes';
+import { ActionType } from '../Reducer/ActionTypes';
 
 import Transport from '../Transport/transport';
 import Recorder from '../Recorder/recorder';
@@ -18,14 +19,13 @@ import Settings from '../Settings/Settings';
 
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { MAX_DURATION, MAX_FILE_SIZE, PIX_TO_TIME } from '../utils/constants';
-import { State } from '../Reducer/AppReducer';
 import { IncompleteRecording } from '../Transport/recording';
 
 const initialState: State = {
 	recordingState: false,
 	mic: undefined,
 	channels: [],
-	selectedRecording: {},
+	selectedRecording: getEmptyRecording(),
 	selectedChannel: '', // id-based system, set to '' when no channels are selected
 	endPosition: 0,
 	soloChannel: undefined,
@@ -109,10 +109,13 @@ function App() {
 	// takes current solo state (boolean)
 	// soloes or un soloes
 	const solo = (soloState: boolean): void => { 
+        if (!existsRecording(state.selectedRecording)) {
+            return;
+        }
 		if (soloState) {
-			dispatch({type: ActionType.unsoloClip,  payload: state.selectedRecording});
+			dispatch({type: ActionType.unsoloRecording,  payload: state.selectedRecording});
 		} else {
-			dispatch({type: ActionType.soloClip,  payload: state.selectedRecording});
+			dispatch({type: ActionType.soloRecording,  payload: state.selectedRecording});
 		}
 	};
   
@@ -177,7 +180,7 @@ function App() {
 
 	useEffect(() => {
 		const mic = new Tone.UserMedia();
-		dispatch({type: ActionType.initializeChannels, payload: {}});
+		dispatch({type: ActionType.initializeChannels});
 		dispatch({type: ActionType.setMic, payload: mic});
 	}, []);
 
@@ -194,7 +197,7 @@ function App() {
                         <Settings displayState={exporting} channels={state.channels}></Settings>
                     </styles.Settings>
                 </styles.TopView>
-                <Editor solo={solo} exporting={exporting}></Editor>
+                <Editor solo={solo}></Editor>
                 <styles.MiddleView dropping={dropping}>
                     <FileDrop 
                         onDrop={(files, event) => upload(files, event)}
