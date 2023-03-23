@@ -3,18 +3,18 @@ import { createPlayer } from '../utils/audio-utils';
 import * as Tone from 'tone';
 import { v4 as uuidv4 } from 'uuid';
 import { Channel } from '../Transport/channel';
-import { EmptyRecording, CompleteRecording } from '../Transport/recording';
+import { EmptyRecording, IncompleteRecording, RecordingType} from '../Transport/recording';
 import { State } from './ReducerTypes';
-import { Action, ActionPayload as p, ActionType as t} from './ActionTypes'
+import { Action, ActionType as t} from './ActionTypes'
 
 export const RecordingReducer = (state: State, action: Action): State => {
 	switch (action.type) {
         case t.setMic:
-            return setMic(state, action.payload);
+            return {...state, mic: action.payload};
         case t.togglePlay:
-            return togglePlay(state, action.payload);
+            return {...state, playing: action.payload.playing, time: action.payload.time};
         case t.toggleRecordingState:
-            return toggleRecordingState(state, action.payload);
+            return {...state, recordingState: action.payload};
 
         case t.initializeChannels:
             return initializeChannels(state);
@@ -23,16 +23,16 @@ export const RecordingReducer = (state: State, action: Action): State => {
         case t.editChannelName:
             return editChannelName(state, action.payload);
         case t.selectChannel:
-            return selectChannel(state, action.payload);
+            return {...state, selectedChannel: action.payload};
         case t.deselectAllChannels:
-            return deselectAllChannels(state);
+            return {...state, selectedChannel: ''};
         case t.deleteSelectedChannel:
-            return deleteChannel(state, action.payload);
+            return deleteChannel(state, state.selectedChannel);
 
         case t.selectRecording:
-            return selectRecording(state, action.payload);
+            return {...state, selectedRecording: action.payload};
         case t.deselectRecordings:
-            return deselectRecordings(state);
+            return {...state, selectedRecording: getEmptyRecording()};
 
         case t.scheduleNewRecording:
             return scheduleNewRecording(state, action.payload);
@@ -56,7 +56,7 @@ export const RecordingReducer = (state: State, action: Action): State => {
             return unsoloRecording(state, action.payload);
 
         case t.updateTransportLength:
-            return updateTransportLength(state, action.payload);
+            return {...state, transportLength: action.payload};
         case t.updateTransportPosition:
             return updateTransportPosition(state, action.payload);
         default: 
@@ -72,22 +72,6 @@ const getNewChannel = (index: number): Channel => {
         id: uuidv4(),
         index: index,
 	}
-};
-
-const setMic = (state: State, mic: p[t.setMic]): State => {
-    return {...state, mic: mic}
-};
-
-const togglePlay = (state: State, payload: p[t.togglePlay]): State => {
-    return {
-        ...state,
-        playing: payload.playing,
-        time: payload.time
-    }
-};
-
-const toggleRecordingState = (state: State, r: p[t.toggleRecordingState]): State => {
-    return {...state, recordingState: r}
 };
 
 const initializeChannels = (state: State): State => {
@@ -114,7 +98,7 @@ const addChannel = (state: State): State => {
     }
 };
 
-const editChannelName = (state: State, payload: p[t.editChannelName]): State => {
+const editChannelName = (state: State, payload: {id: string; name: string;}): State => {
     let channels = state.channels;
     let channelIndex = _findChannelIndex(channels, payload.id);
     return {
@@ -127,7 +111,7 @@ const editChannelName = (state: State, payload: p[t.editChannelName]): State => 
     }
 };
 
-export const existsRecording = (r: CompleteRecording | EmptyRecording): r is CompleteRecording => {
+export const existsRecording = (r: RecordingType | EmptyRecording): r is RecordingType => {
     return ("id" in r && "player" in r);
 };
 
@@ -135,7 +119,7 @@ export const getEmptyRecording = (): EmptyRecording => {
     return { id: '' }
 }
 
-const deleteChannel = (state: State, channelId: p[t.deleteSelectedChannel]): State => {
+const deleteChannel = (state: State, channelId: string): State => {
     let sr = state.selectedRecording;
     if (existsRecording(sr) && sr.channel == channelId) {
         sr = getEmptyRecording();
@@ -162,60 +146,44 @@ const deleteChannel = (state: State, channelId: p[t.deleteSelectedChannel]): Sta
     }
 };
 
-const selectChannel = (state: State, channelId: p[t.selectChannel]): State => {
-    return {...state, selectedChannel: channelId};
-};
-
-const deselectAllChannels = (state: State): State => {
-    return {...state, selectedChannel: ''};
-};
-
-const selectRecording = (state: State, recording: p[t.selectRecording]): State => {
-    return {...state, selectedRecording: recording};
-};
-
-const deselectRecordings = (state: State): State => {
-    return {...state, selectedRecording: getEmptyRecording()};
-};
-
-const _scheduleRecording = (state: State, recording: CompleteRecording): void => {
-    let channelIndex = _findChannelIndex(state.channels, recording.channel);
-    schedulePlayer(recording);
-    recording.player.connect(state.channels[channelIndex].channel);
+const _scheduleRecording = (state: State, r: RecordingType): void => {
+    let channelIndex = _findChannelIndex(state.channels, r.channel);
+    schedulePlayer(r);
+    r.player.connect(state.channels[channelIndex].channel);
 }
 
-const scheduleNewRecording = (state: State, recording: p[t.scheduleNewRecording]): State => {
-    recording.id = uuidv4();
-    recording.channel = state.selectedChannel;
+const scheduleNewRecording = (state: State, r: IncompleteRecording): State => {
+    r.id = uuidv4();
+    r.channel = state.selectedChannel;
     
-    _scheduleRecording(state, recording as CompleteRecording);
-    return _setRecording(state, recording as CompleteRecording, {type: 'add'});
+    _scheduleRecording(state, r as RecordingType);
+    return _setRecording(state, r as RecordingType, {type: 'add'});
 };
 
-const switchRecordingChannel = (state: State, payload: p[t.switchRecordingChannel]): State => {
+const switchRecordingChannel = (state: State, payload: { r: RecordingType; index: number; newIndex: number; }): State => {
     let channels = state.channels;
-	let currChannelIndex: number = payload.channelIndex;
-	let newChannelIndex: number = payload.newChannelIndex;
+	let currIndex: number = payload.index;
+	let newIndex: number = payload.newIndex;
 
-	let lowerIndex = (currChannelIndex > newChannelIndex) ? newChannelIndex : currChannelIndex;
-	let higherIndex = (currChannelIndex > newChannelIndex) ? currChannelIndex : newChannelIndex;
+	let lowerIndex = (currIndex > newIndex) ? newIndex : currIndex;
+	let higherIndex = (currIndex > newIndex) ? currIndex : newIndex;
 
-	let filteredChannel = {...channels[currChannelIndex],
+	let filteredChannel = {...channels[currIndex],
 	    recordings: [
-		    ...channels[currChannelIndex].recordings.filter((recording) => {
-		        return recording.id != payload.recording.id
+		    ...channels[currIndex].recordings.filter((r) => {
+		        return r.id != payload.r.id
 		    })
 	    ]
 	};
 
-	let growingChannel = {...channels[newChannelIndex],
-	    recordings: [...channels[newChannelIndex].recordings, payload.recording]
+	let growingChannel = {...channels[newIndex],
+	    recordings: [...channels[newIndex].recordings, payload.r]
 	};
 
 	// mark the lower index channel as filtered or growing channel
 	let indices = {
-	    first: lowerIndex == newChannelIndex ? growingChannel : filteredChannel,
-	    second: higherIndex == currChannelIndex ? filteredChannel : growingChannel
+	    first: lowerIndex == newIndex ? growingChannel : filteredChannel,
+	    second: higherIndex == currIndex ? filteredChannel : growingChannel
 	};
 
 	return {
@@ -229,7 +197,7 @@ const switchRecordingChannel = (state: State, payload: p[t.switchRecordingChanne
 	}
 };
 
-const _findRecordingIndex = (recordings: CompleteRecording[], recordingId: string): number => {
+const _findRecordingIndex = (recordings: RecordingType[], recordingId: string): number => {
 	return recordings.findIndex((recording) => recording.id == recordingId);
 };
 
@@ -238,39 +206,40 @@ export const _findChannelIndex = (channels: Channel[], channelId: string): numbe
     return (index > 0) ? index : 0;
 };
 
-const deleteRecording = (state: State, selectedRecording: p[t.deleteSelectedRecording]): State => {
+const deleteRecording = (state: State, r: RecordingType): State => {
 	let channels = state.channels;
-	let channelIndex = _findChannelIndex(channels, selectedRecording.channel);
+	let channelIndex = _findChannelIndex(channels, r.channel);
 	if (channelIndex < 0) {
 	    return state;
-	} else return {
-        ...state,
-        channels: [
-            ...channels.slice(0, channelIndex),
-            {...channels[channelIndex],
-                recordings: [
-                    ...channels[channelIndex].recordings.filter((recording) => {
-                        if (recording.id == selectedRecording.id && recording.player) {
-                            recording.player.dispose();
-                        }
-                        return recording.id != selectedRecording.id;
-                    })
-                ]
-            },
-            ...channels.slice(channelIndex + 1, channels.length)
-        ],
-        selectedRecording: getEmptyRecording()
+	} else {
+        return {
+            ...state,
+            channels: [
+                ...channels.slice(0, channelIndex),
+                {...channels[channelIndex],
+                    recordings: [
+                        ...channels[channelIndex].recordings.filter((recording) => {
+                            if (recording.id == r.id && recording.player) {
+                                recording.player.dispose();
+                            }
+                            return recording.id != r.id;
+                        })
+                    ]
+                },
+                ...channels.slice(channelIndex + 1, channels.length)
+            ],
+            selectedRecording: getEmptyRecording()
+        }
     }
 };
 
-type Recordingt = 'add' | 'update';
-type RecordingAction = { type: Recordingt; }
+type RecordingAction = { type: 'add' | 'update' }
 
   // all logic for adding / updating recordings
-const _setRecording = (state: State, recording: CompleteRecording, action: RecordingAction) => {
+const _setRecording = (state: State, r: RecordingType, action: RecordingAction) => {
 	let channels = state.channels;
-	let channelIndex = _findChannelIndex(channels, recording.channel);
-	let recordingIndex = _findRecordingIndex(channels[channelIndex].recordings, recording.id);
+	let channelIndex = _findChannelIndex(channels, r.channel);
+	let recordingIndex = _findRecordingIndex(channels[channelIndex].recordings, r.id);
 	let numRecordings = channels[channelIndex].recordings.length;
 	switch (action.type) {
 	  // append new recording to end
@@ -280,7 +249,7 @@ const _setRecording = (state: State, recording: CompleteRecording, action: Recor
 		        channels: [
 			        ...channels.slice(0, channelIndex),
 			        {...channels[channelIndex], 
-			            recordings: [...channels[channelIndex].recordings.slice(0, numRecordings), {...recording}]
+			            recordings: [...channels[channelIndex].recordings.slice(0, numRecordings), {...r}]
 			        },
 			        ...channels.slice(channelIndex + 1, channels.length)
 		        ],
@@ -288,8 +257,8 @@ const _setRecording = (state: State, recording: CompleteRecording, action: Recor
 
 		// update (replace) recording at recordingIndex
 		case 'update': 
-            let newEndPosition = recording.start + recording.duration > state.endPosition
-                ? recording.start + recording.duration
+            let end = r.start + r.duration > state.endPosition
+                ? r.start + r.duration
                 : state.endPosition;
 		    return {
 		        ...state,
@@ -298,35 +267,31 @@ const _setRecording = (state: State, recording: CompleteRecording, action: Recor
 			        {...channels[channelIndex], 
 			        recordings: [
 				        ...channels[channelIndex].recordings.slice(0, recordingIndex),
-				        {...recording},
+				        {...r},
 				        ...channels[channelIndex].recordings.slice(recordingIndex + 1, numRecordings)
 			        ]},
 			        ...channels.slice(channelIndex + 1, channels.length)
 		        ],
-                endPosition: newEndPosition
+                endPosition: end
 		};
 	}
 };
   
   // error handling in the case where delta exceeds transport limits
   // calculate when delta causes r.start to be 0, and hard limit it at that point
-const updateRecordingPosition = (state: State, payload: p[t.updateRecordingPosition]) => {
-	let newPosition = payload.newPosition / PIX_TO_TIME;
-	let delta = newPosition - payload.recording.start;
-	if (payload.recording.start + newPosition < 0) {
-	  newPosition = Math.abs(payload.recording.start) * -1; // so r.start + delta = 0
+const updateRecordingPosition = (state: State, payload: { r: RecordingType, pos: number; }) => {
+	let pos = payload.pos / PIX_TO_TIME;
+	let delta = pos - payload.r.start;
+	if (payload.r.start + pos < 0) {
+	  pos = Math.abs(payload.r.start) * -1; // so r.start + delta = 0
 	}
-	payload.recording.position += delta;
-	payload.recording.start = newPosition;
-	payload.recording.duration += delta;
+	payload.r.position += delta;
+	payload.r.start = pos;
+	payload.r.duration += delta;
 
-	schedulePlayer(payload.recording);
+	schedulePlayer(payload.r);
 
-	return _updateRecording(state, payload.recording);
-};
-
-const updateTransportLength = (state: State, length: number): State => {
-    return {...state, transportLength: length};
+    return _setRecording(state, payload.r, {type: 'update'});
 };
 
 const _updatePlayerPositions = (state: State, time: number): void => {
@@ -343,14 +308,14 @@ const updateTransportPosition = (state: State, time: number): State => {
     return {...state, time: time};
 };
 
-const cropRecording = (state: State, payload: p[t.cropRecording]): State => {
-    let recording = payload.recording;
+const cropRecording = (state: State, payload: {r: RecordingType; left: number; right: number;}): State => {
+    let recording = payload.r;
 
-    recording.start += payload.leftDelta;
-    recording.duration -= payload.rightDelta;
+    recording.start += payload.left;
+    recording.duration -= payload.right;
 
     schedulePlayer(recording);
-    return _updateRecording(state, recording);
+    return _setRecording(state, recording, {type: 'update'});
 };
 
   /* 
@@ -362,9 +327,9 @@ const cropRecording = (state: State, payload: p[t.cropRecording]): State => {
 	4. split buffer at split point
 	5. update recording players with the buffer halves
   */
-const addSplitRecording = (state: State, payload: p[t.addSplitRecording]): State => {
-	let splitPoint = payload.splitPoint;
-	let originalRecording = payload.recording;
+const addSplitRecording = (state: State, payload: {r: RecordingType, split: number;}): State => {
+	let splitPoint = payload.split;
+	let originalRecording = payload.r;
 	let originalBuffer = originalRecording.player.buffer;
 
 	let secondBuffer = originalBuffer.slice(splitPoint, originalRecording.duration);
@@ -385,23 +350,19 @@ const addSplitRecording = (state: State, payload: p[t.addSplitRecording]): State
 	return _setRecording(state, newRecording, {type: 'add'});
 };
 
-const updateSplitRecording = (state: State, payload: p[t.updateSplitRecording]): State => {
-    let originalRecording = payload.recording;
+const updateSplitRecording = (state: State, payload: {r: RecordingType, split: number;}): State => {
+    let originalRecording = payload.r;
     let originalBuffer = originalRecording.player.buffer;
-    let firstBuffer = originalBuffer.slice(0, payload.splitPoint);
+    let firstBuffer = originalBuffer.slice(0, payload.split);
 
     originalBuffer.dispose();
     originalRecording.player.buffer = firstBuffer;
-    originalRecording.duration = payload.splitPoint;
-    return _updateRecording(state, originalRecording);
-};
-  
-const _updateRecording = (state: State, recording: CompleteRecording): State => {
-	return _setRecording(state, recording, {type: 'update'});
+    originalRecording.duration = payload.split;
+    return _setRecording(state, originalRecording, {type: 'update'});
 };
   
   // internal method to shift start point of a recording
-const _schedulePlayer = (recording: CompleteRecording, offset: number): void => {
+const _schedulePlayer = (recording: RecordingType, offset: number): void => {
     recording.player.unsync();
     // catch all calculation of start position
     // represents start of recording, including potential crop, adjusted for playhead position
@@ -412,40 +373,38 @@ const _schedulePlayer = (recording: CompleteRecording, offset: number): void => 
     recording.player.stop(recording.duration);
 };
 
-const schedulePlayer = (recording: CompleteRecording): void => {
+const schedulePlayer = (recording: RecordingType): void => {
 	  let offset = _calculatePlayOffset(Tone.Transport.seconds, recording);
 	  _schedulePlayer(recording, offset);
 };
 
   // return offset of playhead in relation to a recording clip
   // returns 0 if before or after clip
-export const _calculatePlayOffset = (playPosition: number, recording: CompleteRecording): number => {
+export const _calculatePlayOffset = (playPosition: number, recording: RecordingType): number => {
 	if (playPosition < recording.start || playPosition >= recording.duration) {
 	    return 0;
 	}
 	return playPosition - recording.start;
 };
   
-  // solo: route player to solo channel and solo it
-  const soloRecording = (state: State, recording: p[t.soloRecording]): State => {
+  const soloRecording = (state: State, recording: RecordingType): State => {
     if (recording.player && state.soloChannel) {
         recording.player.connect(state.soloChannel);
         state.soloChannel.solo = true;
         recording.solo = true;
-        return _updateRecording(state, recording);
+        return _setRecording(state, recording, {type: 'update'});
     }
     return state;
 };
   
-  // does player.disconnect() cancel start()?
-const unsoloRecording = (state: State, recording: p[t.unsoloRecording]): State => {
+const unsoloRecording = (state: State, recording: RecordingType): State => {
     if (recording.player  && state.soloChannel) {
         recording.player.disconnect(); // disconnect() -> disconnect all inputs
         let channelIndex = _findChannelIndex(state.channels, recording.channel)
         recording.player.connect(state.channels[channelIndex].channel); // reconnect to original channel
         state.soloChannel.solo = false;
         recording.solo = false;
-        return _updateRecording(state, recording);
+        return _setRecording(state, recording, {type: 'update'});
     }
     return state;	
 };

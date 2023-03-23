@@ -1,4 +1,4 @@
-import { useRef, useEffect, useContext, useState, MutableRefObject, MouseEvent, KeyboardEvent, Dispatch, ReactElement} from 'react';
+import { useRef, useEffect, useContext, useState, MutableRefObject, KeyboardEvent, Dispatch, ReactElement} from 'react';
 import p5 from 'p5';
 
 import * as styles from './Styles/transportStyles';
@@ -7,7 +7,7 @@ import { Transport as ToneTransport } from 'tone';
 import { AppTheme } from '../View/Themes';
 
 import Channel from './channel';
-import Recording, { CompleteRecording } from "./recording";
+import Recording, { RecordingType } from "./recording";
 import Playline from './Playline';
 
 import { existsRecording, _findChannelIndex } from '../Reducer/AppReducer';
@@ -20,16 +20,6 @@ import { CHANNEL_SIZE, PIX_TO_TIME, TIMELINE_HEIGHT } from '../utils/constants';
 import { StateContext, StateDispatchContext } from '../utils/StateContext';
 import { SnapContext } from './SnapContext';
 import { DraggableData, DraggableEvent } from 'react-draggable';
-
-/* 
-
-User inputs transport length in seconds
-Playline stops at that length - DONE
-The animation leaves it there - DONE
-Width of relevant inner components set to length
-Width of transport view itself stays 92vw and scrolls within
-
-*/
 
 interface TransportProps {
     exporting: boolean;
@@ -53,7 +43,7 @@ function Transport({exporting}: TransportProps) {
         return TIMELINE_HEIGHT + (CHANNEL_SIZE * state.channels.length);
     };
 
-    const onStop = (data: DraggableData, recording: CompleteRecording): void => {
+    const onStop = (data: DraggableData, recording: RecordingType): void => {
         // onDrag
         if (draggingRef.current) {
             draggingRef.current = false;
@@ -72,25 +62,25 @@ function Transport({exporting}: TransportProps) {
         }
     };
 
-    const updatePlayerPosition = (deltas: DragData, recording: CompleteRecording): void => {
+    const updatePlayerPosition = (deltas: DragData, r: RecordingType): void => {
         dispatch({type: ActionType.updateRecordingPosition, payload: {
-            recording: recording,
-            newPosition: deltas.x
+            r: r,
+            pos: deltas.x
         }});
-        let index = _findChannelIndex(state.channels, recording.channel)
+        let index = _findChannelIndex(state.channels, r.channel)
         let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
         let sr = state.selectedRecording;
         if (newIndex != index) {
-            recording.channel = state.channels[newIndex].id;
+            r.channel = state.channels[newIndex].id;
             dispatch({type: ActionType.switchRecordingChannel, payload: {
-                recording: recording,
-                channelIndex: index,
-                newChannelIndex: newIndex
+                r: r,
+                index: index,
+                newIndex: newIndex
             }})
         }
         // reselect recording to update playline in Editor
-        if (existsRecording(sr) && sr.id == recording.id) {
-            dispatch({type: ActionType.selectRecording, payload: recording});
+        if (existsRecording(sr) && sr.id == r.id) {
+            dispatch({type: ActionType.selectRecording, payload: r});
         }
     };
 
@@ -146,7 +136,7 @@ function Transport({exporting}: TransportProps) {
                 recordings.push(
                     <Recording key={r.id} r={r}
                         onDrag={(e: DraggableEvent) => onDrag(e)}
-                        onStop={(data: DraggableData, r: CompleteRecording) => onStop(data, r)}
+                        onStop={(data: DraggableData, r: RecordingType) => onStop(data, r)}
                         selected={state.selectedRecording}
                         channelIndex={c.index}
                     />

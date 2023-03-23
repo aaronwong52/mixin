@@ -1,4 +1,4 @@
-import { useRef, useEffect, useContext, Dispatch, RefObject, MouseEvent } from "react";
+import { useRef, useEffect, useContext, Dispatch, RefObject } from "react";
 import { Player, ToneAudioBuffer } from "tone";
 
 import { StateDispatchContext } from "../utils/StateContext";
@@ -9,7 +9,7 @@ import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import * as styles from './Styles/ChannelStyles';
 import { Action, ActionType } from "../Reducer/ActionTypes";
 
-export interface CompleteRecording {
+export interface RecordingType {
     id: string;
     channel: string;
     position: number;
@@ -36,10 +36,10 @@ export type EmptyRecording = {
 }
 
 interface RecordingProps {
-    r: CompleteRecording,
+    r: RecordingType,
     onDrag: (e: DraggableEvent) => void,
-    onStop: (data: DraggableData, r: CompleteRecording) => void,
-    selected: CompleteRecording | EmptyRecording,
+    onStop: (data: DraggableData, r: RecordingType) => void,
+    selected: RecordingType | EmptyRecording,
     channelIndex: number
 }
 

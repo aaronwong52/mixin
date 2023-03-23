@@ -1,96 +1,57 @@
 import * as Tone from 'tone';
-import { CompleteRecording, IncompleteRecording } from '../Transport/recording';
+import { RecordingType, IncompleteRecording } from '../Transport/recording';
 
 export enum ActionType {
-    setMic = 'setMic',
-    togglePlay = 'togglePlay',
-    toggleRecordingState = 'toggleRecordingState',
-    initializeChannels = 'initializeChannels',
-    selectChannel = 'selectChannel',
-    deselectAllChannels = 'deselectAllChannels',
-    addChannel = 'addChannel',
-    editChannelName = 'editChannelName',
-    deleteSelectedChannel = 'deleteSelectedChannel',
-    selectRecording = 'selectRecording',
-    deselectRecordings = 'deselectRecordings',
-    scheduleNewRecording = 'scheduleNewRecording',
-    switchRecordingChannel = 'switchRecordingChannel',
-    deleteSelectedRecording = 'deleteSelectedRecording',
-    updateRecordingPosition = 'updateRecordingPosition',
-    updateTransportLength = 'updateTransportLength',
-    updateTransportPosition = 'updateTransportPosition',
-    cropRecording = 'cropRecording',
-    addSplitRecording = 'addSplitRecording',
-    updateSplitRecording = 'updateSplitRecording',
-    soloRecording = 'soloRecording',
-    unsoloRecording = 'unsoloRecording'
-}
-
-export type ActionPayload = {
-    setMic: Tone.UserMedia;
-    togglePlay: { playing: boolean; time: number; };
-    toggleRecordingState: boolean;
-    selectChannel: string;
-    editChannelName: {id: string; name: string; };
-    deleteSelectedChannel: string;
-    
-    selectRecording: CompleteRecording | IncompleteRecording;
-    scheduleNewRecording: IncompleteRecording;
-    deleteSelectedRecording: CompleteRecording;
-
-    updateRecordingPosition: { recording: CompleteRecording; newPosition: number; };
-    switchRecordingChannel: { 
-        recording: CompleteRecording; 
-        channelIndex: number;
-        newChannelIndex: number;
-    };
-    cropRecording: { 
-        recording: CompleteRecording; 
-        leftDelta: number;
-        rightDelta: number;
-    }
-
-    addSplitRecording: { 
-        recording: CompleteRecording; 
-        splitPoint: number;
-    }
-
-    updateSplitRecording: { 
-        recording: CompleteRecording; 
-        splitPoint: number;
-    }
-    soloRecording: CompleteRecording;
-    unsoloRecording: CompleteRecording;
-    updateTransportPosition: number;
-    updateTransportLength: number;
+    setMic,
+    togglePlay,
+    toggleRecordingState,
+    initializeChannels,
+    selectChannel,
+    deselectAllChannels,
+    addChannel,
+    editChannelName,
+    deleteSelectedChannel,
+    selectRecording,
+    deselectRecordings,
+    scheduleNewRecording,
+    switchRecordingChannel,
+    deleteSelectedRecording,
+    updateRecordingPosition,
+    updateTransportLength,
+    updateTransportPosition,
+    cropRecording,
+    addSplitRecording,
+    updateSplitRecording,
+    soloRecording,
+    unsoloRecording
 }
 
 export type Action = 
-    { type: ActionType.setMic; payload: ActionPayload[ActionType.setMic]; } | 
-    { type: ActionType.togglePlay; payload: ActionPayload[ActionType.togglePlay]; } |
-    { type: ActionType.toggleRecordingState; payload: ActionPayload[ActionType.toggleRecordingState]; } |
+    { type: ActionType.setMic; payload: Tone.UserMedia; } | 
+    { type: ActionType.togglePlay; payload: { playing: boolean; time: number; }; } |
+    { type: ActionType.toggleRecordingState; payload: boolean; } |
 
     { type: ActionType.initializeChannels; } |
     { type: ActionType.addChannel; } |
-    { type: ActionType.editChannelName; payload: ActionPayload[ActionType.editChannelName]; } |
-    { type: ActionType.selectChannel; payload: ActionPayload[ActionType.selectChannel]; } | 
+    { type: ActionType.editChannelName; payload: {id: string; name: string; }; } |
+    { type: ActionType.selectChannel; payload: string; } | 
     { type: ActionType.deselectAllChannels; } |
-    { type: ActionType.deleteSelectedChannel; payload: ActionPayload[ActionType.deleteSelectedChannel]; } |
+    { type: ActionType.deleteSelectedChannel; } |
 
-    { type: ActionType.selectRecording; payload: ActionPayload[ActionType.selectRecording]; } |
+    { type: ActionType.selectRecording; payload: RecordingType | IncompleteRecording; } |
     { type: ActionType.deselectRecordings; } |
 
-    { type: ActionType.scheduleNewRecording; payload: ActionPayload[ActionType.scheduleNewRecording]; } |
-    { type: ActionType.deleteSelectedRecording; payload: ActionPayload[ActionType.deleteSelectedRecording]; } |
-    { type: ActionType.updateRecordingPosition; payload: ActionPayload[ActionType.updateRecordingPosition]; } |
-    { type: ActionType.switchRecordingChannel; payload: ActionPayload[ActionType.switchRecordingChannel]; } |
-    { type: ActionType.cropRecording; payload: ActionPayload[ActionType.cropRecording]; } |
-    { type: ActionType.addSplitRecording; payload: ActionPayload[ActionType.addSplitRecording]; } |
-    { type: ActionType.updateSplitRecording; payload: ActionPayload[ActionType.addSplitRecording]; } |
-    { type: ActionType.soloRecording; payload: ActionPayload[ActionType.soloRecording]; } |
-    { type: ActionType.unsoloRecording; payload: ActionPayload[ActionType.unsoloRecording]; } |
-    { type: ActionType.updateTransportPosition; payload: ActionPayload[ActionType.updateTransportPosition]; }  |
-    { type: ActionType.updateTransportLength; payload: ActionPayload[ActionType.updateTransportLength]; } 
+    { type: ActionType.scheduleNewRecording; payload: IncompleteRecording; } |
+    { type: ActionType.deleteSelectedRecording; payload: RecordingType; } |
+    { type: ActionType.updateRecordingPosition; payload: { r: RecordingType, pos: number; }; } |
+    { type: ActionType.switchRecordingChannel; payload: { r: RecordingType; index: number; newIndex: number; }; } |
+    { type: ActionType.cropRecording; payload: { r: RecordingType; left: number; right: number; }; } |
+    { type: ActionType.addSplitRecording; payload: { r: RecordingType; split: number; }; } |
+    { type: ActionType.updateSplitRecording; payload: { r: RecordingType; split: number; }; } |
+    { type: ActionType.soloRecording; payload: RecordingType; } |
+    { type: ActionType.unsoloRecording; payload: RecordingType; } |
+    { type: ActionType.updateTransportPosition; payload: number; }  |
+    { type: ActionType.updateTransportLength; payload: number; } 
 
 
 

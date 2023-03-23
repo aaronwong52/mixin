@@ -37,9 +37,9 @@ function Recorder({exporting}: RecorderProps) {
 
     const addRecording = (recording: IncompleteRecording): void => {
 		recording.player = createPlayer(recording.data);
+        dispatch({type: ActionType.selectRecording, payload: recording});
         dispatch({type: ActionType.scheduleNewRecording, payload: recording});
 	    dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
-        dispatch({type: ActionType.selectRecording, payload: recording});
     };
 
     const toggleRecording = async (e: MouseEvent) => {
