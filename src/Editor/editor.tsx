@@ -156,8 +156,7 @@ function Editor({solo}: EditorProps) {
                 setSplitting(!splitting);
                 point = _mapPointToTime(point, r);
                 
-                dispatch({type: ActionType.addSplitRecording, payload: {r: r, split: point}});
-                dispatch({type: ActionType.updateSplitRecording, payload: {r: r, split: point}});
+                dispatch({type: ActionType.splitRecording, payload: {r: r, split: point}});
             }
         }
     };

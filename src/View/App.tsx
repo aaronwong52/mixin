@@ -7,7 +7,7 @@ import { FileDrop } from 'react-file-drop';
 
 import { createPlayer } from '../utils/audio-utils';
 
-import { existsRecording, getEmptyRecording, RecordingReducer } from '../Reducer/AppReducer';
+import { existsRecording, emptyRecording, RecordingReducer } from '../Reducer/AppReducer';
 import { State } from '../Reducer/ReducerTypes';
 import { ActionType } from '../Reducer/ActionTypes';
 
@@ -25,7 +25,7 @@ const initialState: State = {
 	recordingState: false,
 	mic: undefined,
 	channels: [],
-	selectedRecording: getEmptyRecording(),
+	selectedRecording: emptyRecording(),
 	selectedChannel: '', // id-based system, set to '' when no channels are selected
 	endPosition: 0,
 	soloChannel: undefined,

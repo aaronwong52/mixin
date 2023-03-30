@@ -151,10 +151,6 @@ function Transport({exporting}: TransportProps) {
         );
     };
 
-    const updateTransportPosition = (time: number): void => {
-        dispatch({type: ActionType.updateTransportPosition, payload: time});
-    };
-
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key == 'Enter') {
             let input = document.getElementById("transport_length_input") as HTMLInputElement;
@@ -209,7 +205,7 @@ function Transport({exporting}: TransportProps) {
 
                 ToneTransport.seconds = newPosition;
                 dispatch({type: ActionType.togglePlay, payload: {playing: false, time: newPosition}});
-                updateTransportPosition(newPosition);
+                dispatch({type: ActionType.updateTransportPosition, payload: newPosition});
             }
         };
         if (transportRef.current) {

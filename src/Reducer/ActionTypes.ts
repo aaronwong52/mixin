@@ -20,8 +20,7 @@ export enum ActionType {
     updateTransportLength,
     updateTransportPosition,
     cropRecording,
-    addSplitRecording,
-    updateSplitRecording,
+    splitRecording,
     soloRecording,
     unsoloRecording
 }
@@ -46,8 +45,7 @@ export type Action =
     { type: ActionType.updateRecordingPosition; payload: { r: RecordingType, pos: number; }; } |
     { type: ActionType.switchRecordingChannel; payload: { r: RecordingType; index: number; newIndex: number; }; } |
     { type: ActionType.cropRecording; payload: { r: RecordingType; left: number; right: number; }; } |
-    { type: ActionType.addSplitRecording; payload: { r: RecordingType; split: number; }; } |
-    { type: ActionType.updateSplitRecording; payload: { r: RecordingType; split: number; }; } |
+    { type: ActionType.splitRecording; payload: { r: RecordingType; split: number; }; } |
     { type: ActionType.soloRecording; payload: RecordingType; } |
     { type: ActionType.unsoloRecording; payload: RecordingType; } |
     { type: ActionType.updateTransportPosition; payload: number; }  |
