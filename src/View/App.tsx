@@ -65,8 +65,6 @@ function App() {
   	const receiveRecording = (recording: IncompleteRecording): void => {
 		recording.player = createPlayer(recording.data);
         dispatch({type: ActionType.scheduleNewRecording, payload: recording});
-        dispatch({type: ActionType.updateTransportPosition, payload: recording.duration});
-        dispatch({type: ActionType.selectRecording, payload: recording});
     };
 
 	const toggle = () => {
@@ -93,7 +91,6 @@ function App() {
 			return;
 		}
 		Tone.Transport.stop();
-		dispatch({type: ActionType.togglePlay, payload: {playing: false, time: 0}});
 		dispatch({type: ActionType.updateTransportPosition, payload: 0});
 	};
 
@@ -180,8 +177,7 @@ function App() {
 
 	useEffect(() => {
 		const mic = new Tone.UserMedia();
-		dispatch({type: ActionType.initializeChannels});
-		dispatch({type: ActionType.setMic, payload: mic});
+		dispatch({type: ActionType.initialize, payload: mic});
 	}, []);
 
 	return (

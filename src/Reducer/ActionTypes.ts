@@ -5,7 +5,7 @@ export enum ActionType {
     setMic,
     togglePlay,
     toggleRecordingState,
-    initializeChannels,
+    initialize,
     selectChannel,
     deselectAllChannels,
     addChannel,
@@ -26,18 +26,17 @@ export enum ActionType {
 }
 
 export type Action = 
-    { type: ActionType.setMic; payload: Tone.UserMedia; } | 
     { type: ActionType.togglePlay; payload: { playing: boolean; time: number; }; } |
     { type: ActionType.toggleRecordingState; payload: boolean; } |
 
-    { type: ActionType.initializeChannels; } |
+    { type: ActionType.initialize; payload: Tone.UserMedia; } |
     { type: ActionType.addChannel; } |
     { type: ActionType.editChannelName; payload: {id: string; name: string; }; } |
     { type: ActionType.selectChannel; payload: string; } | 
     { type: ActionType.deselectAllChannels; } |
     { type: ActionType.deleteSelectedChannel; } |
 
-    { type: ActionType.selectRecording; payload: RecordingType | IncompleteRecording; } |
+    { type: ActionType.selectRecording; payload: RecordingType;} |
     { type: ActionType.deselectRecordings; } |
 
     { type: ActionType.scheduleNewRecording; payload: IncompleteRecording; } |

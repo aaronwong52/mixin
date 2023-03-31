@@ -155,7 +155,6 @@ function Editor({solo}: EditorProps) {
             if ((point / PIX_TO_TIME) > r.start) {
                 setSplitting(!splitting);
                 point = _mapPointToTime(point, r);
-                
                 dispatch({type: ActionType.splitRecording, payload: {r: r, split: point}});
             }
         }

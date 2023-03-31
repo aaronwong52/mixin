@@ -69,7 +69,6 @@ function Transport({exporting}: TransportProps) {
         }});
         let index = _findChannelIndex(state.channels, r.channel)
         let newIndex = Math.floor(deltas.y / CHANNEL_SIZE);
-        let sr = state.selectedRecording;
         if (newIndex != index) {
             r.channel = state.channels[newIndex].id;
             dispatch({type: ActionType.switchRecordingChannel, payload: {
@@ -77,10 +76,6 @@ function Transport({exporting}: TransportProps) {
                 index: index,
                 newIndex: newIndex
             }})
-        }
-        // reselect recording to update playline in Editor
-        if (existsRecording(sr) && sr.id == r.id) {
-            dispatch({type: ActionType.selectRecording, payload: r});
         }
     };
 
@@ -183,7 +178,7 @@ function Transport({exporting}: TransportProps) {
                     }
                     sketch.line(i + 0.5, y - 50, i + 0.5, y - 40); // dashes
                     } else {
-                    sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
+                        sketch.line(i + 0.5, y - 50, i + 0.5, y - 45); // dashes
                     }
                     sketch.stroke(206, 212, 222, 20);
                     sketch.textAlign(sketch.CENTER);
@@ -204,7 +199,6 @@ function Transport({exporting}: TransportProps) {
                 }
 
                 ToneTransport.seconds = newPosition;
-                dispatch({type: ActionType.togglePlay, payload: {playing: false, time: newPosition}});
                 dispatch({type: ActionType.updateTransportPosition, payload: newPosition});
             }
         };
